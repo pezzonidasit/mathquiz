@@ -2633,6 +2633,18 @@ document.getElementById('btn-admin-back').addEventListener('click', () => {
   showScreen('screen-home');
 });
 
+document.getElementById('btn-force-update').addEventListener('click', async () => {
+  if (!confirm('Forcer la mise à jour sur TOUS les appareils ? Ils rechargeront au prochain lancement.')) return;
+  try {
+    const snap = await db.ref('app_version').once('value');
+    const current = snap.val() || 0;
+    await db.ref('app_version').set(current + 1);
+    alert('Version bumpée à ' + (current + 1) + '. Tous les appareils se mettront à jour.');
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  }
+});
+
 document.getElementById('admin-tabs').addEventListener('click', (e) => {
   const tab = e.target.closest('.lb-tab');
   if (!tab) return;

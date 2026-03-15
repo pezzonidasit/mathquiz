@@ -102,6 +102,21 @@ const MQSync = {
   async syncOnLaunch() {
     await firebaseSignIn();
 
+    // Force-update: check version in Firebase, purge cache if newer
+    try {
+      const vSnap = await db.ref('app_version').once('value');
+      const remoteVersion = vSnap.val() || 0;
+      const localVersion = parseInt(localStorage.getItem('mq_app_version') || '0');
+      if (remoteVersion > localVersion) {
+        localStorage.setItem('mq_app_version', String(remoteVersion));
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+        console.log('Force update: cache purged, reloading (v' + remoteVersion + ')');
+        window.location.reload(true);
+        return;
+      }
+    } catch(e) { /* offline, skip */ }
+
     // Restore profile from backup if no local profiles exist
     if (firebaseUid && ProfileManager.getAll().length === 0) {
       try {
