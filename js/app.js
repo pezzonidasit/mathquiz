@@ -285,10 +285,12 @@ function updateProfileHeader() {
   // Render boost selector
   renderBoostSelector();
 
-  // V4: Admin button always visible (anyone can try to activate)
+  // V4: Admin button only visible for admins (set manually in Firebase)
   const adminBtn = document.getElementById('btn-admin');
   if (adminBtn) {
-    adminBtn.style.display = '';
+    checkIsGlobalAdmin().then(isAdmin => {
+      adminBtn.style.display = isAdmin ? '' : 'none';
+    }).catch(() => { adminBtn.style.display = 'none'; });
   }
 
   // V4: Show group prompt if not in any group
@@ -2610,19 +2612,7 @@ document.getElementById('btn-admin').addEventListener('click', async () => {
     showScreen('screen-admin');
     renderAdminDashboard();
   } else {
-    const pin = prompt('Code parent pour activer le mode admin :');
-    if (pin === PIN_CODE) {
-      const success = await setGlobalAdmin();
-      if (!success) {
-        alert('Un admin existe déjà. Contacte l\'admin pour ajouter ton appareil.');
-        return;
-      }
-      document.getElementById('btn-admin').style.display = '';
-      showScreen('screen-admin');
-      renderAdminDashboard();
-    } else if (pin !== null) {
-      alert('Code incorrect');
-    }
+    alert('Accès réservé. Configure isAdmin dans Firebase Console.');
   }
 });
 
