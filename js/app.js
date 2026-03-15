@@ -285,12 +285,10 @@ function updateProfileHeader() {
   // Render boost selector
   renderBoostSelector();
 
-  // V4: Show admin button
+  // V4: Admin button always visible (anyone can try to activate)
   const adminBtn = document.getElementById('btn-admin');
   if (adminBtn) {
-    checkIsGlobalAdmin().then(isAdmin => {
-      adminBtn.style.display = isAdmin ? '' : 'none';
-    }).catch(() => {});
+    adminBtn.style.display = '';
   }
 
   // V4: Show group prompt if not in any group
