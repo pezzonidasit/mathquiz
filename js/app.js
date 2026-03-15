@@ -668,6 +668,14 @@ function getBoostMultiplier(difficulty) {
   return 1; // medium
 }
 
+// ── Stickers (saisonniers — ajoutés régulièrement) ──────────────
+const STICKERS = [
+  { id: 'stk_spring_flower', name: 'Fleur de printemps', icon: '🌸', price: 80, season: 'Printemps 2026' },
+  { id: 'stk_spring_sun', name: 'Soleil doré', icon: '☀️', price: 80, season: 'Printemps 2026' },
+  { id: 'stk_spring_rainbow', name: 'Arc-en-ciel', icon: '🌈', price: 120, season: 'Printemps 2026' },
+  { id: 'stk_spring_butterfly', name: 'Papillon', icon: '🦋', price: 100, season: 'Printemps 2026' },
+];
+
 const BADGE_DEFS = [
   // ── Débuts ──
   { id: 'first_game', name: 'Première partie', icon: '⭐', category: 'debut', check: () => true, progress: () => ({ cur: Math.min(profileGames(), 1), max: 1 }) },
@@ -958,35 +966,81 @@ document.getElementById('btn-shop-back').addEventListener('click', () => { updat
 
 function renderShop() {
   const coins = ProfileManager.get('coins', 0);
-  const owned = ProfileManager.get('ownedThemes', []);
+  const ownedThemes = ProfileManager.get('ownedThemes', []);
+  const ownedStickers = ProfileManager.get('ownedStickers', []);
   const activeTheme = ProfileManager.get('activeTheme', 'nuit');
   document.getElementById('shop-coins').textContent = coins;
   const container = document.getElementById('shop-grid');
-  container.innerHTML = getThemeList().filter(t => t.price > 0).map(t => {
-    const isOwned = owned.includes(t.id);
+
+  // === SECTION 1: Thèmes ===
+  const paidThemes = getThemeList().filter(t => t.price > 0);
+  let html = '<h3 class="shop-section-title">🎨 Thèmes</h3>';
+  html += paidThemes.map(t => {
+    const isOwned = ownedThemes.includes(t.id);
     const isActive = t.id === activeTheme;
-    return `<div class="shop-item ${isOwned ? 'owned' : ''} ${isActive ? 'active-theme' : ''}" data-theme="${t.id}">
+    return `<div class="shop-item shop-theme ${isOwned ? 'owned' : ''} ${isActive ? 'active-theme' : ''}" data-theme="${t.id}">
       <span class="shop-icon">${t.preview}</span>
       <span class="shop-name">${t.name}</span>
-      <span class="shop-price">${isOwned ? (isActive ? '\u2713 Actif' : '\u2713 Possédé') : '\uD83E\uDE99 ' + t.price}</span>
+      <span class="shop-price">${isOwned ? (isActive ? '✓ Actif' : '✓ Possédé') : '🪙 ' + t.price}</span>
     </div>`;
   }).join('');
 
-  container.querySelectorAll('.shop-item').forEach(item => {
+  const allThemesOwned = paidThemes.every(t => ownedThemes.includes(t.id));
+
+  // === SECTION 2: Stickers saisonniers ===
+  if (STICKERS.length > 0) {
+    const currentSeason = STICKERS[0].season;
+    html += `<h3 class="shop-section-title">🏷️ Stickers — ${currentSeason}</h3>`;
+    STICKERS.forEach(s => {
+      const isOwned = ownedStickers.includes(s.id);
+      html += `<div class="shop-item shop-sticker ${isOwned ? 'owned' : ''}" data-sticker="${s.id}">
+        <span class="shop-icon">${s.icon}</span>
+        <span class="shop-name">${s.name}</span>
+        <span class="shop-price">${isOwned ? '✓ Collecté' : '🪙 ' + s.price}</span>
+      </div>`;
+    });
+  }
+
+  const allStickersOwned = STICKERS.every(s => ownedStickers.includes(s.id));
+  const boostsUnlocked = allThemesOwned && allStickersOwned;
+
+  // === SECTION 3: Boosts (verrouillés tant que tout n'est pas acheté) ===
+  html += '<h3 class="shop-section-title">⚡ Boosts de partie</h3>';
+  if (!boostsUnlocked) {
+    const themesLeft = paidThemes.filter(t => !ownedThemes.includes(t.id)).length;
+    const stickersLeft = STICKERS.filter(s => !ownedStickers.includes(s.id)).length;
+    html += `<div class="shop-locked-msg">🔒 Achète tous les thèmes${STICKERS.length > 0 ? ' et stickers' : ''} pour débloquer les boosts !`;
+    if (themesLeft > 0) html += `<br><span class="shop-locked-detail">${themesLeft} thème${themesLeft > 1 ? 's' : ''} restant${themesLeft > 1 ? 's' : ''}</span>`;
+    if (stickersLeft > 0) html += `<br><span class="shop-locked-detail">${stickersLeft} sticker${stickersLeft > 1 ? 's' : ''} restant${stickersLeft > 1 ? 's' : ''}</span>`;
+    html += '</div>';
+  } else {
+    const boostsOwned = ProfileManager.get('boosts', {});
+    BOOSTS.forEach(b => {
+      const count = boostsOwned[b.id] || 0;
+      html += `<div class="shop-item shop-boost" data-boost="${b.id}">
+        <span class="shop-icon">${b.icon}</span>
+        <span class="shop-name">${b.name}</span>
+        <span class="shop-desc">${b.desc}</span>
+        <span class="shop-price">🪙 ${b.price}</span>
+        ${count > 0 ? `<span class="shop-owned-count">×${count} en stock</span>` : ''}
+      </div>`;
+    });
+  }
+
+  container.innerHTML = html;
+
+  // === Event handlers ===
+  // Theme buy/activate
+  container.querySelectorAll('.shop-theme:not(.owned)').forEach(item => {
     item.addEventListener('click', () => {
       const themeId = item.dataset.theme;
       const theme = THEMES[themeId];
-      const currentCoins = ProfileManager.get('coins', 0);
-      const currentOwned = ProfileManager.get('ownedThemes', []);
-      if (currentOwned.includes(themeId)) {
-        ProfileManager.set('activeTheme', themeId);
-        ProfileManager.updateMeta(ProfileManager.getActiveId(), { theme: themeId });
-        applyTheme(themeId);
-        renderShop();
-      } else if (currentCoins >= theme.price) {
-        ProfileManager.set('coins', currentCoins - theme.price);
-        currentOwned.push(themeId);
-        ProfileManager.set('ownedThemes', currentOwned);
+      const c = ProfileManager.get('coins', 0);
+      if (c >= theme.price) {
+        ProfileManager.set('coins', c - theme.price);
+        const o = ProfileManager.get('ownedThemes', []);
+        o.push(themeId);
+        ProfileManager.set('ownedThemes', o);
         ProfileManager.set('activeTheme', themeId);
         ProfileManager.updateMeta(ProfileManager.getActiveId(), { theme: themeId });
         applyTheme(themeId);
@@ -994,41 +1048,57 @@ function renderShop() {
       }
     });
   });
-
-  // Add boosts section in shop
-  const boostsOwned = ProfileManager.get('boosts', {});
-  let boostsHtml = '<h3 style="width:100%;margin-top:16px">⚡ Boosts de partie</h3>';
-  BOOSTS.forEach(b => {
-    const count = boostsOwned[b.id] || 0;
-    boostsHtml += `<div class="shop-item shop-boost" data-boost="${b.id}">
-      <span class="shop-icon">${b.icon}</span>
-      <span class="shop-name">${b.name}</span>
-      <span class="shop-desc">${b.desc}</span>
-      <span class="shop-price">🪙 ${b.price}</span>
-      ${count > 0 ? `<span class="shop-owned-count">×${count} en stock</span>` : ''}
-    </div>`;
-  });
-  container.innerHTML += boostsHtml;
-
-  // Boost buy handlers
-  container.querySelectorAll('.shop-boost').forEach(item => {
+  container.querySelectorAll('.shop-theme.owned').forEach(item => {
     item.addEventListener('click', () => {
-      const boostId = item.dataset.boost;
-      const boost = BOOSTS.find(b => b.id === boostId);
-      const currentCoins = ProfileManager.get('coins', 0);
-      if (currentCoins >= boost.price) {
-        if (confirm(`Acheter ${boost.name} pour ${boost.price} 🪙 ?`)) {
-          ProfileManager.set('coins', currentCoins - boost.price);
-          const inv = ProfileManager.get('boosts', {});
-          inv[boostId] = (inv[boostId] || 0) + 1;
-          ProfileManager.set('boosts', inv);
+      const themeId = item.dataset.theme;
+      ProfileManager.set('activeTheme', themeId);
+      ProfileManager.updateMeta(ProfileManager.getActiveId(), { theme: themeId });
+      applyTheme(themeId);
+      renderShop();
+    });
+  });
+
+  // Sticker buy
+  container.querySelectorAll('.shop-sticker:not(.owned)').forEach(item => {
+    item.addEventListener('click', () => {
+      const stickerId = item.dataset.sticker;
+      const sticker = STICKERS.find(s => s.id === stickerId);
+      const c = ProfileManager.get('coins', 0);
+      if (c >= sticker.price) {
+        if (confirm(`Acheter ${sticker.name} ${sticker.icon} pour ${sticker.price} 🪙 ?`)) {
+          ProfileManager.set('coins', c - sticker.price);
+          const o = ProfileManager.get('ownedStickers', []);
+          o.push(stickerId);
+          ProfileManager.set('ownedStickers', o);
           renderShop();
         }
       } else {
-        alert(`Pas assez de pièces ! (${currentCoins}/${boost.price})`);
+        alert(`Pas assez de pièces ! (${c}/${sticker.price})`);
       }
     });
   });
+
+  // Boost buy
+  if (boostsUnlocked) {
+    container.querySelectorAll('.shop-boost').forEach(item => {
+      item.addEventListener('click', () => {
+        const boostId = item.dataset.boost;
+        const boost = BOOSTS.find(b => b.id === boostId);
+        const c = ProfileManager.get('coins', 0);
+        if (c >= boost.price) {
+          if (confirm(`Acheter ${boost.name} pour ${boost.price} 🪙 ?`)) {
+            ProfileManager.set('coins', c - boost.price);
+            const inv = ProfileManager.get('boosts', {});
+            inv[boostId] = (inv[boostId] || 0) + 1;
+            ProfileManager.set('boosts', inv);
+            renderShop();
+          }
+        } else {
+          alert(`Pas assez de pièces ! (${c}/${boost.price})`);
+        }
+      });
+    });
+  }
 }
 
 // ── Chest Screen ───────────────────────────────────────────────────

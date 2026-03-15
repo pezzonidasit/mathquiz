@@ -1586,6 +1586,33 @@ h2 {
   padding: 8px;
 }
 
+.shop-section-title {
+  grid-column: 1 / -1;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1rem;
+  margin-top: 12px;
+}
+
+.shop-section-title:first-child {
+  margin-top: 0;
+}
+
+.shop-locked-msg {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  background: var(--bg-card);
+  border-radius: 16px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  border: 2px dashed rgba(255,255,255,0.1);
+}
+
+.shop-locked-detail {
+  font-size: 0.75rem;
+  color: var(--accent-yellow);
+}
+
 .shop-desc {
   font-size: 0.7rem;
   color: var(--text-secondary);
