@@ -145,8 +145,19 @@ const MQSync = {
       } catch (e) { /* offline, skip */ }
     }
 
+    // Generate recovery code for existing profiles that don't have one
+    const activeId = ProfileManager.getActiveId();
+    if (activeId && !ProfileManager.get('recoveryCode', null)) {
+      const profile = ProfileManager.getActive();
+      if (profile && typeof generateRecoveryCode === 'function') {
+        const code = generateRecoveryCode(profile.name);
+        ProfileManager.set('recoveryCode', code);
+        saveRecoveryCode(code).catch(() => {});
+      }
+    }
+
     // Always push current stats on launch (initial sync + pending data)
-    if (ProfileManager.getActiveId()) {
+    if (activeId) {
       await this._pushAll();
     }
 
