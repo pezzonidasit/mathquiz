@@ -13,8 +13,24 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- ÉCRAN PIN -->
+  <div id="screen-pin" class="screen active">
+    <h1>🧮</h1>
+    <h2>Mathématiques &amp; Énigmes</h2>
+    <div class="pin-card">
+      <label>Entre le code secret</label>
+      <div class="pin-inputs">
+        <input type="tel" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric">
+        <input type="tel" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric">
+        <input type="tel" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric">
+        <input type="tel" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric">
+      </div>
+      <p id="pin-error" class="pin-error"></p>
+    </div>
+  </div>
+
   <!-- ÉCRAN SÉLECTION PROFIL -->
-  <div id="screen-profiles" class="screen active">
+  <div id="screen-profiles" class="screen">
     <h1>Mathématiques &amp; Énigmes</h1>
     <p class="subtitle">Qui joue ?</p>
     <div id="profiles-list" class="profiles-list"></div>

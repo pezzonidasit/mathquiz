@@ -1,5 +1,45 @@
 /* MathQuiz V2 — App Logic (profile-aware) */
 
+// ── PIN Gate ──────────────────────────────────────────────────────
+const PIN_CODE = '2609';
+
+(function initPin() {
+  if (sessionStorage.getItem('mq_unlocked')) return unlockApp();
+
+  const digits = document.querySelectorAll('.pin-digit');
+
+  digits.forEach((input, i) => {
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D/g, '').slice(0, 1);
+      if (input.value && i < 3) digits[i + 1].focus();
+      const code = Array.from(digits).map(d => d.value).join('');
+      if (code.length === 4) {
+        if (code === PIN_CODE) {
+          sessionStorage.setItem('mq_unlocked', '1');
+          unlockApp();
+        } else {
+          document.getElementById('pin-error').textContent = 'Code incorrect';
+          digits.forEach(d => { d.classList.add('error'); d.value = ''; });
+          digits[0].focus();
+          setTimeout(() => digits.forEach(d => d.classList.remove('error')), 500);
+        }
+      }
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && i > 0) digits[i - 1].focus();
+    });
+  });
+
+  setTimeout(() => digits[0].focus(), 100);
+})();
+
+function unlockApp() {
+  document.getElementById('screen-pin').style.display = 'none';
+  initApp();
+}
+
+function initApp() {
+
 // ── State ──────────────────────────────────────────────────────────
 const state = {
   category: 'all',
@@ -873,3 +913,5 @@ if (activeId && ProfileManager.getActive()) {
   renderProfilesList();
   showScreen('screen-profiles');
 }
+
+} // end initApp()
