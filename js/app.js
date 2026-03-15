@@ -305,11 +305,18 @@ function updateProfileHeader() {
 
   getMyGroups().then(groups => {
     if (groups.length === 0) {
-      noGroupBanner.innerHTML = '<p>👥 Rejoins ou crée un groupe pour jouer !</p>' +
-        '<div style="display:flex;gap:0.5rem;justify-content:center">' +
-        '<button class="btn-primary" onclick="renderGroupsScreen()" style="font-size:0.85rem">Rejoindre</button>' +
-        '<button class="btn-secondary" onclick="quickCreateGroup()" style="font-size:0.85rem">Créer un groupe</button>' +
-        '</div>';
+      // Admin can create, others can only join
+      checkIsGlobalAdmin().then(isAdmin => {
+        let html = '<p>👥 Rejoins un groupe pour commencer à jouer !</p>' +
+          '<button class="btn-primary" onclick="renderGroupsScreen()" style="font-size:0.85rem">Rejoindre un groupe</button>';
+        if (isAdmin) {
+          html += '<br><button class="btn-secondary" onclick="quickCreateGroup()" style="font-size:0.85rem;margin-top:0.5rem">Créer un groupe (admin)</button>';
+        }
+        noGroupBanner.innerHTML = html;
+      }).catch(() => {
+        noGroupBanner.innerHTML = '<p>👥 Rejoins un groupe pour commencer à jouer !</p>' +
+          '<button class="btn-primary" onclick="renderGroupsScreen()" style="font-size:0.85rem">Rejoindre un groupe</button>';
+      });
       noGroupBanner.style.display = '';
       document.getElementById('btn-play').style.display = 'none';
     } else {
@@ -2277,8 +2284,18 @@ async function renderGroupsScreen() {
   let groups = [];
   try { groups = await getMyGroups(); } catch(e) {}
 
+  // Show/hide create button: only if admin OR already in a group
+  const createBtn = document.getElementById('btn-create-group');
+  if (groups.length > 0) {
+    createBtn.style.display = '';
+  } else {
+    checkIsGlobalAdmin().then(isAdmin => {
+      createBtn.style.display = isAdmin ? '' : 'none';
+    }).catch(() => { createBtn.style.display = 'none'; });
+  }
+
   if (groups.length === 0) {
-    listEl.innerHTML = '<div class="groups-empty">Aucun groupe. Rejoins ou crée un groupe !</div>';
+    listEl.innerHTML = '<div class="groups-empty">Aucun groupe. Rejoins un groupe avec un code !</div>';
   } else {
     listEl.innerHTML = groups.map(g => {
       return '<div class="group-card" data-code="' + g.code + '">' +
