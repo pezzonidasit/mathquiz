@@ -437,6 +437,134 @@ const RIDDLE_BANK = [
     hint: 'Combien de jours y a-t-il dans 3 semaines ?',
     explanation: '3 semaines = 21 jours. 21 × 8 = 168 œufs.'
   },
+  {
+    category: 'calcul',
+    text: 'Au marché, tu achètes 4 pommes à 0,50 €, 3 bananes à 0,30 € et 1 pastèque à 3 €. Tu paies avec un billet de 10 €. Combien te rend-on ?',
+    unit: '€',
+    answer: 4.1,
+    hint: 'Calcule le prix total de chaque fruit, puis soustrais de 10 €.',
+    explanation: 'Pommes : 4 × 0,50 = 2 €. Bananes : 3 × 0,30 = 0,90 €. Pastèque : 3 €. Total : 5,90 €. Rendu : 10 − 5,90 = 4,10 €.'
+  },
+  {
+    category: 'calcul',
+    text: 'Une voiture roule à 60 km/h. Quelle distance parcourt-elle en 3 heures et demie ?',
+    unit: 'km',
+    answer: 210,
+    hint: 'Distance = vitesse × temps. 3h30 = 3,5 heures.',
+    explanation: '60 × 3,5 = 210 km.'
+  },
+  {
+    category: 'calcul',
+    text: 'Dans un stade, 25% des 400 spectateurs sont des enfants. Combien d\'adultes y a-t-il ?',
+    unit: '',
+    answer: 300,
+    hint: '25% = un quart. Calcule les enfants, puis déduis les adultes.',
+    explanation: '25% de 400 = 100 enfants. Adultes : 400 − 100 = 300.'
+  },
+  {
+    category: 'calcul',
+    text: 'Pour faire un gâteau, il faut 200 g de farine. Tu veux faire 3 gâteaux et demi. Combien de grammes de farine te faut-il ?',
+    unit: 'g',
+    answer: 700,
+    hint: 'Multiplie 200 g par 3,5.',
+    explanation: '200 × 3,5 = 700 g de farine.'
+  },
+  {
+    category: 'calcul',
+    text: 'Un magasin fait une réduction de 10 € sur un article à 65 €. Tu achètes 2 de ces articles en promotion. Combien paies-tu ?',
+    unit: '€',
+    answer: 110,
+    hint: 'Calcule d\'abord le prix réduit d\'un article.',
+    explanation: 'Prix réduit : 65 − 10 = 55 €. Pour 2 articles : 55 × 2 = 110 €.'
+  },
+  {
+    category: 'calcul',
+    text: 'Au football, l\'équipe A marque 3 buts en 1re mi-temps et 2 en 2e. L\'équipe B marque 1 but en 1re mi-temps et 4 en 2e. Combien de buts au total dans le match ?',
+    unit: '',
+    answer: 10,
+    hint: 'Additionne tous les buts des deux équipes.',
+    explanation: 'Équipe A : 3 + 2 = 5. Équipe B : 1 + 4 = 5. Total : 5 + 5 = 10 buts.'
+  },
+  {
+    category: 'calcul',
+    text: 'Un avion transporte 180 passagers. 50% sont en classe économique, 30% en classe affaires et le reste en première classe. Combien sont en première classe ?',
+    unit: '',
+    answer: 36,
+    hint: '50% + 30% = 80%. Combien reste-t-il de pourcentage ?',
+    explanation: 'Première classe : 100% − 50% − 30% = 20%. 20% de 180 = 36 passagers.'
+  },
+  {
+    category: 'calcul',
+    text: 'Un libraire commande 5 cartons de 24 livres. Il en vend 78 le lundi et 32 le mardi. Combien lui en reste-t-il ?',
+    unit: '',
+    answer: 10,
+    hint: 'Calcule le stock total, puis retire les ventes.',
+    explanation: 'Stock : 5 × 24 = 120 livres. Vendus : 78 + 32 = 110. Reste : 120 − 110 = 10.'
+  },
+  {
+    category: 'calcul',
+    text: 'Mamie prépare des confitures. Elle remplit 12 pots le matin et 8 l\'après-midi. Chaque pot contient 250 g. Quel est le poids total de confiture en kg ?',
+    unit: 'kg',
+    answer: 5,
+    hint: 'Calcule le nombre total de pots, puis le poids en grammes, et convertis en kg.',
+    explanation: '12 + 8 = 20 pots. 20 × 250 = 5000 g = 5 kg.'
+  },
+  {
+    category: 'calcul',
+    text: 'Tu fais les courses avec 50 €. Tu achètes : 2 pizzas à 8 € chacune, 1 salade à 3 €, 4 yaourts à 1,50 € chacun et 1 jus à 2 €. Combien te reste-t-il ?',
+    unit: '€',
+    answer: 23,
+    hint: 'Calcule le prix de chaque article puis le total.',
+    explanation: 'Pizzas : 2 × 8 = 16 €. Salade : 3 €. Yaourts : 4 × 1,50 = 6 €. Jus : 2 €. Total : 27 €. Reste : 50 − 27 = 23 €.'
+  },
+  {
+    category: 'calcul',
+    text: 'Un car scolaire fait 3 voyages par jour. Chaque voyage transporte 45 élèves. Combien d\'élèves le car transporte-t-il en 5 jours d\'école ?',
+    unit: '',
+    answer: 675,
+    hint: 'Voyages par jour × élèves par voyage × nombre de jours.',
+    explanation: '3 × 45 = 135 élèves/jour. 135 × 5 = 675 élèves.'
+  },
+  {
+    category: 'calcul',
+    text: 'Dans un jeu vidéo, tu gagnes 150 pièces par niveau. Tu perds 40 pièces à chaque défaite. Tu réussis 6 niveaux et échoues 3 fois. Combien de pièces as-tu ?',
+    unit: '',
+    answer: 780,
+    hint: 'Calcule les gains et les pertes séparément.',
+    explanation: 'Gains : 6 × 150 = 900. Pertes : 3 × 40 = 120. Total : 900 − 120 = 780 pièces.'
+  },
+  {
+    category: 'calcul',
+    text: 'Un voyage en Suisse coûte 120 CHF pour un adulte et moitié prix pour un enfant. Combien paie une famille de 2 adultes et 3 enfants ?',
+    unit: 'CHF',
+    answer: 420,
+    hint: 'Un enfant paie la moitié du prix adulte.',
+    explanation: 'Adultes : 2 × 120 = 240 CHF. Enfants : 3 × 60 = 180 CHF. Total : 240 + 180 = 420 CHF.'
+  },
+  {
+    category: 'calcul',
+    text: 'Un marathon fait 42 km. Un coureur a déjà parcouru les 3/4 de la course. Combien de km lui reste-t-il à courir ?',
+    unit: 'km',
+    answer: 10.5,
+    hint: 'Calcule 3/4 de 42, puis soustrais de 42.',
+    explanation: '3/4 de 42 = 31,5 km parcourus. Reste : 42 − 31,5 = 10,5 km.'
+  },
+  {
+    category: 'calcul',
+    text: 'Au zoo, il y a 3 fois plus de singes que de lions. Il y a 8 lions. Avec les 15 éléphants, combien d\'animaux y a-t-il en tout (singes + lions + éléphants) ?',
+    unit: '',
+    answer: 47,
+    hint: 'Calcule d\'abord le nombre de singes.',
+    explanation: 'Singes : 3 × 8 = 24. Total : 24 + 8 + 15 = 47 animaux.'
+  },
+  {
+    category: 'calcul',
+    text: 'Une piscine se remplit de 200 litres par heure. Elle contient déjà 1500 litres et doit atteindre 2300 litres. Dans combien d\'heures sera-t-elle pleine ?',
+    unit: 'heures',
+    answer: 4,
+    hint: 'Calcule combien de litres manquent, puis divise par le débit.',
+    explanation: 'Il manque : 2300 − 1500 = 800 litres. 800 ÷ 200 = 4 heures.'
+  },
 
   // ═══════════════════════════════════════════════════════════════════
   // LOGIQUE (~9 riddles)
@@ -514,6 +642,145 @@ const RIDDLE_BANK = [
     hint: 'Remonte les opérations à l\'envers : multiplie par 2, retire 3, divise par 5.',
     explanation: '14 × 2 = 28. 28 − 3 = 25. 25 ÷ 5 = 5. Vérif : 5 × 5 = 25, + 3 = 28, ÷ 2 = 14. ✓'
   },
+  {
+    category: 'logique',
+    text: 'Je suis un nombre à deux chiffres. Je suis un multiple de 7 et la somme de mes chiffres est 9. Qui suis-je ?',
+    unit: '',
+    answer: 63,
+    hint: 'Liste les multiples de 7 à deux chiffres et vérifie la somme des chiffres.',
+    explanation: 'Multiples de 7 à 2 chiffres : 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 98. Seul 63 a une somme de chiffres = 9 (6+3=9). ✓'
+  },
+  {
+    category: 'logique',
+    text: 'Marie a 3 ans de plus que Lucas. Ensemble, ils ont 19 ans. Quel âge a Lucas ?',
+    unit: 'ans',
+    answer: 8,
+    hint: 'Si Lucas a x ans, Marie a x + 3.',
+    explanation: 'Lucas = x, Marie = x + 3. x + x + 3 = 19 → 2x = 16 → x = 8. Lucas a 8 ans.'
+  },
+  {
+    category: 'logique',
+    text: 'Trois amis comparent leurs tailles. Tom est plus grand que Jules. Jules est plus grand que Sara. Qui est le plus petit ?',
+    unit: '',
+    answer: null,
+    textAnswer: 'sara',
+    hint: 'Classe-les du plus grand au plus petit.',
+    explanation: 'Tom > Jules > Sara. Sara est la plus petite.'
+  },
+  {
+    category: 'logique',
+    text: 'Je suis un nombre. Si tu m\'ajoutes 7 puis tu multiplies par 3, tu obtiens 42. Qui suis-je ?',
+    unit: '',
+    answer: 7,
+    hint: 'Pars de 42, divise par 3, puis retire 7.',
+    explanation: '42 ÷ 3 = 14. 14 − 7 = 7. Vérif : (7 + 7) × 3 = 14 × 3 = 42. ✓'
+  },
+  {
+    category: 'logique',
+    text: 'Dans un tiroir, il y a des chaussettes rouges et des bleues. Il fait noir. Combien de chaussettes dois-tu prendre au minimum pour être sûr d\'avoir une paire de la même couleur ?',
+    unit: '',
+    answer: 3,
+    hint: 'Pense au pire cas : les 2 premières pourraient être de couleurs différentes.',
+    explanation: 'Pire cas : 1re rouge, 2e bleue. La 3e sera forcément rouge ou bleue → tu auras une paire. Réponse : 3.'
+  },
+  {
+    category: 'logique',
+    text: 'Aujourd\'hui c\'est mercredi. Quel jour serons-nous dans 10 jours ?',
+    unit: '',
+    answer: null,
+    textAnswer: 'samedi',
+    hint: '7 jours = 1 semaine complète. 10 = 7 + 3.',
+    explanation: '10 jours = 1 semaine + 3 jours. Mercredi + 3 jours = samedi.'
+  },
+  {
+    category: 'logique',
+    text: 'Trouve le nombre suivant : 1, 1, 2, 3, 5, 8, 13, ?',
+    unit: '',
+    answer: 21,
+    hint: 'Chaque nombre est la somme des deux précédents.',
+    explanation: 'Suite de Fibonacci : 8 + 13 = 21.'
+  },
+  {
+    category: 'logique',
+    text: 'Un nombre palindrome se lit de la même façon dans les deux sens (ex : 121). Combien y a-t-il de palindromes à 3 chiffres entre 100 et 200 ?',
+    unit: '',
+    answer: 10,
+    hint: 'Le 1er et le 3e chiffre doivent être identiques. Le 1er chiffre est 1.',
+    explanation: 'Forme : 1_1. Le chiffre du milieu peut être 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 → 10 palindromes (101, 111, 121… 191).'
+  },
+  {
+    category: 'logique',
+    text: 'Paul, Léa et Tom font la queue. Paul n\'est pas premier. Tom est juste après Léa. Qui est en 2e position ?',
+    unit: '',
+    answer: null,
+    textAnswer: 'tom',
+    hint: 'Tom est juste après Léa, donc Léa est avant Tom.',
+    explanation: 'Tom est après Léa → Léa puis Tom. Paul n\'est pas 1er → Paul est 3e. Ordre : Léa, Tom, Paul. Tom est 2e.'
+  },
+  {
+    category: 'logique',
+    text: 'Je suis un nombre entre 1 et 50. Je suis un multiple de 3 ET de 5. Combien de nombres correspondent ?',
+    unit: '',
+    answer: 3,
+    hint: 'Un multiple de 3 ET de 5 est un multiple de 15.',
+    explanation: 'Multiples de 15 entre 1 et 50 : 15, 30, 45. Il y en a 3.'
+  },
+  {
+    category: 'logique',
+    text: 'Une maman a 3 enfants : Anna, Bianca et Carlos. Anna a 5 ans de plus que Bianca. Carlos a 2 ans de moins que Bianca. La somme de leurs âges est 30. Quel âge a Bianca ?',
+    unit: 'ans',
+    answer: 9,
+    hint: 'Pose Bianca = x. Exprime les autres en fonction de x.',
+    explanation: 'Bianca = x, Anna = x + 5, Carlos = x − 2. x + (x+5) + (x−2) = 30 → 3x + 3 = 30 → 3x = 27 → x = 9. Bianca a 9 ans.'
+  },
+  {
+    category: 'logique',
+    text: 'Sur une balance, 3 pommes pèsent autant que 6 oranges. Si une orange pèse 100 g, combien pèse une pomme ?',
+    unit: 'g',
+    answer: 200,
+    hint: '3 pommes = 6 oranges. Simplifie : 1 pomme = ? oranges.',
+    explanation: '3 pommes = 6 oranges → 1 pomme = 2 oranges = 2 × 100 = 200 g.'
+  },
+  {
+    category: 'logique',
+    text: 'Je pense à un nombre. Je le double, j\'ajoute 10, puis je divise par 4. J\'obtiens 5. Quel est mon nombre ?',
+    unit: '',
+    answer: 5,
+    hint: 'Remonte à l\'envers : multiplie par 4, retire 10, divise par 2.',
+    explanation: '5 × 4 = 20. 20 − 10 = 10. 10 ÷ 2 = 5. Vérif : 5 × 2 = 10, + 10 = 20, ÷ 4 = 5. ✓'
+  },
+  {
+    category: 'logique',
+    text: 'Trouve le nombre suivant : 2, 6, 12, 20, 30, ?',
+    unit: '',
+    answer: 42,
+    hint: 'Regarde les différences entre chaque nombre : 4, 6, 8, 10…',
+    explanation: 'Différences : 4, 6, 8, 10 → la suivante est 12. Donc 30 + 12 = 42.'
+  },
+  {
+    category: 'logique',
+    text: 'Dans un groupe de 25 élèves, 15 aiment le foot, 12 aiment le basket, et 5 aiment les deux. Combien d\'élèves n\'aiment ni le foot ni le basket ?',
+    unit: '',
+    answer: 3,
+    hint: 'Ceux qui aiment au moins un sport = foot + basket − les deux.',
+    explanation: 'Au moins un sport : 15 + 12 − 5 = 22. Ni l\'un ni l\'autre : 25 − 22 = 3 élèves.'
+  },
+  {
+    category: 'logique',
+    text: 'Un gardien de phare dit toujours la vérité. Il dit : « J\'ai plus de 30 ans mais moins de 40 ans. Mon âge est un multiple de 6. » Quel âge a-t-il ?',
+    unit: 'ans',
+    answer: 36,
+    hint: 'Liste les multiples de 6 entre 30 et 40.',
+    explanation: 'Multiples de 6 entre 30 et 40 : 36. C\'est le seul ! Il a 36 ans.'
+  },
+  {
+    category: 'logique',
+    text: 'Trouve le nombre suivant : 1, 4, 9, 16, 25, ?',
+    unit: '',
+    answer: 36,
+    hint: 'Ce sont des carrés parfaits : 1², 2², 3²…',
+    explanation: '1², 2², 3², 4², 5², 6² = 36.'
+  },
 
   // ═══════════════════════════════════════════════════════════════════
   // GÉOMÉTRIE (~8 riddles)
@@ -581,6 +848,142 @@ const RIDDLE_BANK = [
     answer: 29,
     hint: 'Calcule le périmètre, puis retire la largeur du portillon.',
     explanation: 'Périmètre = 2 × (10 + 5) = 30 m. On retire 1 m pour le portillon : 30 − 1 = 29 m.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Quel est le volume d\'un cube de 4 cm de côté ?',
+    unit: 'cm³',
+    answer: 64,
+    hint: 'Volume du cube = côté × côté × côté.',
+    explanation: '4 × 4 × 4 = 64 cm³.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Combien de faces a une pyramide à base carrée ?',
+    unit: '',
+    answer: 5,
+    hint: 'Compte la base et les faces triangulaires sur les côtés.',
+    explanation: '1 base carrée + 4 faces triangulaires = 5 faces.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Un cercle a un diamètre de 10 cm. Quel est son rayon ?',
+    unit: 'cm',
+    answer: 5,
+    hint: 'Le rayon est la moitié du diamètre.',
+    explanation: 'Rayon = diamètre ÷ 2 = 10 ÷ 2 = 5 cm.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Un triangle a deux angles de 45° et 90°. Combien mesure le troisième angle ?',
+    unit: '°',
+    answer: 45,
+    hint: 'La somme des angles d\'un triangle fait toujours 180°.',
+    explanation: '180 − 45 − 90 = 45°.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Une chambre rectangulaire mesure 5 m de long et 4 m de large. On veut la couvrir de moquette à 12 € le m². Combien coûte la moquette ?',
+    unit: '€',
+    answer: 240,
+    hint: 'Calcule l\'aire de la chambre, puis multiplie par le prix au m².',
+    explanation: 'Aire = 5 × 4 = 20 m². Coût : 20 × 12 = 240 €.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Combien de sommets a un cube ?',
+    unit: '',
+    answer: 8,
+    hint: 'Un sommet est un coin. Compte ceux du haut et du bas.',
+    explanation: '4 sommets en haut + 4 sommets en bas = 8 sommets.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Une forme en L est composée de 2 rectangles : un de 6 cm × 2 cm et un de 3 cm × 2 cm. Quelle est l\'aire totale ?',
+    unit: 'cm²',
+    answer: 18,
+    hint: 'Calcule l\'aire de chaque rectangle et additionne.',
+    explanation: 'Rectangle 1 : 6 × 2 = 12 cm². Rectangle 2 : 3 × 2 = 6 cm². Total : 12 + 6 = 18 cm².'
+  },
+  {
+    category: 'geometrie',
+    text: 'Un jardin carré a un côté de 8 m. On veut l\'entourer d\'une clôture qui coûte 15 € par mètre. Quel est le coût total ?',
+    unit: '€',
+    answer: 480,
+    hint: 'Calcule d\'abord le périmètre du carré.',
+    explanation: 'Périmètre = 4 × 8 = 32 m. Coût : 32 × 15 = 480 €.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Combien d\'axes de symétrie possède un carré ?',
+    unit: '',
+    answer: 4,
+    hint: 'Pense aux axes horizontaux, verticaux et diagonaux.',
+    explanation: '1 horizontal + 1 vertical + 2 diagonaux = 4 axes de symétrie.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Un triangle équilatéral a un périmètre de 27 cm. Quelle est la longueur d\'un côté ?',
+    unit: 'cm',
+    answer: 9,
+    hint: 'Dans un triangle équilatéral, les 3 côtés sont égaux.',
+    explanation: '27 ÷ 3 = 9 cm par côté.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Sur un quadrillage, on dessine un rectangle de 5 cases de long et 3 cases de large. Combien de cases couvre-t-il ?',
+    unit: '',
+    answer: 15,
+    hint: 'C\'est comme calculer une aire.',
+    explanation: '5 × 3 = 15 cases.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Un prisme triangulaire (comme une boîte de Toblerone) a combien de faces ?',
+    unit: '',
+    answer: 5,
+    hint: 'Il a 2 bases triangulaires et des faces rectangulaires sur les côtés.',
+    explanation: '2 faces triangulaires (bases) + 3 faces rectangulaires (côtés) = 5 faces.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Un terrain rectangulaire mesure 12 m sur 8 m. On place une allée de 2 m de large tout le long d\'un côté de 12 m. Quelle est l\'aire de l\'allée ?',
+    unit: 'm²',
+    answer: 24,
+    hint: 'L\'allée est un rectangle de 12 m × 2 m.',
+    explanation: 'Aire de l\'allée = 12 × 2 = 24 m².'
+  },
+  {
+    category: 'geometrie',
+    text: 'Dans un triangle, un angle mesure 60° et un autre mesure 70°. Combien mesure le troisième ?',
+    unit: '°',
+    answer: 50,
+    hint: 'La somme des 3 angles d\'un triangle = 180°.',
+    explanation: '180 − 60 − 70 = 50°.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Combien d\'axes de symétrie possède un triangle équilatéral ?',
+    unit: '',
+    answer: 3,
+    hint: 'Chaque axe passe par un sommet et le milieu du côté opposé.',
+    explanation: 'Un triangle équilatéral a 3 axes de symétrie.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Un cube a un volume de 27 cm³. Quelle est la longueur de son côté ?',
+    unit: 'cm',
+    answer: 3,
+    hint: 'Quel nombre multiplié par lui-même 3 fois donne 27 ?',
+    explanation: '3 × 3 × 3 = 27. Le côté mesure 3 cm.'
+  },
+  {
+    category: 'geometrie',
+    text: 'Une forme en T est composée d\'un rectangle de 6 cm × 2 cm (horizontal) et d\'un rectangle de 2 cm × 4 cm (vertical, centré en dessous). Quelle est l\'aire totale ?',
+    unit: 'cm²',
+    answer: 20,
+    hint: 'Calcule l\'aire de chaque rectangle séparément.',
+    explanation: 'Rectangle horizontal : 6 × 2 = 12 cm². Rectangle vertical : 2 × 4 = 8 cm². Total : 12 + 8 = 20 cm².'
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -650,6 +1053,142 @@ const RIDDLE_BANK = [
     hint: 'Calcule 3/8 de 40.',
     explanation: '1/8 de 40 = 5 cm. 3/8 = 3 × 5 = 15 cm.'
   },
+  {
+    category: 'fractions',
+    text: 'Combien font 1/4 en pourcentage ?',
+    unit: '%',
+    answer: 25,
+    hint: 'Divise 100 par 4.',
+    explanation: '1/4 = 1 ÷ 4 = 0,25 = 25%.'
+  },
+  {
+    category: 'fractions',
+    text: 'Combien font 3/5 en pourcentage ?',
+    unit: '%',
+    answer: 60,
+    hint: '1/5 = 20%. Multiplie par 3.',
+    explanation: '3/5 = 3 ÷ 5 = 0,60 = 60%.'
+  },
+  {
+    category: 'fractions',
+    text: 'Un héritage de 12 000 € est partagé entre 3 frères. L\'aîné reçoit 1/2, le cadet 1/3 et le benjamin le reste. Combien reçoit le benjamin ?',
+    unit: '€',
+    answer: 2000,
+    hint: 'Calcule la part de l\'aîné et du cadet, puis déduis le reste.',
+    explanation: 'Aîné : 1/2 de 12 000 = 6 000 €. Cadet : 1/3 de 12 000 = 4 000 €. Benjamin : 12 000 − 6 000 − 4 000 = 2 000 €.'
+  },
+  {
+    category: 'fractions',
+    text: 'Classe ces fractions de la plus petite à la plus grande : 1/2, 1/3, 1/4. Quel est le dénominateur de la plus petite ?',
+    unit: '',
+    answer: 4,
+    hint: 'Plus le dénominateur est grand, plus la fraction est petite.',
+    explanation: '1/4 < 1/3 < 1/2. La plus petite est 1/4, son dénominateur est 4.'
+  },
+  {
+    category: 'fractions',
+    text: 'Quelle fraction est équivalente à 2/6 ? Donne le dénominateur de la fraction simplifiée.',
+    unit: '',
+    answer: 3,
+    hint: 'Divise le numérateur et le dénominateur par le même nombre.',
+    explanation: '2/6 = 1/3 (on divise par 2). Le dénominateur simplifié est 3.'
+  },
+  {
+    category: 'fractions',
+    text: 'Dans une classe de 32 élèves, 3/8 sont des filles. Combien y a-t-il de garçons ?',
+    unit: '',
+    answer: 20,
+    hint: 'Calcule d\'abord le nombre de filles.',
+    explanation: 'Filles : 3/8 de 32 = 12. Garçons : 32 − 12 = 20.'
+  },
+  {
+    category: 'fractions',
+    text: 'Tu manges 1/3 d\'une tarte le lundi, puis 1/4 de ce qui reste le mardi. Il restait 24 parts à l\'origine. Combien de parts reste-t-il après mardi ?',
+    unit: '',
+    answer: 12,
+    hint: 'Attention : mardi tu manges 1/4 du RESTE, pas de la tarte entière.',
+    explanation: 'Lundi : 1/3 de 24 = 8 parts mangées. Reste : 24 − 8 = 16. Mardi : 1/4 de 16 = 4 parts mangées. Reste : 16 − 4 = 12.'
+  },
+  {
+    category: 'fractions',
+    text: 'Combien font 2/3 + 1/6 ? Donne le numérateur (sur un dénominateur de 6).',
+    unit: '',
+    answer: 5,
+    hint: 'Mets 2/3 au dénominateur 6 : 2/3 = ?/6.',
+    explanation: '2/3 = 4/6. Donc 4/6 + 1/6 = 5/6. Le numérateur est 5.'
+  },
+  {
+    category: 'fractions',
+    text: 'Un aquarium contient 60 poissons. 2/5 sont rouges, 1/3 sont bleus, le reste sont jaunes. Combien y a-t-il de poissons jaunes ?',
+    unit: '',
+    answer: 16,
+    hint: 'Calcule les rouges et les bleus, puis déduis les jaunes.',
+    explanation: 'Rouges : 2/5 de 60 = 24. Bleus : 1/3 de 60 = 20. Jaunes : 60 − 24 − 20 = 16.'
+  },
+  {
+    category: 'fractions',
+    text: 'Combien vaut 3/4 de 48 bonbons ?',
+    unit: '',
+    answer: 36,
+    hint: 'Calcule d\'abord 1/4 de 48.',
+    explanation: '1/4 de 48 = 12. 3/4 = 3 × 12 = 36 bonbons.'
+  },
+  {
+    category: 'fractions',
+    text: 'Quel nombre est le plus grand : 5/8 ou 7/12 ? Donne le numérateur du plus grand.',
+    unit: '',
+    answer: 5,
+    hint: 'Mets les deux au même dénominateur (24).',
+    explanation: '5/8 = 15/24. 7/12 = 14/24. 15/24 > 14/24. Le plus grand est 5/8, numérateur = 5.'
+  },
+  {
+    category: 'fractions',
+    text: 'Un terrain de 120 m² est divisé en 4 parcelles égales. On plante des fleurs sur 3 parcelles. Quelle surface est fleurie ?',
+    unit: 'm²',
+    answer: 90,
+    hint: '3 parcelles sur 4, c\'est 3/4 du terrain.',
+    explanation: '3/4 de 120 = 90 m².'
+  },
+  {
+    category: 'fractions',
+    text: 'Combien font 1/2 en pourcentage ?',
+    unit: '%',
+    answer: 50,
+    hint: 'La moitié de 100, c\'est…',
+    explanation: '1/2 = 0,50 = 50%.'
+  },
+  {
+    category: 'fractions',
+    text: 'Une recette demande 3/4 de litre de lait. Tu veux faire la moitié de la recette. Combien de mL de lait te faut-il ?',
+    unit: 'mL',
+    answer: 375,
+    hint: '3/4 de litre = 750 mL. La moitié de ça…',
+    explanation: '3/4 L = 750 mL. La moitié : 750 ÷ 2 = 375 mL.'
+  },
+  {
+    category: 'fractions',
+    text: 'Tu as 36 billes. Tu en donnes 2/9 à Paul et 1/4 à Marie. Combien t\'en reste-t-il ?',
+    unit: '',
+    answer: 19,
+    hint: 'Calcule 2/9 de 36 et 1/4 de 36 séparément.',
+    explanation: 'Paul : 2/9 de 36 = 8. Marie : 1/4 de 36 = 9. Donné : 8 + 9 = 17. Reste : 36 − 17 = 19.'
+  },
+  {
+    category: 'fractions',
+    text: 'Quelle fraction de 1 heure représente 15 minutes ? Donne le dénominateur.',
+    unit: '',
+    answer: 4,
+    hint: '1 heure = 60 minutes. 15/60 = ?',
+    explanation: '15/60 = 1/4. Le dénominateur est 4.'
+  },
+  {
+    category: 'fractions',
+    text: 'Un sac contient 40 bonbons. 1/5 sont à la fraise, 3/10 au citron, et le reste au chocolat. Combien sont au chocolat ?',
+    unit: '',
+    answer: 20,
+    hint: 'Calcule les bonbons fraise et citron, puis déduis.',
+    explanation: 'Fraise : 1/5 de 40 = 8. Citron : 3/10 de 40 = 12. Chocolat : 40 − 8 − 12 = 20.'
+  },
 
   // ═══════════════════════════════════════════════════════════════════
   // MESURES (~8 riddles)
@@ -717,6 +1256,142 @@ const RIDDLE_BANK = [
     answer: 155,
     hint: 'Convertis d\'abord tout en centimètres.',
     explanation: '2 m 40 cm = 240 cm. 240 − 85 = 155 cm.'
+  },
+  {
+    category: 'mesures',
+    text: 'À Paris il est 14h00. À New York, il y a 6 heures de décalage en moins. Quelle heure est-il à New York ?',
+    unit: 'h',
+    answer: 8,
+    hint: 'New York est en retard sur Paris.',
+    explanation: '14h − 6h = 8h. Il est 8h du matin à New York.'
+  },
+  {
+    category: 'mesures',
+    text: 'Un sprinter court le 100 m en 10 secondes. Quelle est sa vitesse en km/h ?',
+    unit: 'km/h',
+    answer: 36,
+    hint: '100 m en 10 s → combien en 1 seconde ? Et en 1 heure (3600 secondes) ?',
+    explanation: '100 m / 10 s = 10 m/s. En km/h : 10 × 3,6 = 36 km/h.'
+  },
+  {
+    category: 'mesures',
+    text: 'Sur une carte, 1 cm représente 5 km. Deux villes sont séparées de 7 cm sur la carte. Quelle est la distance réelle ?',
+    unit: 'km',
+    answer: 35,
+    hint: 'Multiplie la distance sur la carte par l\'échelle.',
+    explanation: '7 × 5 = 35 km.'
+  },
+  {
+    category: 'mesures',
+    text: 'Une bouteille contient 1,5 L de jus. Tu verses 3 verres de 250 mL. Combien de mL reste-t-il dans la bouteille ?',
+    unit: 'mL',
+    answer: 750,
+    hint: '1,5 L = 1500 mL. Soustrais les 3 verres.',
+    explanation: '1,5 L = 1500 mL. Versé : 3 × 250 = 750 mL. Reste : 1500 − 750 = 750 mL.'
+  },
+  {
+    category: 'mesures',
+    text: 'L\'eau gèle à 0°C et bout à 100°C. Quelle est la différence de température entre le point d\'ébullition et le point de congélation ?',
+    unit: '°C',
+    answer: 100,
+    hint: 'C\'est une simple soustraction.',
+    explanation: '100 − 0 = 100°C de différence.'
+  },
+  {
+    category: 'mesures',
+    text: 'Un film dure 2 heures 15 minutes et 30 secondes. Combien de secondes cela fait-il au total ?',
+    unit: 's',
+    answer: 8130,
+    hint: 'Convertis d\'abord les heures en minutes, puis tout en secondes.',
+    explanation: '2h = 120 min. 120 + 15 = 135 min. 135 × 60 = 8100 s. 8100 + 30 = 8130 s.'
+  },
+  {
+    category: 'mesures',
+    text: 'Pour une recette, il faut 750 g de farine et 500 mL de lait. Tu as 2 kg de farine. Combien de recettes peux-tu faire (en te basant sur la farine seulement) ?',
+    unit: '',
+    answer: 2,
+    hint: '2 kg = 2000 g. Divise par 750 g et prends la partie entière.',
+    explanation: '2000 ÷ 750 = 2,67. On ne peut faire que 2 recettes complètes.'
+  },
+  {
+    category: 'mesures',
+    text: 'Un match de foot dure 2 × 45 minutes avec 15 minutes de pause. Combien de minutes dure le match au total ?',
+    unit: 'min',
+    answer: 105,
+    hint: 'Additionne les deux mi-temps et la pause.',
+    explanation: '45 + 45 + 15 = 105 minutes.'
+  },
+  {
+    category: 'mesures',
+    text: 'Un coureur fait 3 tours de piste de 400 m en 4 minutes et 30 secondes. Quelle distance a-t-il parcourue en mètres ?',
+    unit: 'm',
+    answer: 1200,
+    hint: 'Le temps ne compte pas ici, seulement la distance.',
+    explanation: '3 tours × 400 m = 1200 m.'
+  },
+  {
+    category: 'mesures',
+    text: 'Tu achètes 1 kg 250 g de pommes et 800 g de poires. Quel poids total portes-tu en grammes ?',
+    unit: 'g',
+    answer: 2050,
+    hint: 'Convertis tout en grammes.',
+    explanation: '1 kg 250 g = 1250 g. Total : 1250 + 800 = 2050 g.'
+  },
+  {
+    category: 'mesures',
+    text: 'Sur une carte au 1/10 000, une rivière mesure 8 cm. Quelle est sa longueur réelle en mètres ?',
+    unit: 'm',
+    answer: 800,
+    hint: '1 cm sur la carte = 10 000 cm en réalité = 100 m.',
+    explanation: '8 cm × 10 000 = 80 000 cm = 800 m.'
+  },
+  {
+    category: 'mesures',
+    text: 'Une baignoire se remplit avec un robinet qui débite 12 litres par minute. Combien de litres coulent en 8 minutes et 30 secondes ?',
+    unit: 'litres',
+    answer: 102,
+    hint: '8 min 30 s = 8,5 minutes.',
+    explanation: '12 × 8,5 = 102 litres.'
+  },
+  {
+    category: 'mesures',
+    text: 'Il est 23h40. Dans combien de minutes sera-t-il minuit ?',
+    unit: 'min',
+    answer: 20,
+    hint: 'Minuit = 24h00.',
+    explanation: 'De 23h40 à 24h00 = 20 minutes.'
+  },
+  {
+    category: 'mesures',
+    text: 'Un train roule à 120 km/h. Combien de temps met-il pour parcourir 60 km ?',
+    unit: 'min',
+    answer: 30,
+    hint: 'Temps = distance ÷ vitesse.',
+    explanation: '60 ÷ 120 = 0,5 heure = 30 minutes.'
+  },
+  {
+    category: 'mesures',
+    text: 'Un gâteau nécessite un four à 180°C pendant 45 min. Tu le mets au four à 10h20. À quelle heure le sors-tu ? Donne les minutes.',
+    unit: '',
+    answer: 5,
+    hint: '10h20 + 45 min. Attention au passage au-dessus de 60.',
+    explanation: '10h20 + 40 min = 11h00. + 5 min = 11h05. Les minutes sont 5.'
+  },
+  {
+    category: 'mesures',
+    text: 'Un nageur fait 50 m en 30 secondes. À cette vitesse, combien de mètres nage-t-il en 2 minutes ?',
+    unit: 'm',
+    answer: 200,
+    hint: '2 minutes = 120 secondes. Combien de fois 30 s dans 120 s ?',
+    explanation: '120 ÷ 30 = 4 longueurs. 4 × 50 = 200 m.'
+  },
+  {
+    category: 'mesures',
+    text: 'Une recette demande 3 dL de crème. Combien cela fait-il en mL ?',
+    unit: 'mL',
+    answer: 300,
+    hint: '1 dL = 100 mL.',
+    explanation: '3 dL = 3 × 100 = 300 mL.'
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -793,6 +1468,134 @@ const RIDDLE_BANK = [
     answer: 8,
     hint: 'Chaque case a 2 choix de couleur, indépendamment des autres.',
     explanation: '2 × 2 × 2 = 8 coloriages possibles. (RRR, RRB, RBR, RBB, BRR, BRB, BBR, BBB)'
+  },
+  {
+    category: 'ouvert',
+    text: 'Deux équipes de 5 joueurs se rencontrent. Chaque joueur d\'une équipe serre la main de chaque joueur de l\'autre équipe. Combien de poignées de main au total ?',
+    unit: '',
+    answer: 25,
+    hint: 'Chaque joueur de l\'équipe A serre la main des 5 joueurs de l\'équipe B.',
+    explanation: '5 × 5 = 25 poignées de main.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Sur un quadrillage 3×3, tu pars du coin bas-gauche et tu veux aller au coin haut-droit en ne montant ou n\'allant qu\'à droite. Combien de chemins différents ?',
+    unit: '',
+    answer: 6,
+    hint: 'Tu dois faire 2 pas à droite et 2 pas en haut, dans un certain ordre.',
+    explanation: 'Il faut choisir 2 pas « droite » parmi 4 pas : C(4,2) = 6 chemins.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Tu as des pièces de 1 €, 2 € et 5 €. De combien de façons peux-tu faire exactement 10 € ?',
+    unit: '',
+    answer: 10,
+    hint: 'Commence par le nombre de pièces de 5 € (0, 1 ou 2), puis essaie les combinaisons.',
+    explanation: 'Avec 2×5 : 1 façon. Avec 1×5 : 5 restants → (0×2,5×1), (1×2,3×1), (2×2,1×1) = 3 façons. Avec 0×5 : 10 restants → (0×2,10×1), (1×2,8×1), (2×2,6×1), (3×2,4×1), (4×2,2×1), (5×2,0×1) = 6 façons. Total : 1+3+6 = 10.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Tu dois transporter 15 livres. Tu peux porter au maximum 4 livres par voyage. Combien de voyages minimum te faut-il ?',
+    unit: '',
+    answer: 4,
+    hint: 'Divise 15 par 4 et arrondis vers le haut.',
+    explanation: '15 ÷ 4 = 3,75. Il faut arrondir au-dessus : 4 voyages (4+4+4+3).'
+  },
+  {
+    category: 'ouvert',
+    text: 'Dans une classe de 13 élèves, chacun est né un mois de l\'année (janv-déc). Est-on sûr que deux élèves sont nés le même mois ? Combien d\'élèves minimum faut-il pour en être certain ?',
+    unit: '',
+    answer: 13,
+    hint: 'Il y a 12 mois. Si 12 élèves ont chacun un mois différent, le 13e…',
+    explanation: 'Avec 12 élèves, chacun peut avoir un mois différent. Le 13e est forcément dans un mois déjà pris. Il faut 13 élèves (principe des tiroirs).'
+  },
+  {
+    category: 'ouvert',
+    text: 'Tu lances un dé à 6 faces. Quelle est la probabilité d\'obtenir un nombre pair ? Donne la réponse en sixièmes (numérateur).',
+    unit: '',
+    answer: 3,
+    hint: 'Les nombres pairs sur un dé sont 2, 4, 6.',
+    explanation: 'Nombres pairs : 2, 4, 6 → 3 résultats sur 6. Probabilité = 3/6. Numérateur = 3.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Un motif se répète : ▲ ○ □ ▲ ○ □ ▲ ○ □… Quelle est la 20e forme ? (1 = triangle, 2 = cercle, 3 = carré)',
+    unit: '',
+    answer: 2,
+    hint: 'Le motif se répète tous les 3. Quel est le reste de 20 ÷ 3 ?',
+    explanation: '20 ÷ 3 = 6 reste 2. La 2e forme du motif est le cercle (○). Réponse : 2.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Tu as 5 chaussettes dans un tiroir : 2 rouges, 2 bleues et 1 verte. Combien dois-tu en prendre dans le noir pour être sûr d\'avoir 2 de la même couleur ?',
+    unit: '',
+    answer: 4,
+    hint: 'Pense au pire cas : les premières pourraient être toutes de couleurs différentes.',
+    explanation: 'Pire cas : 1 rouge, 1 bleue, 1 verte = 3 chaussettes, toutes différentes. La 4e sera forcément rouge ou bleue → tu auras une paire. Il faut 4 chaussettes.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Tu dois ranger 4 cours (maths, français, sport, musique) dans 4 créneaux. De combien de façons peux-tu organiser ton emploi du temps ?',
+    unit: '',
+    answer: 24,
+    hint: '4 choix pour le 1er créneau, 3 pour le 2e…',
+    explanation: '4 × 3 × 2 × 1 = 24 arrangements possibles.'
+  },
+  {
+    category: 'ouvert',
+    text: 'On tire une carte dans un jeu de 52 cartes. Combien y a-t-il de rois dans le jeu ?',
+    unit: '',
+    answer: 4,
+    hint: 'Pense aux 4 couleurs : pique, cœur, carreau, trèfle.',
+    explanation: 'Il y a 1 roi par couleur : roi de pique, roi de cœur, roi de carreau, roi de trèfle = 4 rois.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Combien y a-t-il de carrés en tout sur un échiquier 4×4 ? (De toutes les tailles !)',
+    unit: '',
+    answer: 30,
+    hint: 'Compte les carrés 1×1, 2×2, 3×3 et 4×4.',
+    explanation: '16 carrés 1×1 + 9 carrés 2×2 + 4 carrés 3×3 + 1 carré 4×4 = 30 carrés.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Tu as 3 boîtes et 5 billes identiques. De combien de façons peux-tu répartir toutes les billes dans les boîtes ? (Les boîtes peuvent être vides.)',
+    unit: '',
+    answer: 21,
+    hint: 'C\'est un problème de « barres et étoiles ». Essaie de lister les cas selon le contenu de la 1re boîte.',
+    explanation: 'Formule : C(5+3−1, 3−1) = C(7,2) = 21 répartitions.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Un robot avance sur une grille. Il part de la case (0,0) et fait 3 pas vers la droite et 2 pas vers le haut, dans n\'importe quel ordre. Combien de chemins différents peut-il suivre ?',
+    unit: '',
+    answer: 10,
+    hint: 'Il doit choisir quand faire ses 2 pas vers le haut parmi 5 pas au total.',
+    explanation: 'C(5,2) = 5! / (2! × 3!) = 10 chemins différents.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Un ascenseur peut porter 300 kg maximum. 5 personnes pesant chacune 70 kg veulent monter. Combien de voyages minimum faut-il ?',
+    unit: '',
+    answer: 2,
+    hint: 'Calcule le poids total et combien de personnes par voyage.',
+    explanation: 'Poids total : 5 × 70 = 350 kg > 300 kg. Max 4 personnes par voyage (4 × 70 = 280 kg). Il faut 2 voyages : 4 + 1.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Tu lances 2 dés. Quelle est la probabilité d\'obtenir un double (les 2 dés montrent le même nombre) ? Donne le dénominateur de la fraction simplifiée.',
+    unit: '',
+    answer: 6,
+    hint: 'Il y a 36 résultats possibles. Combien sont des doubles ?',
+    explanation: 'Doubles : (1,1), (2,2), (3,3), (4,4), (5,5), (6,6) = 6 sur 36. Simplifié : 1/6. Dénominateur = 6.'
+  },
+  {
+    category: 'ouvert',
+    text: 'Tu as une balance à deux plateaux et tu dois peser 1 kg, 2 kg et 3 kg. Si tu as des poids de 1 kg et 2 kg, peux-tu peser 3 kg ? Combien de poids minimum te faut-il pour peser 1 kg, 2 kg et 3 kg ?',
+    unit: '',
+    answer: 2,
+    hint: 'Avec un poids de 1 kg et un de 2 kg, tu peux aussi les combiner.',
+    explanation: 'Avec 1 kg et 2 kg : tu pèses 1 kg (le poids de 1), 2 kg (le poids de 2), et 3 kg (les deux ensemble). Il suffit de 2 poids.'
   }
 ];
 
