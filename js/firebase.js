@@ -562,6 +562,45 @@ async function getAllRecoveryCodes() {
   return codes;
 }
 
+// ── Group Rewards ──
+
+/** Add a reward to a group */
+async function addGroupReward(groupCode, reward) {
+  const ref = db.ref('groups/' + groupCode + '/rewards').push();
+  await ref.set(reward);
+  return ref.key;
+}
+
+/** Remove a reward from a group */
+async function removeGroupReward(groupCode, rewardId) {
+  await db.ref('groups/' + groupCode + '/rewards/' + rewardId).remove();
+}
+
+/** Get rewards for a group */
+async function getGroupRewards(groupCode) {
+  const snap = await db.ref('groups/' + groupCode + '/rewards').once('value');
+  if (!snap.exists()) return [];
+  const rewards = [];
+  snap.forEach(child => {
+    rewards.push({ id: child.key, groupCode, ...child.val() });
+  });
+  return rewards;
+}
+
+/** Get rewards from ALL groups a player belongs to */
+async function getAllMyRewards() {
+  const groups = await getMyGroups();
+  const allRewards = [];
+  for (const g of groups) {
+    const rewards = await getGroupRewards(g.code);
+    rewards.forEach(r => {
+      r.groupName = g.name;
+    });
+    allRewards.push(...rewards);
+  }
+  return allRewards;
+}
+
 /** Restore profile from Firebase backup. Returns true if restored. */
 async function restoreProfile() {
   if (!firebaseUid) return false;

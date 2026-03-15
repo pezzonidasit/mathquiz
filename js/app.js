@@ -747,12 +747,6 @@ function totalCorrect() {
 function profileXP() { return ProfileManager.get('xp', 0); }
 function profileGames() { return ProfileManager.get('gamesPlayed', 0); }
 
-function isCategoryComplete(catKey) {
-  // Check if all badges in a category (excluding reallife and hidden) are unlocked
-  const catBadges = BADGE_DEFS.filter(b => b.category === catKey && !b.reallife && !b.hidden);
-  return catBadges.length > 0 && catBadges.every(b => state.badges.includes(b.id));
-}
-
 // ── Boosts System ───────────────────────────────────────────────
 const BOOSTS = [
   { id: 'xp_boost', name: 'Boost XP', icon: '⚡', price: 50, desc: 'XP ×2 (×3 en difficile)', effect: 'xp' },
@@ -879,36 +873,6 @@ const BADGE_DEFS = [
   { id: 'contract_all_bronze', name: 'Tout Bronze', icon: '🥉', category: 'contrat', hidden: true,
     check: () => (ProfileManager.get('contractsCompleted', {}).bronze || 0) >= 20 },
 
-  // ═══ BADGES VRAIE VIE ═══
-  // Débloqués quand catégorie complétée + achetés avec des pièces. Usage unique.
-  { id: 'rl_gaming', name: '30 min de jeux', icon: '🎮', category: 'reallife', reallife: true,
-    reward: '30 minutes de jeux vidéo', price: 2500,
-    requires: 'debut',
-    check: () => isCategoryComplete('debut') },
-  { id: 'rl_movie', name: 'Choix du film', icon: '🎬', category: 'reallife', reallife: true,
-    reward: 'Choisir le film du soir', price: 500,
-    requires: 'explore',
-    check: () => isCategoryComplete('explore') },
-  { id: 'rl_snack', name: 'Petit plaisir', icon: '🛒', category: 'reallife', reallife: true,
-    reward: 'Choix d\'un snack au magasin', price: 2000,
-    requires: 'total',
-    check: () => isCategoryComplete('total') },
-  { id: 'rl_outing', name: 'Sortie spéciale', icon: '🎢', category: 'reallife', reallife: true,
-    reward: 'Sortie au choix (parc, ciné, bowling...)', price: 3000,
-    requires: 'perf',
-    check: () => isCategoryComplete('perf') },
-  { id: 'rl_bedtime', name: 'Coucher tard', icon: '🌙', category: 'reallife', reallife: true,
-    reward: '+30 min avant de dormir', price: 1500,
-    requires: 'xp',
-    check: () => isCategoryComplete('xp') },
-  { id: 'rl_gift', name: 'Surprise', icon: '🎁', category: 'reallife', reallife: true,
-    reward: 'Cadeau surprise', price: 5000,
-    requires: 'master',
-    check: () => isCategoryComplete('master') },
-  { id: 'rl_legend', name: 'Légende vivante', icon: '⭐', category: 'reallife', reallife: true,
-    reward: 'Gros privilège au choix', price: 10000,
-    requires: 'ALL',
-    check: () => ['debut','explore','total','perf','xp','master'].every(c => isCategoryComplete(c)) },
 ];
 
 function checkBadges() {
@@ -1153,15 +1117,13 @@ document.getElementById('btn-menu').addEventListener('click', () => {
 document.getElementById('btn-shop').addEventListener('click', () => { renderShop(); showScreen('screen-shop'); });
 document.getElementById('btn-shop-back').addEventListener('click', () => { updateProfileHeader(); showScreen('screen-home'); });
 
-function renderShop() {
+async function renderShop() {
   const coins = ProfileManager.get('coins', 0);
   const ownedThemes = ProfileManager.get('ownedThemes', []);
   const ownedStickers = ProfileManager.get('ownedStickers', []);
   const activeTheme = ProfileManager.get('activeTheme', 'nuit');
   document.getElementById('shop-coins').textContent = coins;
   const container = document.getElementById('shop-grid');
-
-  const sections_map = { debut: '⭐ Débuts', perf: '🏆 Performance', master: '🎓 Maîtrise', xp: '⚔️ XP', total: '✅ Réponses', explore: '🌍 Exploration' };
 
   // === SECTION 1: Thèmes (only unpurchased) ===
   const paidThemes = getThemeList().filter(t => t.price > 0);
@@ -1220,48 +1182,46 @@ function renderShop() {
     });
   }
 
-  // === SECTION 4: Récompenses Vraie Vie (buyable if category done + not currently purchased) ===
-  const rlRewards = BADGE_DEFS.filter(b => b.reallife);
-  const availableRL = rlRewards.filter(b => {
-    const purchased = ProfileManager.get('purchased_' + b.id, false);
-    const used = ProfileManager.get('used_' + b.id, false);
-    // Available in shop if: not currently purchased (or already used = can rebuy)
-    return !purchased || used;
-  });
-  if (availableRL.length > 0) {
-    html += '<h3 class="shop-section-title">🎁 Récompenses Vraie Vie</h3>';
-    availableRL.forEach(b => {
-      const categoryDone = b.check();
-      const locked = !categoryDone;
-      const reqTitle = b.requires === 'ALL' ? 'TOUTES' : (sections_map[b.requires] || b.requires);
-      html += `<div class="shop-item shop-reward ${locked ? 'shop-locked' : ''}" data-reward="${b.id}" data-price="${b.price}">
-        <span class="shop-icon">${b.icon}</span>
-        <span class="shop-name">${b.name}</span>
-        <span class="shop-desc">${b.reward}</span>
-        <span class="shop-price">${locked ? '🔒 ' + reqTitle : '🪙 ' + b.price}</span>
-      </div>`;
+  // === SECTION 4: Récompenses Vraie Vie (from groups) ===
+  try {
+    const groupRewards = await getAllMyRewards();
+    const buyableRewards = groupRewards.filter(r => {
+      const key = 'purchased_reward_' + r.groupCode + '_' + r.id;
+      return !ProfileManager.get(key, false);
     });
-  }
+    if (buyableRewards.length > 0) {
+      html += '<h3 class="shop-section-title">🎁 Récompenses Vraie Vie</h3>';
+      buyableRewards.forEach(r => {
+        html += '<div class="shop-item shop-reward" data-reward-group="' + r.groupCode + '" data-reward-id="' + r.id + '" data-price="' + r.price + '">' +
+          '<span class="shop-icon">' + (r.icon || '🎁') + '</span>' +
+          '<span class="shop-name">' + r.name + '</span>' +
+          '<span class="shop-desc">' + (r.description || '') + '</span>' +
+          '<span class="shop-price">🪙 ' + r.price + '</span>' +
+          '<span class="shop-desc" style="font-size:0.65rem">👥 ' + r.groupName + '</span>' +
+          '</div>';
+      });
+    }
+  } catch(e) { /* offline — skip rewards */ }
 
   container.innerHTML = html;
 
   // === Event handlers ===
-  // Reward buy
-  container.querySelectorAll('.shop-reward:not(.shop-locked)').forEach(item => {
+  // Reward buy (group-based)
+  container.querySelectorAll('.shop-reward').forEach(item => {
     item.addEventListener('click', () => {
-      const rewardId = item.dataset.reward;
+      const groupCode = item.dataset.rewardGroup;
+      const rewardId = item.dataset.rewardId;
       const price = parseInt(item.dataset.price);
-      const reward = rlRewards.find(b => b.id === rewardId);
+      const name = item.querySelector('.shop-name').textContent;
       const c = ProfileManager.get('coins', 0);
       if (c >= price) {
-        if (confirm(`Acheter ${reward.name} ${reward.icon} pour ${price} 🪙 ?`)) {
+        if (confirm('Acheter ' + name + ' pour ' + price + ' 🪙 ?')) {
           ProfileManager.set('coins', c - price);
-          ProfileManager.set('purchased_' + rewardId, true);
-          ProfileManager.set('used_' + rewardId, false);
+          ProfileManager.set('purchased_reward_' + groupCode + '_' + rewardId, true);
           renderShop();
         }
       } else {
-        alert(`Pas assez de pièces ! (${c}/${price})`);
+        alert('Pas assez de pièces ! (' + c + '/' + price + ')');
       }
     });
   });
@@ -1384,7 +1344,7 @@ document.getElementById('btn-chest-close').addEventListener('click', () => {
 document.getElementById('btn-profile-detail').addEventListener('click', () => { renderProfileDetail(); showScreen('screen-profile-detail'); });
 document.getElementById('btn-profile-back').addEventListener('click', () => { showScreen('screen-home'); });
 
-function renderProfileDetail() {
+async function renderProfileDetail() {
   const profile = ProfileManager.getActive();
   const xp = ProfileManager.get('xp', 0);
   const coins = ProfileManager.get('coins', 0);
@@ -1495,27 +1455,35 @@ function renderProfileDetail() {
       continue;
     }
 
-    // Reallife rewards: only show purchased-and-ready-to-use in profile
     if (sec.key === 'reallife') {
-      const readyToUse = secBadges.filter(b => {
-        const purchased = ProfileManager.get('purchased_' + b.id, false);
-        const used = ProfileManager.get('used_' + b.id, false);
-        return purchased && !used;
-      });
-      if (readyToUse.length === 0) {
-        badgesHtml += `<h3>${sec.title}</h3><p style="color:var(--text-secondary);font-size:0.85rem;text-align:center">Achète des récompenses dans la boutique !</p>`;
-      } else {
-        badgesHtml += `<h3>${sec.title}</h3><div class="badges-grid">`;
-        readyToUse.forEach(b => {
-          badgesHtml += `<div class="badge-item badge-reallife" data-badge-id="${b.id}" data-rl-state="owned" style="cursor:pointer">
-            <span class="badge-icon">${b.icon}</span>
-            <span class="badge-name">${b.name}</span>
-            <span class="badge-reward">${b.reward}</span>
-            <span class="badge-hint" style="color:var(--accent-green)">Cliquer pour utiliser</span>
-          </div>`;
+      // Show purchased group rewards ready to use
+      let rlHtml = '<h3>' + sec.title + '</h3>';
+      let hasRewards = false;
+      try {
+        const groupRewards = await getAllMyRewards();
+        const ready = groupRewards.filter(r => {
+          const key = 'purchased_reward_' + r.groupCode + '_' + r.id;
+          return ProfileManager.get(key, false);
         });
-        badgesHtml += '</div>';
+        if (ready.length > 0) {
+          hasRewards = true;
+          rlHtml += '<div class="badges-grid">';
+          ready.forEach(r => {
+            const key = 'purchased_reward_' + r.groupCode + '_' + r.id;
+            rlHtml += '<div class="badge-item badge-reallife" data-reward-key="' + key + '" style="cursor:pointer">' +
+              '<span class="badge-icon">' + (r.icon || '🎁') + '</span>' +
+              '<span class="badge-name">' + r.name + '</span>' +
+              '<span class="badge-reward">' + (r.description || '') + '</span>' +
+              '<span class="badge-hint" style="color:var(--accent-green)">Cliquer pour utiliser</span>' +
+              '</div>';
+          });
+          rlHtml += '</div>';
+        }
+      } catch(e) { /* offline */ }
+      if (!hasRewards) {
+        rlHtml += '<p style="color:var(--text-secondary);font-size:0.85rem;text-align:center">Achète des récompenses dans la boutique !</p>';
       }
+      badgesHtml += rlHtml;
       continue;
     }
 
@@ -1545,14 +1513,12 @@ function renderProfileDetail() {
 
   document.getElementById('profile-badges-list').innerHTML = badgesHtml;
 
-  // Click handler for real-life rewards: use (profile only shows purchased ones)
-  document.querySelectorAll('.badge-reallife[data-badge-id]').forEach(el => {
+  // Click handler for real-life rewards: use
+  document.querySelectorAll('.badge-reallife[data-reward-key]').forEach(el => {
     el.addEventListener('click', () => {
-      const bid = el.dataset.badgeId;
+      const key = el.dataset.rewardKey;
       if (confirm('Utiliser cette récompense ? Elle retournera dans la boutique.')) {
-        // Reset: available for purchase again
-        ProfileManager.set('purchased_' + bid, false);
-        ProfileManager.set('used_' + bid, false);
+        ProfileManager.set(key, false);
         renderProfileDetail();
       }
     });
@@ -2401,6 +2367,7 @@ async function renderGroupDetail(code) {
     if (isAdmin) {
       actHtml = '<button class="btn-primary" onclick="showDashboard(\'' + code + '\')">📊 Dashboard parent</button>' + actHtml;
       actHtml += '<button class="btn-danger" style="margin-top:0.5rem" onclick="regenerateCodeAction(\'' + code + '\')">🔄 Régénérer le code</button>';
+      actHtml += '<button class="btn-primary" style="margin-top:0.5rem;font-size:0.85rem" onclick="addRewardToGroup(\'' + code + '\')">🎁 Ajouter une récompense</button>';
     }
 
     actionsEl.innerHTML = actHtml;
@@ -2492,6 +2459,24 @@ async function showDashboard(code) {
 
       html += '</div>';
     }
+
+    // Group rewards section
+    try {
+      const rewards = await getGroupRewards(code);
+      html += '<h3 style="margin-top:1rem">🎁 Récompenses du groupe</h3>';
+      if (rewards.length === 0) {
+        html += '<p style="color:var(--text-secondary);font-size:0.85rem">Aucune récompense. Ajoute-en depuis le détail du groupe !</p>';
+      } else {
+        rewards.forEach(r => {
+          html += '<div class="dash-member" style="padding:0.5rem 0.75rem">' +
+            '<span style="font-size:1.2rem;margin-right:0.5rem">' + (r.icon || '🎁') + '</span>' +
+            '<strong>' + r.name + '</strong> — ' + r.price + ' 🪙' +
+            '<br><span style="font-size:0.75rem;color:var(--text-secondary)">' + (r.description || '') + '</span>' +
+            '<button class="btn-danger" style="font-size:0.65rem;padding:0.15rem 0.4rem;margin-left:0.5rem" onclick="removeRewardAction(\'' + code + '\',\'' + r.id + '\',\'' + r.name.replace(/'/g, '') + '\')">×</button>' +
+            '</div>';
+        });
+      }
+    } catch(e) {}
 
     contentEl.innerHTML = html;
   } catch(e) {
@@ -2835,5 +2820,33 @@ window.quickCreateGroup = quickCreateGroup;
 
 // Debug helper — accessible from browser console
 window._debug = { triggerBoss, state, showBossAppear, BOSS_POOL, renderLeaderboard, renderGroupsScreen, showCreateRiddleScreen, renderAdminDashboard };
+
+async function addRewardToGroup(groupCode) {
+  const name = prompt('Nom de la récompense (ex: 30 min de jeux, bowling...) :');
+  if (!name) return;
+  const icon = prompt('Emoji (ex: 🎮, 🎳, 🎬) :', '🎁') || '🎁';
+  const description = prompt('Description :', name) || name;
+  const priceStr = prompt('Prix en pièces :', '1000');
+  const price = parseInt(priceStr);
+  if (isNaN(price) || price <= 0) { alert('Prix invalide'); return; }
+
+  try {
+    await addGroupReward(groupCode, { name, icon, description, price });
+    alert('Récompense "' + name + '" ajoutée !');
+    renderGroupDetail(groupCode);
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  }
+}
+window.addRewardToGroup = addRewardToGroup;
+
+async function removeRewardAction(groupCode, rewardId, name) {
+  if (!confirm('Supprimer la récompense "' + name + '" ?')) return;
+  try {
+    await removeGroupReward(groupCode, rewardId);
+    showDashboard(groupCode);
+  } catch(e) { alert('Erreur : ' + e.message); }
+}
+window.removeRewardAction = removeRewardAction;
 
 } // end initApp()
