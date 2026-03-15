@@ -1783,8 +1783,15 @@ function handleBossAnswer(timedOut) {
 }
 
 document.getElementById('btn-boss-validate').addEventListener('click', () => handleBossAnswer(false));
-document.getElementById('boss-answer-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') handleBossAnswer(false);
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const bossScreen = document.getElementById('screen-boss-fight');
+  if (!bossScreen.classList.contains('active')) return;
+  if (state.bossState && state.bossState.answered) {
+    document.getElementById('btn-boss-next').click();
+  } else {
+    handleBossAnswer(false);
+  }
 });
 
 document.getElementById('btn-boss-next').addEventListener('click', () => {
