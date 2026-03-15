@@ -3,40 +3,8 @@
 // ── PIN Gate ──────────────────────────────────────────────────────
 const PIN_CODE = '2609';
 
-(function initPin() {
-  if (sessionStorage.getItem('mq_unlocked')) return unlockApp();
-
-  const digits = document.querySelectorAll('.pin-digit');
-
-  digits.forEach((input, i) => {
-    input.addEventListener('input', () => {
-      input.value = input.value.replace(/\D/g, '').slice(0, 1);
-      if (input.value && i < 3) digits[i + 1].focus();
-      const code = Array.from(digits).map(d => d.value).join('');
-      if (code.length === 4) {
-        if (code === PIN_CODE) {
-          sessionStorage.setItem('mq_unlocked', '1');
-          unlockApp();
-        } else {
-          document.getElementById('pin-error').textContent = 'Code incorrect';
-          digits.forEach(d => { d.classList.add('error'); d.value = ''; });
-          digits[0].focus();
-          setTimeout(() => digits.forEach(d => d.classList.remove('error')), 500);
-        }
-      }
-    });
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !input.value && i > 0) digits[i - 1].focus();
-    });
-  });
-
-  setTimeout(() => digits[0].focus(), 100);
-})();
-
-function unlockApp() {
-  document.getElementById('screen-pin').style.display = 'none';
-  initApp();
-}
+// V4: No PIN gate — app opens directly
+initApp();
 
 function initApp() {
 
@@ -324,6 +292,31 @@ function updateProfileHeader() {
       adminBtn.style.display = isAdmin ? '' : 'none';
     }).catch(() => {});
   }
+
+  // V4: Show group prompt if not in any group
+  let noGroupBanner = document.getElementById('no-group-banner');
+  if (!noGroupBanner) {
+    noGroupBanner = document.createElement('div');
+    noGroupBanner.id = 'no-group-banner';
+    noGroupBanner.className = 'no-group-banner';
+    const playBtn = document.getElementById('btn-play');
+    playBtn.parentNode.insertBefore(noGroupBanner, playBtn);
+  }
+
+  getMyGroups().then(groups => {
+    if (groups.length === 0) {
+      noGroupBanner.innerHTML = '<p>👥 Rejoins un groupe pour commencer à jouer !</p><button class="btn-primary" onclick="renderGroupsScreen()" style="font-size:0.85rem">Rejoindre un groupe</button>';
+      noGroupBanner.style.display = '';
+      document.getElementById('btn-play').style.display = 'none';
+    } else {
+      noGroupBanner.style.display = 'none';
+      document.getElementById('btn-play').style.display = '';
+    }
+  }).catch(() => {
+    // Offline — allow play
+    noGroupBanner.style.display = 'none';
+    document.getElementById('btn-play').style.display = '';
+  });
 }
 
 function renderBoostSelector() {
@@ -476,7 +469,14 @@ function startGame() {
   showQuestion();
 }
 
-document.getElementById('btn-play').addEventListener('click', () => {
+document.getElementById('btn-play').addEventListener('click', async () => {
+  // V4: Must be in a group to play
+  let groups = [];
+  try { groups = await getMyGroups(); } catch(e) {}
+  if (groups.length === 0) {
+    alert('Rejoins un groupe pour jouer ! Va dans ton profil → Mes Groupes.');
+    return;
+  }
   showContractScreen();
 });
 
@@ -2748,6 +2748,7 @@ window.regenerateCodeAction = regenerateCodeAction;
 window.banMemberAction = banMemberAction;
 window.showDashboard = showDashboard;
 window.adminDeleteRiddleAction = adminDeleteRiddleAction;
+window.renderGroupsScreen = renderGroupsScreen;
 
 // Debug helper — accessible from browser console
 window._debug = { triggerBoss, state, showBossAppear, BOSS_POOL, renderLeaderboard, renderGroupsScreen, showCreateRiddleScreen, renderAdminDashboard };

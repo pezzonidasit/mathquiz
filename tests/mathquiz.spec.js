@@ -3,21 +3,10 @@ const { test, expect } = require('@playwright/test');
 const BASE_URL = 'file:///C:/Users/User/Claude/MathQuiz/index.html';
 
 /**
- * Helper: enter PIN code 2609 by typing digits one by one.
- * The app auto-focuses the next digit on input and auto-submits when 4 digits are entered.
- */
-async function enterPIN(page, code = '2609') {
-  const digits = page.locator('.pin-digit');
-  for (let i = 0; i < 4; i++) {
-    await digits.nth(i).fill(code[i]);
-  }
-}
-
-/**
- * Helper: enter PIN + create a profile + land on home screen.
+ * Helper: create a profile + land on home screen.
  */
 async function setupProfile(page, name = 'TestPlayer') {
-  await enterPIN(page);
+  // No PIN gate — profiles screen should be visible directly
   await page.waitForSelector('#screen-profiles', { state: 'visible', timeout: 3000 });
   await page.click('#btn-new-profile');
   await page.fill('#profile-name-input', name);
@@ -29,6 +18,8 @@ async function setupProfile(page, name = 'TestPlayer') {
  * Helper: click Play then skip contract screen.
  */
 async function startGameNoContract(page) {
+  // Mock getMyGroups to bypass group requirement in tests
+  await page.evaluate(() => { window.getMyGroups = async () => [{ code: 'TEST01', name: 'Test Group' }]; });
   await page.click('#btn-play');
   await page.waitForSelector('#screen-contract', { state: 'visible', timeout: 3000 });
   await page.click('#btn-no-contract');
@@ -41,27 +32,16 @@ test.describe('MathQuiz E2E Tests', () => {
     // Clear all storage for clean state
     await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
     await page.reload();
-    await page.waitForSelector('#screen-pin', { state: 'visible', timeout: 3000 });
+    await page.waitForSelector('#screen-profiles', { state: 'visible', timeout: 3000 });
+    // Mock Firebase group check for tests (no Firebase in test env)
+    await page.evaluate(() => { window.getMyGroups = async () => [{ code: 'TEST01', name: 'Test Group' }]; });
   });
 
-  test('PIN screen shows on first load', async ({ page }) => {
-    await expect(page.locator('#screen-pin')).toBeVisible();
-    await expect(page.locator('.pin-digit').first()).toBeVisible();
-  });
-
-  test('Wrong PIN shows error', async ({ page }) => {
-    await enterPIN(page, '1234');
-    await expect(page.locator('#pin-error')).toContainText('incorrect', { ignoreCase: true });
-  });
-
-  test('Correct PIN unlocks app', async ({ page }) => {
-    await enterPIN(page);
-    // PIN screen should be hidden (uses style.display = none)
+  test('App opens directly to profiles screen', async ({ page }) => {
     await expect(page.locator('#screen-profiles')).toBeVisible({ timeout: 3000 });
   });
 
   test('Create profile and reach home screen', async ({ page }) => {
-    await enterPIN(page);
     await page.waitForSelector('#screen-profiles', { state: 'visible', timeout: 3000 });
 
     // Create new profile
