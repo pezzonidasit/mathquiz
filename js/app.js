@@ -2661,6 +2661,7 @@ async function renderAdminDashboard() {
 
 async function renderAdminPlayers(el) {
   const players = await getAllPlayers();
+  const recoveryCodes = await getAllRecoveryCodes();
   const rankIcons = { bronze: '🥉', argent: '🥈', or: '🥇', diamant: '💎', maitre: '👑', legende: '⭐' };
 
   if (players.length === 0) {
@@ -2668,26 +2669,44 @@ async function renderAdminPlayers(el) {
     return;
   }
 
-  // Sort by XP descending
   players.sort((a, b) => (b.xp || 0) - (a.xp || 0));
 
   let html = '<p style="text-align:center;color:var(--text-secondary);font-size:0.85rem">' + players.length + ' joueur' + (players.length > 1 ? 's' : '') + '</p>';
 
   players.forEach(p => {
     const rankIcon = rankIcons[p.rank] || '🥉';
-    // Find player groups
     const groupCodes = p.groups ? Object.keys(p.groups) : [];
+    const recovery = recoveryCodes.find(r => r.uid === p.uid);
+    const isMe = p.uid === firebaseUid;
 
     html += '<div class="dash-member">';
-    html += '<div class="dash-member-name">' + rankIcon + ' ' + (p.name || 'Joueur') + ' <span style="font-size:0.7rem;color:var(--text-secondary)">' + (p.xp || 0) + ' XP — ' + (p.gamesPlayed || 0) + ' parties</span></div>';
+    html += '<div class="dash-member-name">' + rankIcon + ' ' + (p.name || 'Joueur') + (isMe ? ' <span style="font-size:0.65rem;color:var(--accent-green)">(toi)</span>' : '') + '</div>';
 
-    // Groups badges
+    // Stats row
+    html += '<div style="font-size:0.8rem;color:var(--text-secondary)">';
+    html += (p.xp || 0) + ' XP — ' + (p.gamesPlayed || 0) + ' parties';
+    html += '</div>';
+
+    // Recovery code
+    if (recovery) {
+      html += '<div style="font-size:0.75rem;margin-top:0.3rem">🔑 <span style="color:var(--accent-yellow);font-family:monospace;letter-spacing:1px">' + recovery.code + '</span></div>';
+    }
+
+    // Groups
     if (groupCodes.length > 0) {
-      html += '<div style="margin-bottom:0.5rem">';
+      html += '<div style="margin-top:0.3rem">';
       groupCodes.forEach(c => {
         html += '<span style="font-size:0.65rem;background:var(--bg-card-hover);padding:0.15rem 0.4rem;border-radius:6px;margin-right:0.3rem">' + c + '</span>';
       });
       html += '</div>';
+    }
+
+    // UID
+    html += '<div style="font-size:0.55rem;color:var(--text-secondary);opacity:0.4;margin-top:0.2rem">' + p.uid + '</div>';
+
+    // Delete button (not for self)
+    if (!isMe) {
+      html += '<button class="btn-danger" style="font-size:0.7rem;padding:0.2rem 0.6rem;margin-top:0.4rem" onclick="adminDeletePlayerAction(\'' + p.uid + '\',\'' + (p.name || 'Joueur').replace(/'/g, '') + '\')">Supprimer ce joueur</button>';
     }
 
     html += '</div>';
@@ -2722,14 +2741,15 @@ async function renderAdminGroups(el) {
     if (g.members) {
       html += '<div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.3rem">';
       for (const uid of Object.keys(g.members)) {
-        try {
-          const snap = await db.ref('players/' + uid + '/name').once('value');
-          const name = snap.val() || 'Joueur';
-          html += '<span style="font-size:0.7rem;background:var(--bg-card-hover);padding:0.2rem 0.5rem;border-radius:6px">' + name + '</span>';
-        } catch(e) {}
+        const snap = await db.ref('players/' + uid + '/name').once('value');
+        const name = snap.val() || 'Joueur';
+        html += '<span style="font-size:0.7rem;background:var(--bg-card-hover);padding:0.2rem 0.5rem;border-radius:6px">' + name + '</span>';
       }
       html += '</div>';
     }
+
+    // Delete group button
+    html += '<button class="btn-danger" style="font-size:0.7rem;padding:0.2rem 0.6rem;margin-top:0.5rem" onclick="adminDeleteGroupAction(\'' + g.code + '\',\'' + (g.name || '').replace(/'/g, '') + '\')">Supprimer ce groupe</button>';
 
     html += '</div>';
   }
@@ -2776,6 +2796,27 @@ window.regenerateCodeAction = regenerateCodeAction;
 window.banMemberAction = banMemberAction;
 window.showDashboard = showDashboard;
 window.adminDeleteRiddleAction = adminDeleteRiddleAction;
+
+async function adminDeletePlayerAction(uid, name) {
+  if (!confirm('Supprimer le joueur "' + name + '" ? Ses données, énigmes et appartenances aux groupes seront supprimées.')) return;
+  try {
+    await adminDeletePlayer(uid);
+    alert(name + ' supprimé.');
+    renderAdminDashboard();
+  } catch(e) { alert('Erreur : ' + e.message); }
+}
+window.adminDeletePlayerAction = adminDeletePlayerAction;
+
+async function adminDeleteGroupAction(code, name) {
+  if (!confirm('Supprimer le groupe "' + name + '" (' + code + ') ? Tous les membres seront retirés.')) return;
+  try {
+    await adminDeleteGroup(code);
+    alert('Groupe "' + name + '" supprimé.');
+    renderAdminDashboard();
+  } catch(e) { alert('Erreur : ' + e.message); }
+}
+window.adminDeleteGroupAction = adminDeleteGroupAction;
+
 window.renderGroupsScreen = renderGroupsScreen;
 
 async function quickCreateGroup() {

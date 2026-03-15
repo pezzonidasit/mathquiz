@@ -489,6 +489,79 @@ async function restoreFromCode(code) {
   return profile;
 }
 
+/** Admin: delete a player and remove from all their groups */
+async function adminDeletePlayer(uid) {
+  // Get player's groups
+  const pSnap = await db.ref('players/' + uid + '/groups').once('value');
+  const groups = pSnap.exists() ? Object.keys(pSnap.val()) : [];
+
+  // Remove from each group
+  const updates = {};
+  groups.forEach(code => {
+    updates['groups/' + code + '/members/' + uid] = null;
+    updates['groups/' + code + '/dashboard/' + uid] = null;
+  });
+
+  // Delete player data
+  updates['players/' + uid] = null;
+  updates['leaderboard/weekly/' + uid] = null;
+
+  // Delete their riddles
+  const riddleSnap = await db.ref('riddles').orderByChild('createdBy').equalTo(uid).once('value');
+  if (riddleSnap.exists()) {
+    riddleSnap.forEach(child => {
+      updates['riddles/' + child.key] = null;
+    });
+  }
+
+  // Delete their recovery code(s)
+  const recSnap = await db.ref('recovery').orderByChild('uid').equalTo(uid).once('value');
+  if (recSnap.exists()) {
+    recSnap.forEach(child => {
+      updates['recovery/' + child.key] = null;
+    });
+  }
+
+  await db.ref().update(updates);
+}
+
+/** Admin: delete a group and remove it from all members */
+async function adminDeleteGroup(code) {
+  const gSnap = await db.ref('groups/' + code).once('value');
+  if (!gSnap.exists()) return;
+  const group = gSnap.val();
+
+  const updates = {};
+  // Remove group reference from all members
+  const memberIds = Object.keys(group.members || {});
+  memberIds.forEach(uid => {
+    updates['players/' + uid + '/groups/' + code] = null;
+  });
+
+  // Delete group itself
+  updates['groups/' + code] = null;
+
+  await db.ref().update(updates);
+}
+
+/** Admin: get all recovery codes with player names */
+async function getAllRecoveryCodes() {
+  const snap = await db.ref('recovery').once('value');
+  if (!snap.exists()) return [];
+  const codes = [];
+  const promises = [];
+  snap.forEach(child => {
+    const data = child.val();
+    codes.push({ code: child.key, uid: data.uid, name: null });
+    promises.push(db.ref('players/' + data.uid + '/name').once('value'));
+  });
+  const names = await Promise.all(promises);
+  names.forEach((nSnap, i) => {
+    codes[i].name = nSnap.val() || 'Inconnu';
+  });
+  return codes;
+}
+
 /** Restore profile from Firebase backup. Returns true if restored. */
 async function restoreProfile() {
   if (!firebaseUid) return false;
