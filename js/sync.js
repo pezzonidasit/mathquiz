@@ -145,8 +145,8 @@ const MQSync = {
       } catch (e) { /* offline, skip */ }
     }
 
-    // Sync pending game data
-    if (ProfileManager.get('pendingSync', false)) {
+    // Always push current stats on launch (initial sync + pending data)
+    if (ProfileManager.getActiveId()) {
       await this._pushAll();
     }
 
