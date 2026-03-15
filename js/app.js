@@ -1658,6 +1658,13 @@ function updateBossHP() {
     hearts += i < bs.playerHP ? '❤️' : '🖤';
   }
   document.getElementById('player-hearts').innerHTML = hearts;
+  // Boss low HP state — tremble when near death
+  const emoji = document.getElementById('boss-fight-emoji');
+  if (bs.bossHP <= 2 && bs.bossHP > 0) {
+    emoji.classList.add('low-hp');
+  } else {
+    emoji.classList.remove('low-hp');
+  }
 }
 
 function showBossPhaseLabel() {
