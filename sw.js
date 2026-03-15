@@ -1,9 +1,10 @@
-const CACHE_NAME = 'mathquiz-v7';
+const CACHE_NAME = 'mathquiz-v8';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
   './js/themes.js',
+  './js/bosses-svg.js',
   './js/profiles.js',
   './js/questions.js',
   './js/progression.js',

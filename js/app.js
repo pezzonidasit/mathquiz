@@ -1634,6 +1634,13 @@ function startBossFight(boss) {
   // Apply boss zone color
   document.getElementById('boss-zone').style.backgroundColor = boss.color || '#1a1a2e';
   showScreen('screen-boss-fight');
+  // Set boss SVG
+  const emojiEl = document.getElementById('boss-fight-emoji');
+  if (BOSS_SVG[boss.id]) {
+    emojiEl.innerHTML = BOSS_SVG[boss.id];
+  } else {
+    emojiEl.textContent = boss.emoji;
+  }
   updateBossHP();
   showBossPhaseLabel();
   showBossQuestion();
@@ -1646,7 +1653,11 @@ function updateBossHP() {
   document.getElementById('boss-hp-fill').style.width = bossPct + '%';
   document.getElementById('boss-hp-text').textContent = Math.max(0, bs.bossHP) + '/' + bs.maxBossHP;
   // Boss info
-  document.getElementById('boss-fight-emoji').textContent = bs.boss.emoji;
+  // Use pixel art SVG if available, fallback to emoji
+  const emojiEl = document.getElementById('boss-fight-emoji');
+  if (BOSS_SVG[bs.boss.id] && !emojiEl.querySelector('svg')) {
+    emojiEl.innerHTML = BOSS_SVG[bs.boss.id];
+  }
   document.getElementById('boss-fight-name').textContent = bs.boss.name;
   // Player HP bar
   const playerPct = (bs.playerHP / bs.maxPlayerHP) * 100;
