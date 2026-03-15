@@ -66,6 +66,13 @@ const state = {
   categoryStats: {},
   pendingChests: [],
   activeBoost: null,
+  // V3 — Boss Fight
+  bossState: null,
+  pendingBoss: null,
+  gamesSinceBoss: 0,
+  // V3 — Contrat
+  activeContract: null,
+  contractGameResult: null,
 };
 
 // ── Difficulty ─────────────────────────────────────────────────────
@@ -115,6 +122,22 @@ function clearGameState() {
 
 function loadGameState() {
   return ProfileManager.get('gameState', null);
+}
+
+// ── Boss Persistence ──────────────────────────────────────────────────
+function loadBossState() {
+  state.pendingBoss = ProfileManager.get('pendingBoss', null);
+  state.gamesSinceBoss = ProfileManager.get('gamesSinceBoss', 0);
+  if (state.pendingBoss) {
+    const full = BOSS_POOL.find(b => b.id === state.pendingBoss.id);
+    if (full) state.pendingBoss = full;
+    else state.pendingBoss = null;
+  }
+}
+
+function saveBossState() {
+  ProfileManager.set('pendingBoss', state.pendingBoss ? { id: state.pendingBoss.id } : null);
+  ProfileManager.set('gamesSinceBoss', state.gamesSinceBoss);
 }
 
 // ── Screen Navigation ──────────────────────────────────────────────
@@ -213,6 +236,7 @@ function selectProfile(id) {
   ProfileManager.setActive(id);
   applyTheme(ProfileManager.get('activeTheme', 'nuit'));
   loadProfileData();
+  loadBossState();
   updateProfileHeader();
   renderRecords();
 
@@ -251,6 +275,7 @@ function selectProfile(id) {
     }
   } else {
     showScreen('screen-home');
+    renderBossWaitingIcon();
   }
 }
 
@@ -423,7 +448,9 @@ function startGame() {
   showQuestion();
 }
 
-document.getElementById('btn-play').addEventListener('click', startGame);
+document.getElementById('btn-play').addEventListener('click', () => {
+  showContractScreen();
+});
 
 // ── Timer ──────────────────────────────────────────────────────────
 function startTimer() {
@@ -486,6 +513,21 @@ function showQuestion() {
   document.getElementById('btn-next').textContent = 'Suivant';
 
   state.questionStartTime = Date.now();
+
+  // V3: Show contract indicator
+  let contractIndicator = document.getElementById('contract-indicator');
+  if (state.activeContract) {
+    if (!contractIndicator) {
+      contractIndicator = document.createElement('div');
+      contractIndicator.id = 'contract-indicator';
+      contractIndicator.className = 'contract-indicator';
+      document.querySelector('.game-header').after(contractIndicator);
+    }
+    contractIndicator.innerHTML = `<span class="contract-tier-icon">${state.activeContract.icon}</span> Contrat : ${state.activeContract.label}`;
+    contractIndicator.style.display = '';
+  } else if (contractIndicator) {
+    contractIndicator.style.display = 'none';
+  }
 
   const card = document.getElementById('question-card');
   card.classList.remove('slide-in');
@@ -572,6 +614,23 @@ function validateAnswer() {
   }
   state.categoryStats[q.category].total++;
   if (isCorrect) state.categoryStats[q.category].correct++;
+
+  // V3: Track contract metrics
+  if (state.contractGameResult) {
+    const cr = state.contractGameResult;
+    if (isCorrect) {
+      cr.correct++;
+      cr._currentStreak++;
+      if (cr._currentStreak > cr.bestStreak) cr.bestStreak = cr._currentStreak;
+      if (elapsed < 10) cr.fastAnswers++;
+      cr._consecWrong = 0;
+    } else {
+      cr._currentStreak = 0;
+      cr._consecWrong++;
+      if (cr._consecWrong > cr.maxConsecWrong) cr.maxConsecWrong = cr._consecWrong;
+    }
+    if (state.hintUsed) cr.hintsUsed++;
+  }
 
   document.getElementById('score-display').textContent = state.score;
   updateStreak();
@@ -754,6 +813,32 @@ const BADGE_DEFS = [
       const cats = state.questions.map(q => q.category);
       return new Set(cats).size >= 3;
     }},
+
+  // ═══ BOSS BADGES ═══
+  { id: 'boss_first_win', name: 'Première Victoire', icon: '⚔️', category: 'boss',
+    check: () => (ProfileManager.get('defeatedBosses', []).length >= 1),
+    progress: () => ({ cur: Math.min(ProfileManager.get('defeatedBosses', []).length, 1), max: 1 }) },
+  { id: 'boss_slayer', name: 'Tueur de Boss', icon: '🗡️', category: 'boss',
+    check: () => (ProfileManager.get('defeatedBosses', []).length >= 6),
+    progress: () => ({ cur: Math.min(ProfileManager.get('defeatedBosses', []).length, 6), max: 6 }) },
+  { id: 'boss_flawless', name: 'Sans Égratignure', icon: '🛡️', category: 'boss',
+    check: () => false, hint: 'Bats un boss sans perdre de PV' },
+  { id: 'boss_critical', name: 'Critique !', icon: '💥', category: 'boss',
+    check: () => false, hint: '3 réponses critiques dans un combat' },
+  { id: 'boss_dragon_enraged', name: 'Chasseur de Dragons', icon: '🐉', category: 'boss', hidden: true,
+    check: () => false },
+
+  // ═══ CONTRAT BADGES ═══
+  { id: 'contract_first', name: 'Premier Contrat', icon: '🎯', category: 'contrat',
+    check: () => { const c = ProfileManager.get('contractsCompleted', {}); return (c.bronze||0)+(c.silver||0)+(c.gold||0) >= 1; },
+    progress: () => { const c = ProfileManager.get('contractsCompleted', {}); return { cur: Math.min((c.bronze||0)+(c.silver||0)+(c.gold||0), 1), max: 1 }; } },
+  { id: 'contract_gold_hunter', name: 'Chasseur d\'Or', icon: '🥇', category: 'contrat',
+    check: () => (ProfileManager.get('contractsCompleted', {}).gold || 0) >= 10,
+    progress: () => ({ cur: Math.min(ProfileManager.get('contractsCompleted', {}).gold || 0, 10), max: 10 }) },
+  { id: 'contract_perfectionist', name: 'Perfectionniste', icon: '✨', category: 'contrat',
+    check: () => false, hint: '5 contrats Or d\'affilée' },
+  { id: 'contract_all_bronze', name: 'Tout Bronze', icon: '🥉', category: 'contrat', hidden: true,
+    check: () => (ProfileManager.get('contractsCompleted', {}).bronze || 0) >= 20 },
 
   // ═══ BADGES VRAIE VIE ═══
   // Débloqués quand catégorie complétée + achetés avec des pièces. Usage unique.
@@ -949,7 +1034,46 @@ function endGame() {
   document.getElementById('xp-bar-end-fill').style.width = (progress.progress * 100) + '%';
   document.getElementById('xp-bar-end-text').textContent = progress.next ? progress.xpInLevel + '/' + progress.xpNeeded + ' XP' : 'MAX';
 
+  // V3: Evaluate contract
+  if (state.activeContract && state.contractGameResult) {
+    const contractMet = state.activeContract.check(state.contractGameResult);
+    const contractEl = document.createElement('div');
+    contractEl.className = 'contract-result ' + (contractMet ? 'success' : 'failure');
+
+    if (contractMet) {
+      const bonus = state.activeContract.bonus;
+      ProfileManager.set('coins', ProfileManager.get('coins', 0) + bonus);
+      contractEl.textContent = `${state.activeContract.icon} Contrat ${state.activeContract.tier === 'gold' ? 'Or' : state.activeContract.tier === 'silver' ? 'Argent' : 'Bronze'} rempli ! +${bonus} 🪙`;
+      const contractsCompleted = ProfileManager.get('contractsCompleted', { bronze: 0, silver: 0, gold: 0, goldStreak: 0 });
+      contractsCompleted[state.activeContract.tier]++;
+      if (state.activeContract.tier === 'gold') {
+        contractsCompleted.goldStreak++;
+      } else {
+        contractsCompleted.goldStreak = 0;
+      }
+      ProfileManager.set('contractsCompleted', contractsCompleted);
+      checkContractBadges(contractsCompleted);
+    } else {
+      contractEl.textContent = `${state.activeContract.icon} Contrat non rempli — la prochaine fois !`;
+      const contractsCompleted = ProfileManager.get('contractsCompleted', { bronze: 0, silver: 0, gold: 0, goldStreak: 0 });
+      contractsCompleted.goldStreak = 0;
+      ProfileManager.set('contractsCompleted', contractsCompleted);
+    }
+
+    const rewardsSection = document.getElementById('rewards-section');
+    const existing = document.querySelector('.contract-result');
+    if (existing) existing.remove();
+    rewardsSection.parentNode.insertBefore(contractEl, rewardsSection);
+
+    state.activeContract = null;
+    state.contractGameResult = null;
+  }
+
   showScreen('screen-end');
+
+  // V3: Track games since boss
+  state.gamesSinceBoss++;
+  saveBossState();
 }
 
 // ── Replay / Menu ──────────────────────────────────────────────────
@@ -958,7 +1082,11 @@ document.getElementById('btn-replay').addEventListener('click', () => {
     state.replayAfterChests = true;
     showChest(state.pendingChests.shift());
   } else {
-    startGame();
+    if (shouldTriggerBoss()) {
+      triggerBoss();
+    } else {
+      showContractScreen();
+    }
   }
 });
 
@@ -968,7 +1096,12 @@ document.getElementById('btn-menu').addEventListener('click', () => {
   } else {
     updateProfileHeader();
     renderRecords();
-    showScreen('screen-home');
+    if (shouldTriggerBoss()) {
+      triggerBoss();
+    } else {
+      renderBossWaitingIcon();
+      showScreen('screen-home');
+    }
   }
 });
 
@@ -1200,6 +1333,8 @@ function renderProfileDetail() {
     { key: 'total', title: '✅ Réponses' },
     { key: 'debut', title: '⭐ Débuts' },
     { key: 'explore', title: '🌍 Exploration' },
+    { key: 'boss', title: '⚔️ Boss' },
+    { key: 'contrat', title: '🎯 Contrats' },
     { key: 'hidden', title: '🔮 Secrets' },
   ];
 
@@ -1406,6 +1541,444 @@ if (activeId && ProfileManager.getActive()) {
 } else {
   renderProfilesList();
   showScreen('screen-profiles');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// V3 — BOSS FIGHT SYSTEM
+// ══════════════════════════════════════════════════════════════════════
+
+function shouldTriggerBoss() {
+  if (state.pendingBoss) return false;
+  const g = state.gamesSinceBoss;
+  if (g <= 0) return false;
+  if (g >= 15) return true;
+  let prob = 0;
+  if (g >= 11) prob = 0.20;
+  else if (g >= 6) prob = 0.10;
+  else if (g >= 2) prob = 0.05;
+  return Math.random() < prob;
+}
+
+function pickBoss() {
+  const defeated = ProfileManager.get('defeatedBosses', []);
+  const lastBossCat = ProfileManager.get('lastBossCategory', null);
+  let candidates = BOSS_POOL.filter(b => !defeated.includes(b.id));
+  if (candidates.length === 0) candidates = BOSS_POOL;
+  if (lastBossCat && candidates.length > 1) {
+    const filtered = candidates.filter(b => b.category !== lastBossCat);
+    if (filtered.length > 0) candidates = filtered;
+  }
+  return pick(candidates);
+}
+
+function triggerBoss() {
+  const boss = pickBoss();
+  state.pendingBoss = boss;
+  state.gamesSinceBoss = 0;
+  saveBossState();
+  showBossAppear(boss);
+}
+
+function showBossAppear(boss) {
+  const coins = ProfileManager.get('coins', 0);
+  document.getElementById('boss-appear-emoji').textContent = boss.emoji;
+  document.getElementById('boss-appear-name').textContent = boss.name;
+  document.getElementById('boss-appear-category').textContent = CATEGORIES[boss.category]?.label || boss.category;
+  document.getElementById('boss-appear-stake').textContent = boss.stake + ' 🪙';
+  const fightBtn = document.getElementById('btn-boss-fight');
+  if (coins < boss.stake) {
+    fightBtn.textContent = `Pas assez de pièces (${coins}/${boss.stake} 🪙)`;
+    fightBtn.disabled = true;
+  } else {
+    fightBtn.textContent = '⚔️ L\'affronter !';
+    fightBtn.disabled = false;
+  }
+  showScreen('screen-boss-appear');
+}
+
+document.getElementById('btn-boss-fight').addEventListener('click', () => {
+  if (!state.pendingBoss) return;
+  startBossFight(state.pendingBoss);
+});
+
+document.getElementById('btn-boss-later').addEventListener('click', () => {
+  saveBossState();
+  updateProfileHeader();
+  renderBossWaitingIcon();
+  showScreen('screen-home');
+});
+
+function startBossFight(boss) {
+  const coins = ProfileManager.get('coins', 0);
+  ProfileManager.set('coins', coins - boss.stake);
+  const defeated = ProfileManager.get('defeatedBosses', []);
+  const isEnraged = defeated.includes(boss.id);
+  const maxPlayerHP = 3;
+  const maxBossHP = isEnraged ? boss.hp + 2 : boss.hp;
+  const subLevel = Math.min(3, getSubLevel() + 1);
+  const phase1Questions = [];
+  let lastCat = null;
+  for (let i = 0; i < 3; i++) {
+    const q = generateQuestion(boss.category, subLevel, lastCat);
+    phase1Questions.push(q);
+    lastCat = q.category;
+  }
+  const bossQ = getBossQuestion(boss.id);
+  state.bossState = {
+    boss, isEnraged, phase: 1, questionIndex: 0,
+    playerHP: maxPlayerHP, bossHP: maxBossHP, maxPlayerHP, maxBossHP,
+    questions: phase1Questions, bossQuestion: bossQ,
+    currentStepIndex: 0, criticalHits: 0, answered: false,
+    timerInterval: null, timerStart: 0, timerDuration: 0,
+  };
+  showScreen('screen-boss-fight');
+  updateBossHP();
+  showBossPhaseLabel();
+  showBossQuestion();
+}
+
+function updateBossHP() {
+  const bs = state.bossState;
+  document.getElementById('player-hp-fill').style.width = (bs.playerHP / bs.maxPlayerHP * 100) + '%';
+  document.getElementById('player-hp-text').textContent = bs.playerHP + '/' + bs.maxPlayerHP;
+  document.getElementById('boss-hp-fill').style.width = (Math.max(0, bs.bossHP) / bs.maxBossHP * 100) + '%';
+  document.getElementById('boss-hp-text').textContent = Math.max(0, bs.bossHP) + '/' + bs.maxBossHP;
+  document.getElementById('boss-fight-emoji').textContent = bs.boss.emoji;
+  document.getElementById('boss-fight-name').textContent = bs.boss.name;
+}
+
+function showBossPhaseLabel() {
+  const bs = state.bossState;
+  const label = document.getElementById('boss-phase-label');
+  if (bs.phase === 1) {
+    label.textContent = `Phase 1 — Assaut (${bs.questionIndex + 1}/3)`;
+  } else {
+    label.textContent = `⚔️ COUP FATAL — Étape ${bs.currentStepIndex + 1}/${bs.bossQuestion.steps.length}`;
+  }
+}
+
+function showBossQuestion() {
+  const bs = state.bossState;
+  bs.answered = false;
+  let q, timerDuration;
+  if (bs.phase === 1) {
+    q = bs.questions[bs.questionIndex];
+    timerDuration = bs.isEnraged ? 12 : 15;
+  } else {
+    q = bs.bossQuestion.steps[bs.currentStepIndex];
+    timerDuration = 30;
+  }
+  const badge = document.getElementById('boss-category-badge');
+  const catInfo = CATEGORIES[q.category || bs.boss.category];
+  badge.textContent = catInfo ? catInfo.label : '';
+  badge.setAttribute('data-cat', q.category || bs.boss.category);
+  document.getElementById('boss-question-card').setAttribute('data-cat', q.category || bs.boss.category);
+  document.getElementById('boss-question-text').textContent = q.text;
+  document.getElementById('boss-question-unit').textContent = q.unit ? 'Réponse en ' + q.unit : '';
+  document.getElementById('boss-answer-section').style.display = '';
+  document.getElementById('boss-feedback-section').style.display = 'none';
+  const input = document.getElementById('boss-answer-input');
+  input.value = '';
+  input.type = q.textAnswer !== undefined ? 'text' : 'number';
+  input.placeholder = 'Ta réponse...';
+  startBossTimer(timerDuration);
+  const card = document.getElementById('boss-question-card');
+  card.classList.remove('slide-in');
+  void card.offsetWidth;
+  card.classList.add('slide-in');
+  setTimeout(() => input.focus(), 100);
+}
+
+function startBossTimer(seconds) {
+  const bs = state.bossState;
+  stopBossTimer();
+  bs.timerStart = Date.now();
+  bs.timerDuration = seconds * 1000;
+  const fill = document.getElementById('boss-timer-fill');
+  fill.style.width = '100%';
+  fill.className = 'boss-timer-fill';
+  bs.timerInterval = setInterval(() => {
+    const elapsed = Date.now() - bs.timerStart;
+    const remaining = Math.max(0, 1 - elapsed / bs.timerDuration);
+    fill.style.width = (remaining * 100) + '%';
+    if (remaining < 0.25) fill.className = 'boss-timer-fill danger';
+    else if (remaining < 0.5) fill.className = 'boss-timer-fill warning';
+    if (remaining <= 0) {
+      stopBossTimer();
+      handleBossAnswer(true);
+    }
+  }, 50);
+}
+
+function stopBossTimer() {
+  const bs = state.bossState;
+  if (bs && bs.timerInterval) {
+    clearInterval(bs.timerInterval);
+    bs.timerInterval = null;
+  }
+}
+
+function handleBossAnswer(timedOut) {
+  const bs = state.bossState;
+  if (bs.answered) return;
+  bs.answered = true;
+  stopBossTimer();
+  let q, isCorrect;
+  const elapsed = (Date.now() - bs.timerStart) / 1000;
+  const input = document.getElementById('boss-answer-input');
+  const userAnswer = timedOut ? '' : input.value.trim();
+  if (bs.phase === 1) {
+    q = bs.questions[bs.questionIndex];
+  } else {
+    q = bs.bossQuestion.steps[bs.currentStepIndex];
+  }
+  if (timedOut) {
+    isCorrect = false;
+  } else if (q.textAnswer !== undefined) {
+    isCorrect = userAnswer.toLowerCase() === q.textAnswer.toLowerCase();
+  } else {
+    isCorrect = parseFloat(userAnswer) === q.answer;
+  }
+  const isCritical = isCorrect && elapsed < (bs.timerDuration / 2000);
+  const emoji = document.getElementById('boss-fight-emoji');
+  if (isCorrect) {
+    const damage = isCritical ? 2 : 1;
+    bs.bossHP = Math.max(0, bs.bossHP - damage);
+    if (isCritical) bs.criticalHits++;
+    emoji.classList.remove('hit');
+    void emoji.offsetWidth;
+    emoji.classList.add('hit');
+    launchMiniConfetti();
+  } else {
+    if (bs.phase === 1) {
+      bs.playerHP--;
+      emoji.classList.remove('attack');
+      void emoji.offsetWidth;
+      emoji.classList.add('attack');
+    }
+  }
+  updateBossHP();
+  const feedbackResult = document.getElementById('boss-feedback-result');
+  const feedbackExplanation = document.getElementById('boss-feedback-explanation');
+  if (isCorrect) {
+    feedbackResult.textContent = isCritical ? 'CRITIQUE ! Dégâts ×2 !' : 'Correct ! Touché !';
+    feedbackResult.className = 'feedback-result correct';
+  } else {
+    const correctAnswer = q.textAnswer !== undefined ? q.textAnswer : q.answer;
+    feedbackResult.textContent = timedOut
+      ? 'Temps écoulé ! La réponse était ' + correctAnswer
+      : 'Incorrect — la réponse était ' + correctAnswer;
+    feedbackResult.className = 'feedback-result incorrect';
+  }
+  feedbackExplanation.textContent = q.explanation || '';
+  document.getElementById('boss-answer-section').style.display = 'none';
+  document.getElementById('boss-feedback-section').style.display = '';
+  if (bs.playerHP <= 0) {
+    document.getElementById('btn-boss-next').textContent = 'Défaite...';
+  } else if (bs.bossHP <= 0) {
+    document.getElementById('btn-boss-next').textContent = 'Victoire !';
+  } else {
+    document.getElementById('btn-boss-next').textContent = 'Suivant';
+  }
+}
+
+document.getElementById('btn-boss-validate').addEventListener('click', () => handleBossAnswer(false));
+document.getElementById('boss-answer-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleBossAnswer(false);
+});
+
+document.getElementById('btn-boss-next').addEventListener('click', () => {
+  const bs = state.bossState;
+  if (!bs) return;
+  if (bs.playerHP <= 0) { endBossFight(false); return; }
+  if (bs.bossHP <= 0) { endBossFight(true); return; }
+  if (bs.phase === 1) {
+    bs.questionIndex++;
+    if (bs.questionIndex >= 3) {
+      bs.phase = 2;
+      bs.currentStepIndex = 0;
+    }
+  } else {
+    bs.currentStepIndex++;
+    if (bs.currentStepIndex >= bs.bossQuestion.steps.length) {
+      endBossFight(bs.bossHP <= 0);
+      return;
+    }
+  }
+  showBossPhaseLabel();
+  showBossQuestion();
+});
+
+function endBossFight(victory) {
+  stopBossTimer();
+  const bs = state.bossState;
+  const boss = bs.boss;
+  document.getElementById('boss-end-emoji').textContent = boss.emoji;
+  if (victory) {
+    document.getElementById('boss-end-title').textContent = 'Victoire !';
+    document.getElementById('boss-end-message').textContent = boss.name + ' est vaincu !';
+    const reward = calculateBossReward(boss, bs.playerHP, bs.maxPlayerHP);
+    ProfileManager.set('coins', ProfileManager.get('coins', 0) + reward.coins);
+    ProfileManager.set('xp', ProfileManager.get('xp', 0) + reward.xp);
+    const defeated = ProfileManager.get('defeatedBosses', []);
+    if (!defeated.includes(boss.id)) defeated.push(boss.id);
+    ProfileManager.set('defeatedBosses', defeated);
+    ProfileManager.set('lastBossCategory', boss.category);
+    const loot = applyBossLoot(boss);
+    let rewardsHtml = `<div class="reward-row"><span>Pièces gagnées</span><span class="reward-value">+${reward.coins} 🪙</span></div>`;
+    rewardsHtml += `<div class="reward-row"><span>XP gagnés</span><span class="reward-value">+${reward.xp} XP</span></div>`;
+    if (reward.flawless) {
+      rewardsHtml += `<div class="reward-row"><span>🛡️ Sans égratignure !</span><span class="reward-value">+50 🪙 bonus</span></div>`;
+    }
+    document.getElementById('boss-end-rewards').innerHTML = rewardsHtml;
+    const lootIcon = boss.lootType === 'theme' ? (THEMES[boss.lootId]?.preview || '🎁')
+                   : boss.lootType === 'sticker' ? '🏷️'
+                   : boss.lootType === 'badge' ? '🏅'
+                   : boss.lootType === 'effect' ? '✨' : '🏆';
+    document.getElementById('boss-end-loot').innerHTML = `
+      <span class="loot-label">Loot exclusif !</span>
+      <span class="loot-icon">${lootIcon}</span>
+      <span class="loot-name">${boss.lootName}</span>
+    `;
+    document.getElementById('boss-end-loot').style.display = '';
+    checkBossBadges(bs);
+    launchBigConfetti();
+  } else {
+    document.getElementById('boss-end-title').textContent = 'Défaite...';
+    document.getElementById('boss-end-message').textContent = boss.name + ' a gagné cette fois. Il reviendra... prépare-toi !';
+    document.getElementById('boss-end-rewards').innerHTML = `<div class="reward-row"><span>Mise perdue</span><span class="reward-value" style="color:var(--accent-red)">−${boss.stake} 🪙</span></div>`;
+    document.getElementById('boss-end-loot').style.display = 'none';
+  }
+  state.pendingBoss = null;
+  state.gamesSinceBoss = 0;
+  saveBossState();
+  state.bossState = null;
+  showScreen('screen-boss-end');
+}
+
+function checkBossBadges(bs) {
+  const badges = ProfileManager.get('badges', []);
+  const newBadges = [];
+  if (!badges.includes('boss_first_win')) {
+    badges.push('boss_first_win');
+    newBadges.push({ icon: '⚔️', name: 'Première Victoire' });
+  }
+  const defeated = ProfileManager.get('defeatedBosses', []);
+  if (defeated.length >= 6 && !badges.includes('boss_slayer')) {
+    badges.push('boss_slayer');
+    newBadges.push({ icon: '🗡️', name: 'Tueur de Boss' });
+  }
+  if (bs.playerHP === bs.maxPlayerHP && !badges.includes('boss_flawless')) {
+    badges.push('boss_flawless');
+    newBadges.push({ icon: '🛡️', name: 'Sans Égratignure' });
+  }
+  if (bs.criticalHits >= 3 && !badges.includes('boss_critical')) {
+    badges.push('boss_critical');
+    newBadges.push({ icon: '💥', name: 'Critique !' });
+  }
+  if (bs.isEnraged && bs.boss.id === 'dragon' && !badges.includes('boss_dragon_enraged')) {
+    badges.push('boss_dragon_enraged');
+    newBadges.push({ icon: '🐉', name: 'Chasseur de Dragons' });
+  }
+  ProfileManager.set('badges', badges);
+  if (newBadges.length > 0) {
+    const rewardsEl = document.getElementById('boss-end-rewards');
+    newBadges.forEach(b => {
+      rewardsEl.innerHTML += `<div class="reward-row"><span>${b.icon} Badge !</span><span class="reward-value">${b.name}</span></div>`;
+    });
+  }
+}
+
+document.getElementById('btn-boss-end-close').addEventListener('click', () => {
+  updateProfileHeader();
+  renderRecords();
+  renderBossWaitingIcon();
+  showScreen('screen-home');
+});
+
+function renderBossWaitingIcon() {
+  let icon = document.getElementById('boss-waiting-icon');
+  if (state.pendingBoss) {
+    if (!icon) {
+      icon = document.createElement('div');
+      icon.id = 'boss-waiting-icon';
+      icon.className = 'boss-waiting-icon';
+      document.getElementById('screen-home').appendChild(icon);
+    }
+    icon.textContent = state.pendingBoss.emoji;
+    icon.style.display = '';
+    icon.onclick = () => showBossAppear(state.pendingBoss);
+  } else if (icon) {
+    icon.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// V3 — CONTRAT D'OBJECTIF
+// ══════════════════════════════════════════════════════════════════════
+
+function showContractScreen() {
+  const contracts = generateContracts(
+    state.category, state.difficulty, state.questionCount, state.categoryStats
+  );
+  const container = document.getElementById('contract-options');
+  container.innerHTML = contracts.map(c => {
+    const condText = c.conditions.length > 0
+      ? c.conditions.map(cond => cond.label).join(' + ')
+      : '';
+    return `<div class="contract-card" data-tier="${c.tier}">
+      <span class="contract-icon">${c.icon}</span>
+      <div class="contract-info">
+        <div class="contract-title">${c.label}</div>
+        <div class="contract-conditions">${condText}</div>
+      </div>
+      <span class="contract-bonus">+${c.bonus} 🪙</span>
+    </div>`;
+  }).join('');
+  state._contracts = contracts;
+  container.querySelectorAll('.contract-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const tier = card.dataset.tier;
+      state.activeContract = contracts.find(c => c.tier === tier);
+      state.contractGameResult = {
+        correct: 0, hintsUsed: 0, maxConsecWrong: 0,
+        _consecWrong: 0, fastAnswers: 0, bestStreak: 0, _currentStreak: 0,
+      };
+      startGame();
+    });
+  });
+  document.getElementById('btn-no-contract').onclick = () => {
+    state.activeContract = null;
+    state.contractGameResult = null;
+    startGame();
+  };
+  showScreen('screen-contract');
+}
+
+function checkContractBadges(stats) {
+  const badges = ProfileManager.get('badges', []);
+  const newBadges = [];
+  const total = stats.bronze + stats.silver + stats.gold;
+  if (total >= 1 && !badges.includes('contract_first')) {
+    badges.push('contract_first');
+    newBadges.push({ icon: '🎯', name: 'Premier Contrat' });
+  }
+  if (stats.gold >= 10 && !badges.includes('contract_gold_hunter')) {
+    badges.push('contract_gold_hunter');
+    newBadges.push({ icon: '🥇', name: 'Chasseur d\'Or' });
+  }
+  if (stats.goldStreak >= 5 && !badges.includes('contract_perfectionist')) {
+    badges.push('contract_perfectionist');
+    newBadges.push({ icon: '✨', name: 'Perfectionniste' });
+  }
+  if (stats.bronze >= 20 && !badges.includes('contract_all_bronze')) {
+    badges.push('contract_all_bronze');
+    newBadges.push({ icon: '🥉', name: 'Tout Bronze' });
+  }
+  if (newBadges.length > 0) {
+    ProfileManager.set('badges', badges);
+    state.badgesUnlocked.push(...newBadges);
+  }
 }
 
 } // end initApp()

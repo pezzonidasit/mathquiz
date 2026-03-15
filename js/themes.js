@@ -206,6 +206,48 @@ const THEMES = {
       '--accent-red': '#e04080',
       '--accent-yellow': '#d0a030'
     }
+  },
+
+  // === BOSS-EXCLUSIVE THEMES (not purchasable) ===
+  boss_dragon: {
+    id: 'boss_dragon',
+    name: 'Antre du Dragon',
+    price: -1,
+    rarity: 'legendary',
+    preview: '🐉',
+    vars: {
+      '--bg-dark': '#1a0505',
+      '--bg-card': '#2e0a0a',
+      '--bg-card-hover': '#3d1212',
+      '--text-primary': '#ffd0b0',
+      '--text-secondary': '#c08060',
+      '--accent-blue': '#ff6030',
+      '--accent-green': '#ffb020',
+      '--accent-orange': '#ff4500',
+      '--accent-violet': '#ff6090',
+      '--accent-red': '#ff2020',
+      '--accent-yellow': '#ffa000'
+    }
+  },
+  boss_kraken: {
+    id: 'boss_kraken',
+    name: 'Abysses',
+    price: -1,
+    rarity: 'legendary',
+    preview: '🌀',
+    vars: {
+      '--bg-dark': '#050a1a',
+      '--bg-card': '#0a1530',
+      '--bg-card-hover': '#102048',
+      '--text-primary': '#b0d0ff',
+      '--text-secondary': '#6080b0',
+      '--accent-blue': '#2060ff',
+      '--accent-green': '#00d4aa',
+      '--accent-orange': '#4090ff',
+      '--accent-violet': '#6040ff',
+      '--accent-red': '#3060c0',
+      '--accent-yellow': '#40b0ff'
+    }
   }
 };
 

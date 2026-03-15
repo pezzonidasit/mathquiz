@@ -1637,3 +1637,127 @@ function generateQuestion(category, subLevel, lastCategory) {
   // Fallback — should not happen
   return generateCalcul(subLevel);
 }
+
+// ── Boss Fight Data ──────────────────────────────────────────────────
+
+const BOSS_POOL = [
+  { id: 'dragon',    name: 'Dragon des Fractions',     emoji: '🐉', category: 'fractions', stake: 50, hp: 5, lootType: 'theme',   lootId: 'boss_dragon',  lootName: 'Antre du Dragon' },
+  { id: 'golem',     name: 'Golem du Calcul',          emoji: '🤖', category: 'calcul',    stake: 40, hp: 4, lootType: 'title',   lootId: 'boss_golem',   lootName: 'Briseur de Golem' },
+  { id: 'sorcier',   name: 'Sorcier de Logique',       emoji: '🧙', category: 'logique',   stake: 60, hp: 5, lootType: 'sticker', lootId: 'boss_sorcier', lootName: 'Grimoire' },
+  { id: 'sphinx',    name: 'Sphinx de Géométrie',      emoji: '📐', category: 'geometrie', stake: 50, hp: 5, lootType: 'badge',   lootId: 'boss_sphinx',  lootName: 'Œil du Sphinx' },
+  { id: 'alchimiste',name: 'Alchimiste des Mesures',   emoji: '⚗️', category: 'mesures',   stake: 50, hp: 5, lootType: 'effect',  lootId: 'boss_alchimiste', lootName: 'Potions' },
+  { id: 'kraken',    name: 'Kraken des Problèmes',     emoji: '🌀', category: 'ouvert',    stake: 70, hp: 6, lootType: 'theme',   lootId: 'boss_kraken',  lootName: 'Abysses' },
+];
+
+const BOSS_QUESTIONS = [
+  // Dragon des Fractions
+  {
+    boss: 'dragon',
+    steps: [
+      { text: "Marie a 3/4 d'une pizza. Elle en mange 1/3 de ce qu'elle a. Combien de pizza a-t-elle mangé ? (en fraction décimale)", answer: 0.25, unit: '', hint: "1/3 de 3/4 = ?", explanation: "1/3 × 3/4 = 3/12 = 1/4 = 0.25" },
+      { text: "Combien de pizza lui reste-t-il ? (en fraction décimale)", answer: 0.5, unit: '', hint: "3/4 − 1/4 = ?", explanation: "3/4 − 1/4 = 2/4 = 1/2 = 0.5" },
+    ]
+  },
+  {
+    boss: 'dragon',
+    steps: [
+      { text: "Un gâteau est partagé en 8 parts. Liam mange 3 parts, Noé mange 2 parts. Quelle fraction du gâteau reste-t-il ? Donne le numérateur (dénominateur = 8).", answer: 3, unit: '', hint: "8 − 3 − 2 = ?", explanation: "8 − 3 − 2 = 3 parts restantes, soit 3/8." },
+      { text: "Si on partage ce reste entre 3 personnes, chacune reçoit combien de huitièmes ?", answer: 1, unit: '', hint: "3 parts ÷ 3 personnes", explanation: "3 ÷ 3 = 1. Chacun reçoit 1/8 du gâteau." },
+    ]
+  },
+  {
+    boss: 'dragon',
+    steps: [
+      { text: "Un réservoir est rempli au 2/5. On ajoute 1/5 de sa capacité. À quelle fraction est-il rempli ? Donne le numérateur (dénominateur = 5).", answer: 3, unit: '', hint: "2/5 + 1/5 = ?", explanation: "2/5 + 1/5 = 3/5" },
+      { text: "Le réservoir fait 100 litres. Combien de litres contient-il maintenant ?", answer: 60, unit: 'litres', hint: "3/5 de 100", explanation: "3/5 × 100 = 60 litres" },
+    ]
+  },
+  // Golem du Calcul
+  {
+    boss: 'golem',
+    steps: [
+      { text: "Un train roule à 120 km/h pendant 2h30. Quelle distance parcourt-il ?", answer: 300, unit: 'km', hint: "120 × 2.5", explanation: "120 × 2.5 = 300 km" },
+      { text: "Il lui reste 180 km. Combien de minutes lui faut-il encore ?", answer: 90, unit: 'min', hint: "180 ÷ 120 = ? heures, puis convertis en minutes", explanation: "180 ÷ 120 = 1.5 h = 90 minutes" },
+    ]
+  },
+  {
+    boss: 'golem',
+    steps: [
+      { text: "Un magasin vend 3 cartons de 24 bouteilles et 5 cartons de 12 bouteilles. Combien de bouteilles en tout ?", answer: 132, unit: '', hint: "3×24 + 5×12", explanation: "3×24=72, 5×12=60, 72+60=132" },
+      { text: "Chaque bouteille coûte 2€. On a une réduction de 15€. Quel est le prix final ?", answer: 249, unit: '€', hint: "132 × 2 − 15", explanation: "132 × 2 = 264, 264 − 15 = 249€" },
+    ]
+  },
+  {
+    boss: 'golem',
+    steps: [
+      { text: "Papa a 250€. Il achète 3 livres à 18€ chacun. Combien lui reste-t-il ?", answer: 196, unit: '€', hint: "250 − 3×18", explanation: "3×18=54, 250−54=196€" },
+      { text: "Il veut acheter un jeu à 45€ et un sac à 38€. A-t-il assez ? Si oui, combien lui restera-t-il ?", answer: 113, unit: '€', hint: "196 − 45 − 38", explanation: "45+38=83, 196−83=113€. Oui, il a assez !" },
+    ]
+  },
+  // Sorcier de Logique
+  {
+    boss: 'sorcier',
+    steps: [
+      { text: "Une suite magique : 2, 6, 18, 54, ... Quel est le nombre suivant ?", answer: 162, unit: '', hint: "Chaque nombre est multiplié par...", explanation: "×3 à chaque fois. 54 × 3 = 162" },
+      { text: "Quel est le 7ème nombre de cette suite ?", answer: 1458, unit: '', hint: "Continue : 162, 486, ...", explanation: "162, 486, 1458. Le 7ème = 1458" },
+    ]
+  },
+  {
+    boss: 'sorcier',
+    steps: [
+      { text: "J'ai un nombre. Si je le multiplie par 3 et que j'ajoute 7, j'obtiens 34. Quel est ce nombre ?", answer: 9, unit: '', hint: "(34 − 7) ÷ 3", explanation: "34 − 7 = 27, 27 ÷ 3 = 9" },
+      { text: "Si maintenant je prends ce nombre, je le mets au carré et je retire 1, qu'est-ce que j'obtiens ?", answer: 80, unit: '', hint: "9 × 9 − 1", explanation: "9² = 81, 81 − 1 = 80" },
+    ]
+  },
+  // Sphinx de Géométrie
+  {
+    boss: 'sphinx',
+    steps: [
+      { text: "Un rectangle mesure 12 cm de long et 8 cm de large. Quel est son périmètre ?", answer: 40, unit: 'cm', hint: "2 × (12 + 8)", explanation: "2 × (12+8) = 2×20 = 40 cm" },
+      { text: "On coupe ce rectangle en diagonale. Quelle est l'aire d'un des triangles obtenus ?", answer: 48, unit: 'cm²', hint: "L'aire du rectangle ÷ 2", explanation: "12×8=96, 96÷2 = 48 cm²" },
+    ]
+  },
+  {
+    boss: 'sphinx',
+    steps: [
+      { text: "Un carré a un périmètre de 36 cm. Quel est son côté ?", answer: 9, unit: 'cm', hint: "Périmètre ÷ 4", explanation: "36 ÷ 4 = 9 cm" },
+      { text: "Quelle est l'aire de ce carré ?", answer: 81, unit: 'cm²', hint: "côté × côté", explanation: "9 × 9 = 81 cm²" },
+    ]
+  },
+  // Alchimiste des Mesures
+  {
+    boss: 'alchimiste',
+    steps: [
+      { text: "Une potion nécessite 1,5 litre d'eau. Combien de millilitres cela fait-il ?", answer: 1500, unit: 'ml', hint: "1 litre = 1000 ml", explanation: "1.5 × 1000 = 1500 ml" },
+      { text: "Si on divise en flacons de 250 ml, combien de flacons obtient-on ?", answer: 6, unit: 'flacons', hint: "1500 ÷ 250", explanation: "1500 ÷ 250 = 6 flacons" },
+    ]
+  },
+  {
+    boss: 'alchimiste',
+    steps: [
+      { text: "Un cours de magie dure 1h45. Il commence à 14h30. À quelle heure finit-il ? (format HHMM, ex: 1615)", answer: 1615, unit: '', hint: "14h30 + 1h45", explanation: "14h30 + 1h = 15h30, + 45min = 16h15" },
+      { text: "Le sorcier fait 3 cours par jour avec 15 min de pause entre chaque. Combien de temps dure sa journée de travail en minutes ?", answer: 345, unit: 'min', hint: "3 × 105 min + 2 × 15 min", explanation: "3×105=315 min de cours + 2×15=30 min de pause = 345 min" },
+    ]
+  },
+  // Kraken des Problèmes
+  {
+    boss: 'kraken',
+    steps: [
+      { text: "Un navire transporte 240 caisses. 1/3 sont déchargées au port A, puis 1/4 du reste au port B. Combien de caisses restent ?", answer: 120, unit: 'caisses', hint: "D'abord 240÷3, puis le reste ÷4", explanation: "Port A: 240÷3=80 déchargées, reste 160. Port B: 160÷4=40 déchargées, reste 120." },
+      { text: "Chaque caisse pèse 15 kg. Quel est le poids total restant en kg ?", answer: 1800, unit: 'kg', hint: "120 × 15", explanation: "120 × 15 = 1800 kg" },
+    ]
+  },
+  {
+    boss: 'kraken',
+    steps: [
+      { text: "Un aquarium contient 5 poissons. Chaque mois, le nombre double. Combien de poissons après 4 mois ?", answer: 80, unit: '', hint: "5, 10, 20, ...", explanation: "Mois 1: 10, Mois 2: 20, Mois 3: 40, Mois 4: 80" },
+      { text: "L'aquarium peut contenir 200 poissons maximum. Après combien de mois sera-t-il plein ? (en partant de 5)", answer: 6, unit: 'mois', hint: "Continue à doubler: 80, 160, ...", explanation: "Mois 5: 160, Mois 6: 320 > 200. Plein au mois 6." },
+    ]
+  },
+];
+
+/** Pick a random multi-step question for a given boss */
+function getBossQuestion(bossId) {
+  const pool = BOSS_QUESTIONS.filter(q => q.boss === bossId);
+  return pick(pool);
+}

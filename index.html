@@ -217,6 +217,84 @@
     <button id="btn-delete-profile" class="btn-danger">Supprimer ce profil</button>
   </div>
 
+  <!-- ÉCRAN APPARITION BOSS -->
+  <div id="screen-boss-appear" class="screen">
+    <div class="boss-appear-card">
+      <div id="boss-appear-emoji" class="boss-appear-emoji"></div>
+      <h2 id="boss-appear-name"></h2>
+      <p id="boss-appear-category" class="boss-appear-category"></p>
+      <div class="boss-appear-stake">
+        <span>Mise :</span>
+        <span id="boss-appear-stake" class="boss-stake-amount"></span>
+      </div>
+      <div class="boss-appear-buttons">
+        <button id="btn-boss-fight" class="btn-primary btn-boss-fight">⚔️ L'affronter !</button>
+        <button id="btn-boss-later" class="btn-secondary">⏳ Plus tard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉCRAN COMBAT BOSS -->
+  <div id="screen-boss-fight" class="screen">
+    <div class="boss-fight-header">
+      <div class="hp-bar-container hp-player">
+        <span class="hp-label">Toi</span>
+        <div class="hp-bar">
+          <div id="player-hp-fill" class="hp-fill hp-fill-player"></div>
+        </div>
+        <span id="player-hp-text" class="hp-text">3/3</span>
+      </div>
+      <div id="boss-fight-emoji" class="boss-fight-emoji"></div>
+      <div class="hp-bar-container hp-boss">
+        <span id="boss-fight-name" class="hp-label"></span>
+        <div class="hp-bar">
+          <div id="boss-hp-fill" class="hp-fill hp-fill-boss"></div>
+        </div>
+        <span id="boss-hp-text" class="hp-text">5/5</span>
+      </div>
+    </div>
+
+    <div id="boss-phase-label" class="boss-phase-label">Phase 1 — Assaut</div>
+
+    <div id="boss-question-card" class="question-card">
+      <span id="boss-category-badge" class="category-badge"></span>
+      <p id="boss-question-text" class="question-text"></p>
+      <p id="boss-question-unit" class="question-unit"></p>
+
+      <div id="boss-timer-bar" class="boss-timer-bar">
+        <div id="boss-timer-fill" class="boss-timer-fill"></div>
+      </div>
+
+      <div id="boss-answer-section" class="answer-section">
+        <input type="number" id="boss-answer-input" class="answer-input" placeholder="Ta réponse...">
+        <button id="btn-boss-validate" class="btn-primary">Valider</button>
+      </div>
+
+      <div id="boss-feedback-section" class="feedback-section" style="display:none">
+        <p id="boss-feedback-result" class="feedback-result"></p>
+        <p id="boss-feedback-explanation" class="feedback-explanation"></p>
+        <button id="btn-boss-next" class="btn-primary">Suivant</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉCRAN FIN BOSS -->
+  <div id="screen-boss-end" class="screen">
+    <div id="boss-end-emoji" class="boss-appear-emoji"></div>
+    <h2 id="boss-end-title"></h2>
+    <p id="boss-end-message" class="boss-end-message"></p>
+    <div id="boss-end-rewards" class="rewards-section"></div>
+    <div id="boss-end-loot" class="boss-loot-reveal"></div>
+    <button id="btn-boss-end-close" class="btn-primary">Continuer</button>
+  </div>
+
+  <!-- ÉCRAN CONTRAT D'OBJECTIF -->
+  <div id="screen-contract" class="screen">
+    <h2>🎯 Choisis ton défi !</h2>
+    <div id="contract-options" class="contract-options"></div>
+    <button id="btn-no-contract" class="btn-secondary btn-no-contract">Jouer sans contrat</button>
+  </div>
+
   <canvas id="confetti-canvas"></canvas>
 
   <script src="js/themes.js"></script>

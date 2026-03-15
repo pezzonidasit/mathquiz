@@ -1692,3 +1692,331 @@ h2 {
   .xp-bar-container { width: 90px; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   V3 — BOSS FIGHTS
+   ══════════════════════════════════════════════════════════════════════ */
+
+.boss-appear-card {
+  text-align: center;
+  padding: 2rem;
+  animation: bossAppear 0.6s ease-out;
+}
+
+@keyframes bossAppear {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.boss-appear-emoji {
+  font-size: 5rem;
+  margin-bottom: 0.5rem;
+  animation: bossPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes bossPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.boss-appear-category {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.boss-appear-stake {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  margin: 1.5rem 0;
+  color: var(--accent-yellow);
+}
+
+.boss-stake-amount {
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.boss-appear-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.btn-boss-fight {
+  font-size: 1.2rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--accent-red), var(--accent-orange));
+  animation: fightPulse 2s ease-in-out infinite;
+}
+
+@keyframes fightPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 100, 50, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(255, 100, 50, 0.6); }
+}
+
+.boss-fight-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.hp-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hp-bar-container.hp-boss {
+  text-align: right;
+}
+
+.hp-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hp-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.hp-fill-player {
+  background: linear-gradient(90deg, #4ecdc4, #44b09e);
+}
+
+.hp-fill-boss {
+  background: linear-gradient(90deg, #ff6b6b, #ff4040);
+  float: right;
+}
+
+.hp-text {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.boss-fight-emoji {
+  font-size: 2.5rem;
+  margin: 0 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.boss-fight-emoji.hit {
+  animation: bossHit 0.4s ease;
+}
+
+.boss-fight-emoji.attack {
+  animation: bossAttack 0.5s ease;
+}
+
+@keyframes bossHit {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.8) rotate(-10deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes bossAttack {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.3) rotate(5deg); }
+  100% { transform: scale(1); }
+}
+
+.boss-phase-label {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-orange);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.boss-timer-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  margin: 0.75rem 0;
+  overflow: hidden;
+}
+
+.boss-timer-fill {
+  height: 100%;
+  background: var(--accent-green);
+  border-radius: 3px;
+  transition: width 0.1s linear, background-color 0.3s;
+  width: 100%;
+}
+
+.boss-timer-fill.warning {
+  background: var(--accent-orange);
+}
+
+.boss-timer-fill.danger {
+  background: var(--accent-red);
+}
+
+.boss-end-message {
+  text-align: center;
+  color: var(--text-secondary);
+  margin: 0.5rem 0 1.5rem;
+}
+
+.boss-loot-reveal {
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin: 1rem 0;
+  border: 2px solid var(--accent-yellow);
+}
+
+.boss-loot-reveal .loot-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.boss-loot-reveal .loot-name {
+  font-weight: 700;
+  color: var(--accent-yellow);
+  font-size: 1.1rem;
+}
+
+.boss-loot-reveal .loot-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.boss-waiting-icon {
+  position: fixed;
+  bottom: 5rem;
+  right: 1rem;
+  font-size: 2.5rem;
+  cursor: pointer;
+  animation: bossPulse 1.5s ease-in-out infinite;
+  z-index: 10;
+  filter: drop-shadow(0 0 8px rgba(255, 100, 50, 0.5));
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   V3 — CONTRAT D'OBJECTIF
+   ══════════════════════════════════════════════════════════════════════ */
+
+.contract-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.contract-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-card);
+  border-radius: 12px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.contract-card:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.contract-card:active {
+  transform: translateY(0);
+}
+
+.contract-card[data-tier="bronze"] { border-left: 4px solid #cd7f32; }
+.contract-card[data-tier="silver"] { border-left: 4px solid #c0c0c0; }
+.contract-card[data-tier="gold"]   { border-left: 4px solid #ffd700; }
+
+.contract-icon {
+  font-size: 2rem;
+}
+
+.contract-info {
+  flex: 1;
+}
+
+.contract-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.contract-conditions {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.contract-bonus {
+  font-weight: 700;
+  color: var(--accent-yellow);
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.btn-no-contract {
+  width: 100%;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+.contract-indicator {
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  background: var(--bg-card);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.contract-indicator .contract-tier-icon {
+  margin-right: 0.3rem;
+}
+
+.contract-result {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.contract-result.success {
+  background: rgba(78, 205, 196, 0.15);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+
+.contract-result.failure {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-secondary);
+}

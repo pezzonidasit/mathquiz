@@ -204,3 +204,122 @@ function applyLootItem(item) {
     }
   }
 }
+
+// ─── Boss Fight Rewards ──────────────────────────────────────────────
+
+function applyBossLoot(boss) {
+  const pm = ProfileManager;
+  const item = { id: boss.lootId, name: boss.lootName, type: boss.lootType, boss: boss.id };
+
+  switch (boss.lootType) {
+    case 'theme': {
+      const owned = pm.get('ownedThemes') || [];
+      if (!owned.includes(boss.lootId)) {
+        pm.set('ownedThemes', [...owned, boss.lootId]);
+      }
+      break;
+    }
+    case 'title': {
+      const titles = pm.get('bossTitles') || [];
+      if (!titles.includes(boss.lootId)) {
+        pm.set('bossTitles', [...titles, boss.lootId]);
+      }
+      break;
+    }
+    case 'sticker': {
+      const stickers = pm.get('ownedStickers') || [];
+      if (!stickers.includes(boss.lootId)) {
+        pm.set('ownedStickers', [...stickers, boss.lootId]);
+      }
+      break;
+    }
+    case 'badge': {
+      const badges = pm.get('badges') || [];
+      if (!badges.includes(boss.lootId)) {
+        pm.set('badges', [...badges, boss.lootId]);
+      }
+      break;
+    }
+    case 'effect': {
+      const effects = pm.get('bossEffects') || [];
+      if (!effects.includes(boss.lootId)) {
+        pm.set('bossEffects', [...effects, boss.lootId]);
+      }
+      break;
+    }
+  }
+
+  return item;
+}
+
+function calculateBossReward(boss, playerHP, maxPlayerHP) {
+  const baseReward = boss.stake * 3;
+  const flawlessBonus = (playerHP === maxPlayerHP) ? 50 : 0;
+  return { coins: baseReward + flawlessBonus, xp: baseReward, flawless: flawlessBonus > 0 };
+}
+
+// ─── Contrat d'Objectif ──────────────────────────────────────────────
+
+function generateContracts(category, difficulty, questionCount, catStats) {
+  const cats = category === 'all'
+    ? Object.values(catStats)
+    : [catStats[category] || { correct: 0, total: 0 }];
+  const totalCorrect = cats.reduce((s, c) => s + (c.correct || 0), 0);
+  const totalQuestions = cats.reduce((s, c) => s + (c.total || 0), 0);
+
+  let recentRate;
+  if (totalQuestions >= 10) {
+    recentRate = totalCorrect / totalQuestions;
+  } else {
+    recentRate = difficulty === 'easy' ? 0.8 : difficulty === 'hard' ? 0.6 : 0.7;
+  }
+
+  const bronzeRate = Math.max(0.2, recentRate - 0.1);
+  const silverRate = recentRate;
+  const goldRate = Math.min(1.0, recentRate + 0.15);
+
+  const bronzeCount = Math.max(1, Math.round(bronzeRate * questionCount));
+  const silverCount = Math.max(bronzeCount + 1, Math.round(silverRate * questionCount));
+  const goldCount = Math.max(silverCount + 1, Math.min(questionCount, Math.round(goldRate * questionCount)));
+
+  const conditionPool = [
+    { id: 'no_hint', label: 'sans indice', check: (r) => r.hintsUsed === 0 },
+    { id: 'no_consec_wrong', label: 'sans 2 erreurs d\'affilée', check: (r) => r.maxConsecWrong < 2 },
+    { id: 'one_fast', label: 'au moins 1 réponse rapide (< 10s)', check: (r) => r.fastAnswers >= 1 },
+    { id: 'streak_3', label: 'série de 3 minimum', check: (r) => r.bestStreak >= 3 },
+  ];
+
+  const shuffled = conditionPool.sort(() => Math.random() - 0.5);
+  const silverCondition = shuffled[0];
+  const goldConditions = [shuffled[0], shuffled[1] || shuffled[0]];
+  if (!goldConditions.find(c => c.id === 'no_hint')) {
+    goldConditions[1] = conditionPool.find(c => c.id === 'no_hint');
+  }
+
+  return [
+    {
+      tier: 'bronze',
+      icon: '🥉',
+      label: `${bronzeCount}/${questionCount} correct`,
+      conditions: [],
+      bonus: 10,
+      check: (r) => r.correct >= bronzeCount,
+    },
+    {
+      tier: 'silver',
+      icon: '🥈',
+      label: `${silverCount}/${questionCount} correct`,
+      conditions: [silverCondition],
+      bonus: 30,
+      check: (r) => r.correct >= silverCount && silverCondition.check(r),
+    },
+    {
+      tier: 'gold',
+      icon: '🥇',
+      label: `${goldCount}/${questionCount} correct`,
+      conditions: goldConditions,
+      bonus: 60,
+      check: (r) => r.correct >= goldCount && goldConditions.every(c => c.check(r)),
+    },
+  ];
+}
