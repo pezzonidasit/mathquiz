@@ -265,6 +265,51 @@ function updateProfileHeader() {
   document.getElementById('home-coins').textContent = coins;
   document.getElementById('xp-bar').style.width = (rp.progress * 100) + '%';
   document.getElementById('xp-text').textContent = rp.next ? rp.xpInLevel + '/' + rp.xpNeeded : 'MAX';
+
+  // Render next goals widget
+  renderNextGoals();
+}
+
+function renderNextGoals() {
+  let container = document.getElementById('next-goals');
+  if (!container) {
+    // Create container after profile header
+    container = document.createElement('div');
+    container.id = 'next-goals';
+    container.className = 'next-goals';
+    const header = document.getElementById('profile-header');
+    header.parentNode.insertBefore(container, header.nextSibling);
+  }
+
+  // Find the 3 closest unfinished badges with progress
+  const upcoming = BADGE_DEFS
+    .filter(b => !state.badges.includes(b.id) && !b.hidden && !b.reallife && b.progress)
+    .map(b => {
+      const p = b.progress();
+      return { ...b, cur: p.cur, max: p.max, pct: p.cur / p.max };
+    })
+    .filter(b => b.pct < 1 && b.pct > 0)
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 3);
+
+  if (upcoming.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = '<h3>🎯 Prochains objectifs</h3>' +
+    upcoming.map(b => `
+      <div class="goal-row">
+        <span class="goal-icon">${b.icon}</span>
+        <div class="goal-info">
+          <div class="goal-name">${b.name}</div>
+          <div class="goal-bar-container">
+            <div class="goal-bar" style="width:${Math.round(b.pct * 100)}%"></div>
+          </div>
+          <div class="goal-text">${b.cur} / ${b.max}</div>
+        </div>
+      </div>
+    `).join('');
 }
 
 // ── Records Display ────────────────────────────────────────────────
@@ -549,57 +594,60 @@ function isCategoryComplete(catKey) {
 
 const BADGE_DEFS = [
   // ── Débuts ──
-  { id: 'first_game', name: 'Première partie', icon: '⭐', category: 'debut', check: () => true },
-  { id: 'ten_games', name: '10 parties', icon: '🎯', category: 'debut', check: () => profileGames() >= 10 },
-  { id: 'fifty_games', name: '50 parties', icon: '🎪', category: 'debut', check: () => profileGames() >= 50 },
-  { id: 'hundred_games', name: '100 parties !', icon: '💯', category: 'debut', check: () => profileGames() >= 100 },
+  { id: 'first_game', name: 'Première partie', icon: '⭐', category: 'debut', check: () => true, progress: () => ({ cur: Math.min(profileGames(), 1), max: 1 }) },
+  { id: 'ten_games', name: '10 parties', icon: '🎯', category: 'debut', check: () => profileGames() >= 10, progress: () => ({ cur: Math.min(profileGames(), 10), max: 10 }) },
+  { id: 'fifty_games', name: '50 parties', icon: '🎪', category: 'debut', check: () => profileGames() >= 50, progress: () => ({ cur: Math.min(profileGames(), 50), max: 50 }) },
+  { id: 'hundred_games', name: '100 parties !', icon: '💯', category: 'debut', check: () => profileGames() >= 100, progress: () => ({ cur: Math.min(profileGames(), 100), max: 100 }) },
 
   // ── Performance ──
-  { id: 'perfect', name: 'Sans faute', icon: '🏆', category: 'perf', check: () => state.bestStreakThisGame >= state.questionCount },
-  { id: 'perfect_20', name: 'Parfait x20', icon: '👑', category: 'perf', check: () => state.bestStreakThisGame >= 20 && state.questionCount === 20 },
-  { id: 'on_fire', name: 'En feu !', icon: '🔥', category: 'perf', check: () => state.bestStreakThisGame >= 10 },
-  { id: 'inferno', name: 'Inferno', icon: '🌋', category: 'perf', check: () => state.bestStreakThisGame >= 20 },
-  { id: 'no_hints', name: 'Sans aide', icon: '🧠', category: 'perf', check: () => state.noHintCount >= 5 },
-  { id: 'no_hints_10', name: 'Cerveau d\'acier', icon: '🦾', category: 'perf', check: () => state.noHintCount >= 10 },
-  { id: 'speedster', name: 'Rapide', icon: '⚡', category: 'perf', check: () => state.timerEnabled && (Date.now() - state.gameStartTime) < 120000 },
-  { id: 'flash', name: 'Flash', icon: '💨', category: 'perf', check: () => state.timerEnabled && (Date.now() - state.gameStartTime) < 60000 },
-  { id: 'hard_mode', name: 'Mode difficile', icon: '💪', category: 'perf', check: () => state.difficulty === 'hard' },
-  { id: 'hard_perfect', name: 'Difficile parfait', icon: '🏅', category: 'perf', check: () => state.difficulty === 'hard' && state.bestStreakThisGame >= state.questionCount },
-  { id: 'score_100', name: 'Score 100+', icon: '📈', category: 'perf', check: () => state.score >= 100 },
-  { id: 'score_200', name: 'Score 200+', icon: '📊', category: 'perf', check: () => state.score >= 200 },
-  { id: 'score_300', name: 'Score 300+', icon: '🚀', category: 'perf', check: () => state.score >= 300 },
+  { id: 'perfect', name: 'Sans faute', icon: '🏆', category: 'perf', check: () => state.bestStreakThisGame >= state.questionCount, hint: 'Fais un score parfait' },
+  { id: 'perfect_20', name: 'Parfait x20', icon: '👑', category: 'perf', check: () => state.bestStreakThisGame >= 20 && state.questionCount === 20, hint: '20/20 en mode 20 questions' },
+  { id: 'on_fire', name: 'En feu !', icon: '🔥', category: 'perf', check: () => state.bestStreakThisGame >= 10, hint: '10 bonnes réponses d\'affilée' },
+  { id: 'inferno', name: 'Inferno', icon: '🌋', category: 'perf', check: () => state.bestStreakThisGame >= 20, hint: '20 bonnes réponses d\'affilée' },
+  { id: 'no_hints', name: 'Sans aide', icon: '🧠', category: 'perf', check: () => state.noHintCount >= 5, hint: '5 réponses sans indice en 1 partie' },
+  { id: 'no_hints_10', name: 'Cerveau d\'acier', icon: '🦾', category: 'perf', check: () => state.noHintCount >= 10, hint: '10 réponses sans indice en 1 partie' },
+  { id: 'speedster', name: 'Rapide', icon: '⚡', category: 'perf', check: () => state.timerEnabled && (Date.now() - state.gameStartTime) < 120000, hint: 'Finis en moins de 2 min (chrono)' },
+  { id: 'flash', name: 'Flash', icon: '💨', category: 'perf', check: () => state.timerEnabled && (Date.now() - state.gameStartTime) < 60000, hint: 'Finis en moins de 1 min (chrono)' },
+  { id: 'hard_mode', name: 'Mode difficile', icon: '💪', category: 'perf', check: () => state.difficulty === 'hard', hint: 'Joue en mode Difficile' },
+  { id: 'hard_perfect', name: 'Difficile parfait', icon: '🏅', category: 'perf', check: () => state.difficulty === 'hard' && state.bestStreakThisGame >= state.questionCount, hint: 'Score parfait en Difficile' },
+  { id: 'score_100', name: 'Score 100+', icon: '📈', category: 'perf', check: () => state.score >= 100, hint: 'Atteins 100 points en 1 partie' },
+  { id: 'score_200', name: 'Score 200+', icon: '📊', category: 'perf', check: () => state.score >= 200, hint: 'Atteins 200 points en 1 partie' },
+  { id: 'score_300', name: 'Score 300+', icon: '🚀', category: 'perf', check: () => state.score >= 300, hint: 'Atteins 300 points en 1 partie' },
 
   // ── Exploration ──
-  { id: 'explorer', name: 'Explorateur', icon: '🌍', category: 'explore', check: () => Object.keys(state.categoryStats).length >= 6 },
-  { id: 'try_easy', name: 'Échauffement', icon: '😊', category: 'explore', check: () => state.difficulty === 'easy' },
-  { id: 'try_chrono', name: 'Contre la montre', icon: '⏱️', category: 'explore', check: () => state.timerEnabled },
-  { id: 'marathon', name: 'Marathon', icon: '🏃', category: 'explore', check: () => state.questionCount === 20 },
+  { id: 'explorer', name: 'Explorateur', icon: '🌍', category: 'explore', check: () => Object.keys(state.categoryStats).length >= 6, progress: () => ({ cur: Object.keys(state.categoryStats).length, max: 6 }), hint: 'Joue dans les 6 catégories' },
+  { id: 'try_easy', name: 'Échauffement', icon: '😊', category: 'explore', check: () => state.difficulty === 'easy', hint: 'Joue en mode Facile' },
+  { id: 'try_chrono', name: 'Contre la montre', icon: '⏱️', category: 'explore', check: () => state.timerEnabled, hint: 'Active le chronomètre' },
+  { id: 'marathon', name: 'Marathon', icon: '🏃', category: 'explore', check: () => state.questionCount === 20, hint: 'Joue une partie de 20 questions' },
 
   // ── Maîtrise par catégorie ──
-  { id: 'master_calcul', name: 'Maître Calcul', icon: '🧮', category: 'master', check: () => (state.categoryStats.calcul?.correct || 0) >= 50 },
-  { id: 'master_logique', name: 'Maître Logique', icon: '🧩', category: 'master', check: () => (state.categoryStats.logique?.correct || 0) >= 50 },
-  { id: 'master_geometrie', name: 'Maître Géométrie', icon: '📐', category: 'master', check: () => (state.categoryStats.geometrie?.correct || 0) >= 50 },
-  { id: 'master_fractions', name: 'Maître Fractions', icon: '🍕', category: 'master', check: () => (state.categoryStats.fractions?.correct || 0) >= 50 },
-  { id: 'master_mesures', name: 'Maître Mesures', icon: '📏', category: 'master', check: () => (state.categoryStats.mesures?.correct || 0) >= 50 },
-  { id: 'master_ouvert', name: 'Maître Ouvert', icon: '💡', category: 'master', check: () => (state.categoryStats.ouvert?.correct || 0) >= 50 },
+  { id: 'master_calcul', name: 'Maître Calcul', icon: '🧮', category: 'master', check: () => (state.categoryStats.calcul?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.calcul?.correct || 0, 50), max: 50 }) },
+  { id: 'master_logique', name: 'Maître Logique', icon: '🧩', category: 'master', check: () => (state.categoryStats.logique?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.logique?.correct || 0, 50), max: 50 }) },
+  { id: 'master_geometrie', name: 'Maître Géométrie', icon: '📐', category: 'master', check: () => (state.categoryStats.geometrie?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.geometrie?.correct || 0, 50), max: 50 }) },
+  { id: 'master_fractions', name: 'Maître Fractions', icon: '🍕', category: 'master', check: () => (state.categoryStats.fractions?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.fractions?.correct || 0, 50), max: 50 }) },
+  { id: 'master_mesures', name: 'Maître Mesures', icon: '📏', category: 'master', check: () => (state.categoryStats.mesures?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.mesures?.correct || 0, 50), max: 50 }) },
+  { id: 'master_ouvert', name: 'Maître Ouvert', icon: '💡', category: 'master', check: () => (state.categoryStats.ouvert?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.ouvert?.correct || 0, 50), max: 50 }) },
   { id: 'grand_master', name: 'Grand Maître', icon: '🎓', category: 'master', check: () => {
     return ['calcul','logique','geometrie','fractions','mesures','ouvert'].every(c => (state.categoryStats[c]?.correct || 0) >= 50);
+  }, progress: () => {
+    const done = ['calcul','logique','geometrie','fractions','mesures','ouvert'].filter(c => (state.categoryStats[c]?.correct || 0) >= 50).length;
+    return { cur: done, max: 6 };
   }},
 
   // ── XP milestones ──
-  { id: 'xp_100', name: 'Centurion', icon: '🔰', category: 'xp', check: () => profileXP() >= 100 },
-  { id: 'xp_500', name: 'Vétéran', icon: '⚔️', category: 'xp', check: () => profileXP() >= 500 },
-  { id: 'xp_1000', name: 'Champion', icon: '🗡️', category: 'xp', check: () => profileXP() >= 1000 },
-  { id: 'xp_2500', name: 'Héros', icon: '🦸', category: 'xp', check: () => profileXP() >= 2500 },
-  { id: 'xp_5000', name: 'Légende', icon: '🐉', category: 'xp', check: () => profileXP() >= 5000 },
-  { id: 'xp_10000', name: 'Mythique', icon: '🌟', category: 'xp', check: () => profileXP() >= 10000 },
+  { id: 'xp_100', name: 'Centurion', icon: '🔰', category: 'xp', check: () => profileXP() >= 100, progress: () => ({ cur: Math.min(profileXP(), 100), max: 100 }) },
+  { id: 'xp_500', name: 'Vétéran', icon: '⚔️', category: 'xp', check: () => profileXP() >= 500, progress: () => ({ cur: Math.min(profileXP(), 500), max: 500 }) },
+  { id: 'xp_1000', name: 'Champion', icon: '🗡️', category: 'xp', check: () => profileXP() >= 1000, progress: () => ({ cur: Math.min(profileXP(), 1000), max: 1000 }) },
+  { id: 'xp_2500', name: 'Héros', icon: '🦸', category: 'xp', check: () => profileXP() >= 2500, progress: () => ({ cur: Math.min(profileXP(), 2500), max: 2500 }) },
+  { id: 'xp_5000', name: 'Légende', icon: '🐉', category: 'xp', check: () => profileXP() >= 5000, progress: () => ({ cur: Math.min(profileXP(), 5000), max: 5000 }) },
+  { id: 'xp_10000', name: 'Mythique', icon: '🌟', category: 'xp', check: () => profileXP() >= 10000, progress: () => ({ cur: Math.min(profileXP(), 10000), max: 10000 }) },
 
   // ── Réponses totales ──
-  { id: 'correct_50', name: '50 bonnes réponses', icon: '✅', category: 'total', check: () => totalCorrect() >= 50 },
-  { id: 'correct_100', name: '100 bonnes réponses', icon: '💚', category: 'total', check: () => totalCorrect() >= 100 },
-  { id: 'correct_250', name: '250 bonnes réponses', icon: '💎', category: 'total', check: () => totalCorrect() >= 250 },
-  { id: 'correct_500', name: '500 bonnes réponses', icon: '🏰', category: 'total', check: () => totalCorrect() >= 500 },
-  { id: 'correct_1000', name: '1000 bonnes réponses', icon: '👸', category: 'total', check: () => totalCorrect() >= 1000 },
+  { id: 'correct_50', name: '50 bonnes réponses', icon: '✅', category: 'total', check: () => totalCorrect() >= 50, progress: () => ({ cur: Math.min(totalCorrect(), 50), max: 50 }) },
+  { id: 'correct_100', name: '100 bonnes réponses', icon: '💚', category: 'total', check: () => totalCorrect() >= 100, progress: () => ({ cur: Math.min(totalCorrect(), 100), max: 100 }) },
+  { id: 'correct_250', name: '250 bonnes réponses', icon: '💎', category: 'total', check: () => totalCorrect() >= 250, progress: () => ({ cur: Math.min(totalCorrect(), 250), max: 250 }) },
+  { id: 'correct_500', name: '500 bonnes réponses', icon: '🏰', category: 'total', check: () => totalCorrect() >= 500, progress: () => ({ cur: Math.min(totalCorrect(), 500), max: 500 }) },
+  { id: 'correct_1000', name: '1000 bonnes réponses', icon: '👸', category: 'total', check: () => totalCorrect() >= 1000, progress: () => ({ cur: Math.min(totalCorrect(), 1000), max: 1000 }) },
 
   // ═══ BADGES CACHÉS (le kid les découvre par hasard) ═══
   { id: 'night_owl', name: 'Hibou', icon: '🦉', category: 'hidden', hidden: true,
@@ -951,10 +999,20 @@ function renderProfileDetail() {
       const usedUp = isRL && unlocked && (ProfileManager.get('used_' + b.id, false));
       const usedLabel = usedUp ? '<span class="badge-used">Utilisé ✓</span>' : '';
       const requiresLabel = isRL && !unlocked && b.requires ? `<span class="badge-reward">Complète "${sections.find(s=>s.key===b.requires)?.title || b.requires}"</span>` : '';
-      badgesHtml += `<div class="badge-item ${isRL ? 'badge-reallife' : ''} ${usedUp ? 'badge-spent' : ''}" style="${unlocked ? '' : 'opacity:0.3;filter:grayscale(1)'}" ${isRL && unlocked && !usedUp ? `data-badge-id="${b.id}"` : ''}>
+      // Progress bar for locked badges
+      let progressHtml = '';
+      if (!unlocked && b.progress && !isRL) {
+        const p = b.progress();
+        if (p.cur > 0) {
+          const pct = Math.round((p.cur / p.max) * 100);
+          progressHtml = `<div class="badge-progress"><div class="badge-progress-bar" style="width:${pct}%"></div></div><span class="badge-progress-text">${p.cur}/${p.max}</span>`;
+        }
+      }
+      const hintHtml = !unlocked && b.hint && !isRL ? `<span class="badge-hint">${b.hint}</span>` : '';
+      badgesHtml += `<div class="badge-item ${isRL ? 'badge-reallife' : ''} ${usedUp ? 'badge-spent' : ''}" style="${unlocked ? '' : 'opacity:0.5;filter:grayscale(0.8)'}" ${isRL && unlocked && !usedUp ? `data-badge-id="${b.id}"` : ''}>
         <span class="badge-icon">${b.icon}</span>
-        <span class="badge-name">${unlocked ? b.name : '???'}</span>
-        ${rewardText}${requiresLabel}${usedLabel}
+        <span class="badge-name">${unlocked ? b.name : (b.hint ? b.name : '???')}</span>
+        ${progressHtml}${hintHtml}${rewardText}${requiresLabel}${usedLabel}
       </div>`;
     });
     badgesHtml += '</div>';
