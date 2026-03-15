@@ -995,7 +995,7 @@ function renderProfileDetail() {
     secBadges.forEach(b => {
       const unlocked = badges.includes(b.id);
       const isRL = b.reallife;
-      const rewardText = isRL && unlocked ? `<span class="badge-reward">${b.reward}</span>` : '';
+      const rewardText = isRL ? `<span class="badge-reward">${unlocked ? b.reward : ''}</span>` : '';
       const usedUp = isRL && unlocked && (ProfileManager.get('used_' + b.id, false));
       const usedLabel = usedUp ? '<span class="badge-used">Utilisé ✓</span>' : '';
       const requiresLabel = isRL && !unlocked && b.requires ? `<span class="badge-reward">Complète "${sections.find(s=>s.key===b.requires)?.title || b.requires}"</span>` : '';
@@ -1011,7 +1011,7 @@ function renderProfileDetail() {
       const hintHtml = !unlocked && b.hint && !isRL ? `<span class="badge-hint">${b.hint}</span>` : '';
       badgesHtml += `<div class="badge-item ${isRL ? 'badge-reallife' : ''} ${usedUp ? 'badge-spent' : ''}" style="${unlocked ? '' : 'opacity:0.5;filter:grayscale(0.8)'}" ${isRL && unlocked && !usedUp ? `data-badge-id="${b.id}"` : ''}>
         <span class="badge-icon">${b.icon}</span>
-        <span class="badge-name">${unlocked ? b.name : (b.hint ? b.name : '???')}</span>
+        <span class="badge-name">${unlocked ? b.name : b.name}</span>
         ${progressHtml}${hintHtml}${rewardText}${requiresLabel}${usedLabel}
       </div>`;
     });
