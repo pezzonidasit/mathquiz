@@ -124,10 +124,67 @@ function saveBossState() {
 }
 
 // ── Screen Navigation ──────────────────────────────────────────────
-function showScreen(screenId) {
+// ── Navigation history (browser back button support) ────────────
+const screenHistory = [];
+
+function showScreen(screenId, opts) {
+  const replace = opts && opts.replace;
+  const fromPop = opts && opts.fromPop;
+  const current = document.querySelector('.screen.active');
+  const currentId = current ? current.id : null;
+
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
+
+  // Push to browser history so back button works
+  if (!fromPop) {
+    if (replace) {
+      history.replaceState({ screen: screenId }, '');
+    } else {
+      if (currentId && currentId !== screenId) {
+        screenHistory.push(currentId);
+      }
+      history.pushState({ screen: screenId }, '');
+    }
+  }
 }
+
+// Map screens to their "back" destination
+const screenBackMap = {
+  'screen-home': 'screen-profiles',
+  'screen-game': 'screen-home',
+  'screen-end': 'screen-home',
+  'screen-shop': 'screen-home',
+  'screen-chest': 'screen-home',
+  'screen-profile-detail': 'screen-home',
+  'screen-boss-appear': 'screen-home',
+  'screen-boss-fight': 'screen-home',
+  'screen-boss-end': 'screen-home',
+  'screen-leaderboard': 'screen-home',
+  'screen-contract': 'screen-home',
+  'screen-groups': 'screen-home',
+  'screen-group-detail': 'screen-groups',
+  'screen-group-dashboard': 'screen-group-detail',
+  'screen-create-profile': 'screen-profiles',
+};
+
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.screen) {
+    showScreen(e.state.screen, { fromPop: true });
+  } else if (screenHistory.length > 0) {
+    const prev = screenHistory.pop();
+    showScreen(prev, { fromPop: true });
+  } else {
+    // Fallback: use the back map based on current screen
+    const current = document.querySelector('.screen.active');
+    if (current && screenBackMap[current.id]) {
+      showScreen(screenBackMap[current.id], { fromPop: true });
+    }
+  }
+});
+
+// Initialize history state
+history.replaceState({ screen: 'screen-profiles' }, '');
 
 // ── Pill Selection ─────────────────────────────────────────────────
 document.querySelectorAll('.pill-group').forEach(group => {
