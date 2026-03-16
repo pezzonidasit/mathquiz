@@ -176,7 +176,9 @@ async function getMyGroups() {
   for (const code of codes) {
     const gSnap = await db.ref('groups/' + code + '/name').once('value');
     if (gSnap.exists()) {
-      groups.push({ code, name: gSnap.val() });
+      const mSnap = await db.ref('groups/' + code + '/members').once('value');
+      const memberCount = mSnap.exists() ? Object.keys(mSnap.val()).length : 0;
+      groups.push({ code, name: gSnap.val(), memberCount });
     }
   }
   return groups;

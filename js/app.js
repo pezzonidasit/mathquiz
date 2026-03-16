@@ -2619,7 +2619,7 @@ async function renderGroupsScreen(backTo) {
         '<span class="group-icon">👥</span>' +
         '<div class="group-info">' +
         '<div class="group-name">' + g.name + '</div>' +
-        '<div class="group-code">Code : ' + g.code + '</div>' +
+        '<div class="group-code">Code : ' + g.code + ' · ' + g.memberCount + ' membre' + (g.memberCount > 1 ? 's' : '') + '</div>' +
         '</div></div>';
     }).join('');
 
