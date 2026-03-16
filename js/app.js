@@ -166,6 +166,10 @@ const screenBackMap = {
   'screen-group-detail': 'screen-groups',
   'screen-group-dashboard': 'screen-group-detail',
   'screen-create-profile': 'screen-profiles',
+  'screen-duel-create': 'screen-home',
+  'screen-duel-join': 'screen-home',
+  'screen-duel-fight': 'screen-home',
+  'screen-duel-end': 'screen-home',
 };
 
 window.addEventListener('popstate', (e) => {
@@ -2923,5 +2927,75 @@ async function removeRewardAction(groupCode, rewardId, name) {
   } catch(e) { alert('Erreur : ' + e.message); }
 }
 window.removeRewardAction = removeRewardAction;
+
+// ── Duel Event Handlers ──
+
+document.getElementById('btn-duel').addEventListener('click', () => {
+  if (!isOnline()) { alert('Le mode duel nécessite une connexion internet'); return; }
+  const choice = confirm('Créer un duel ?\n\nOK = Créer\nAnnuler = Rejoindre');
+  if (choice) {
+    Duel._cleanup();
+    document.getElementById('duel-my-coins').textContent = ProfileManager.get('coins', 0);
+    showScreen('screen-duel-create');
+  } else {
+    Duel._cleanup();
+    document.getElementById('duel-join-info').style.display = 'none';
+    document.getElementById('duel-join-code').value = '';
+    showScreen('screen-duel-join');
+  }
+});
+
+document.getElementById('btn-duel-launch').addEventListener('click', () => {
+  const pills = document.querySelectorAll('[data-setting="duel-category"] .pill.active');
+  const category = pills.length > 0 ? pills[0].dataset.value : 'all';
+  const stake = parseInt(document.getElementById('duel-stake-input').value) || 10;
+  Duel.create(category, stake);
+});
+
+document.getElementById('btn-duel-cancel').addEventListener('click', () => Duel.cancel());
+document.getElementById('btn-duel-create-back').addEventListener('click', () => Duel.cancel());
+document.getElementById('btn-duel-join-back').addEventListener('click', () => { Duel._cleanup(); showScreen('screen-home'); });
+
+document.getElementById('btn-duel-find').addEventListener('click', async () => {
+  const code = document.getElementById('duel-join-code').value;
+  const duel = await Duel.find(code);
+  if (!duel) return;
+  const catNames = { calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes', all: '🎯 Toutes' };
+  document.getElementById('duel-join-category').textContent = catNames[duel.category] || duel.category;
+  document.getElementById('duel-join-stake').textContent = duel.stake.a + ' 🪙';
+  document.getElementById('duel-join-opponent').textContent = duel.players.a.name;
+  document.getElementById('duel-join-info').style.display = '';
+});
+
+document.getElementById('btn-duel-accept').addEventListener('click', () => {
+  const code = document.getElementById('duel-join-code').value.trim();
+  const pills = document.querySelectorAll('[data-setting="duel-difficulty"] .pill.active');
+  const difficulty = pills.length > 0 ? pills[0].dataset.value : 'medium';
+  const stake = parseInt(document.getElementById('duel-join-stake-input').value) || 10;
+  Duel.join(code, difficulty, stake);
+});
+
+document.getElementById('btn-duel-validate').addEventListener('click', () => {
+  const input = document.getElementById('duel-answer-input');
+  if (input.value === '') return;
+  Duel.submitAnswer(input.value);
+});
+
+document.getElementById('duel-answer-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-duel-validate').click(); }
+});
+
+document.getElementById('btn-duel-rematch').addEventListener('click', () => Duel.rematch());
+document.getElementById('btn-duel-home').addEventListener('click', () => { Duel._cleanup(); updateProfileHeader(); showScreen('screen-home'); });
+
+// Pill groups for duel screens
+document.querySelectorAll('#screen-duel-create .pill-group, #screen-duel-join .pill-group').forEach(group => {
+  group.addEventListener('click', (e) => {
+    const pill = e.target.closest('.pill');
+    if (!pill) return;
+    group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+  });
+});
 
 } // end initApp()

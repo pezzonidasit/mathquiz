@@ -123,7 +123,10 @@
     </div>
 
     <div id="boost-selector" class="boost-selector"></div>
-    <button id="btn-play" class="btn-primary btn-play-main">⚔️ Jouer !</button>
+    <div style="display:flex;gap:0.75rem;width:100%">
+      <button id="btn-play" class="btn-primary btn-play-main" style="flex:1">⚔️ Jouer !</button>
+      <button id="btn-duel" class="btn-primary" style="flex:0 0 auto;background:linear-gradient(135deg, var(--accent-orange), var(--accent-gold, #ffd700))">🤺 Duel</button>
+    </div>
 
     <div id="records-display" class="records-section"></div>
   </div>
@@ -411,6 +414,127 @@
     </div>
   </div>
 
+  <!-- ÉCRAN CRÉER DUEL -->
+  <div id="screen-duel-create" class="screen">
+    <button id="btn-duel-create-back" class="btn-back">← Retour</button>
+    <h2>⚔️ Créer un Duel</h2>
+    <div class="settings-card" id="duel-create-settings">
+      <div class="setting-group">
+        <label>Catégorie</label>
+        <div class="pill-group" data-setting="duel-category">
+          <button class="pill active" data-value="all">🎯 Toutes</button>
+          <button class="pill" data-value="calcul">🧮 Calcul</button>
+          <button class="pill" data-value="logique">🧩 Logique</button>
+          <button class="pill" data-value="geometrie">📐 Géométrie</button>
+          <button class="pill" data-value="fractions">🍕 Fractions</button>
+          <button class="pill" data-value="mesures">📏 Mesures</button>
+          <button class="pill" data-value="ouvert">💡 Problèmes</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <label>Mise (min 5 🪙)</label>
+        <input type="number" id="duel-stake-input" class="answer-input" min="5" value="10" style="width:100%">
+        <p class="hint-text" style="display:block">Solde : <span id="duel-my-coins">0</span> 🪙</p>
+      </div>
+    </div>
+    <button id="btn-duel-launch" class="btn-primary" style="width:100%">⚔️ Lancer le défi !</button>
+    <div id="duel-waiting" style="display:none;text-align:center;margin-top:2rem">
+      <p style="font-size:1.2rem;font-weight:600">Code du duel :</p>
+      <p id="duel-code-display" style="font-size:3rem;font-family:'Fredoka';letter-spacing:0.3em;color:var(--accent-gold, #ffd700)"></p>
+      <p style="color:var(--text-secondary)">En attente de l'adversaire...</p>
+      <button id="btn-duel-cancel" class="btn-secondary" style="margin-top:1rem">Annuler</button>
+    </div>
+  </div>
+
+  <!-- ÉCRAN REJOINDRE DUEL -->
+  <div id="screen-duel-join" class="screen">
+    <button id="btn-duel-join-back" class="btn-back">← Retour</button>
+    <h2>⚔️ Rejoindre un Duel</h2>
+    <div class="settings-card">
+      <div class="setting-group">
+        <label>Code du duel</label>
+        <input type="text" id="duel-join-code" class="answer-input" placeholder="Code à 4 chiffres" maxlength="4" inputmode="numeric" style="width:100%;text-align:center;font-size:2rem;letter-spacing:0.3em">
+      </div>
+    </div>
+    <button id="btn-duel-find" class="btn-primary" style="width:100%">Chercher le duel</button>
+    <div id="duel-join-info" style="display:none;margin-top:1.5rem">
+      <div class="settings-card">
+        <p>🎯 Catégorie : <strong id="duel-join-category"></strong></p>
+        <p>🪙 Mise adverse : <strong id="duel-join-stake"></strong></p>
+        <p>👤 Adversaire : <strong id="duel-join-opponent"></strong></p>
+        <div class="setting-group" style="margin-top:1rem">
+          <label>Difficulté</label>
+          <div class="pill-group" data-setting="duel-difficulty">
+            <button class="pill" data-value="easy">😊 Facile</button>
+            <button class="pill active" data-value="medium">💪 Moyen</button>
+            <button class="pill" data-value="hard">🔥 Difficile</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label>Ta mise (min 5 🪙)</label>
+          <input type="number" id="duel-join-stake-input" class="answer-input" min="5" value="10" style="width:100%">
+        </div>
+      </div>
+      <button id="btn-duel-accept" class="btn-primary" style="width:100%;margin-top:1rem">⚔️ Accepter le défi !</button>
+    </div>
+  </div>
+
+  <!-- ÉCRAN COMBAT DUEL -->
+  <div id="screen-duel-fight" class="screen">
+    <div class="duel-scoreboard">
+      <div class="duel-player duel-player-a">
+        <span id="duel-name-a" class="duel-pname"></span>
+        <span id="duel-score-a" class="duel-pscore">0</span>
+      </div>
+      <div class="duel-vs">
+        <span id="duel-round-label" class="duel-round">Round 1</span>
+        <span class="duel-vs-icon">⚔️</span>
+        <span id="duel-stake-label" class="duel-stake-info"></span>
+      </div>
+      <div class="duel-player duel-player-b">
+        <span id="duel-name-b" class="duel-pname"></span>
+        <span id="duel-score-b" class="duel-pscore">0</span>
+      </div>
+    </div>
+
+    <div id="duel-question-card" class="question-card">
+      <span id="duel-category-badge" class="category-badge"></span>
+      <p id="duel-question-text" class="question-text"></p>
+      <p id="duel-question-unit" class="question-unit"></p>
+
+      <div id="duel-timer-bar" class="boss-timer-bar">
+        <div id="duel-timer-fill" class="boss-timer-fill"></div>
+      </div>
+
+      <div id="duel-answer-section" class="answer-section">
+        <input type="number" id="duel-answer-input" class="answer-input" placeholder="Ta réponse...">
+        <button id="btn-duel-validate" class="btn-primary">Valider</button>
+      </div>
+
+      <div id="duel-waiting-opponent" style="display:none;text-align:center;padding:1rem">
+        <p style="font-size:1.1rem">✅ Réponse envoyée !</p>
+        <p style="color:var(--text-secondary)">En attente de l'adversaire...</p>
+      </div>
+
+      <div id="duel-round-result" style="display:none;text-align:center;padding:1rem">
+        <p id="duel-round-winner" style="font-size:1.3rem;font-weight:700"></p>
+        <p id="duel-round-detail" style="color:var(--text-secondary)"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉCRAN FIN DUEL -->
+  <div id="screen-duel-end" class="screen">
+    <div id="duel-end-icon" style="font-size:4rem;text-align:center"></div>
+    <h2 id="duel-end-title" style="text-align:center"></h2>
+    <p id="duel-end-score" style="text-align:center;font-size:1.5rem;font-family:'Fredoka'"></p>
+    <div id="duel-end-coins" class="rewards-section" style="margin-top:1.5rem"></div>
+    <div class="end-buttons" style="margin-top:2rem">
+      <button id="btn-duel-rematch" class="btn-primary">🔄 Revanche</button>
+      <button id="btn-duel-home" class="btn-secondary">Retour</button>
+    </div>
+  </div>
+
   <canvas id="confetti-canvas"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -427,6 +551,7 @@
   <script src="js/questions.js"></script>
   <script src="js/progression.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/duel.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js');
