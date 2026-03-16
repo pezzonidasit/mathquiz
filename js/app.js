@@ -2249,10 +2249,18 @@ async function renderLeaderboard() {
   try { lbGroups = await getMyGroups(); } catch(e) {}
 
   const tabsEl = document.getElementById('lb-tabs');
-  let tabsHtml = '<button class="lb-tab ' + (currentLbTab === 'global' ? 'active' : '') + '" data-tab="global">🌍 Global</button>';
+  let tabsHtml = '';
+  if (lbGroups.length > 1) {
+    tabsHtml += '<button class="lb-tab ' + (currentLbTab === 'global' ? 'active' : '') + '" data-tab="global">🌍 Tous</button>';
+  }
   lbGroups.forEach(g => {
     tabsHtml += '<button class="lb-tab ' + (currentLbTab === g.code ? 'active' : '') + '" data-tab="' + g.code + '">' + g.name + '</button>';
   });
+  // Default to first group if no tab selected or only 1 group
+  if (!currentLbTab || currentLbTab === 'global') {
+    if (lbGroups.length === 1) currentLbTab = lbGroups[0].code;
+    else if (lbGroups.length > 1) currentLbTab = 'global';
+  }
   tabsEl.innerHTML = tabsHtml;
 
   tabsEl.querySelectorAll('.lb-tab').forEach(tab => {
@@ -2271,12 +2279,26 @@ async function renderLeaderboard() {
 
   try {
     if (currentLbTab === 'global') {
-      entries = isOnline() ? await getWeeklyLeaderboard(50) : MQSync.getCachedLeaderboard();
+      // Merge all group leaderboards (deduplicate by uid)
+      const seen = new Set();
+      for (const g of lbGroups) {
+        const groupEntries = await getGroupLeaderboard(g.code);
+        groupEntries.forEach(e => {
+          if (!seen.has(e.uid)) { seen.add(e.uid); entries.push(e); }
+        });
+      }
+      entries.sort((a, b) => b.xp - a.xp);
     } else {
       entries = await getGroupLeaderboard(currentLbTab);
     }
   } catch(e) {
-    entries = MQSync.getCachedLeaderboard();
+    entries = [];
+  }
+
+  if (lbGroups.length === 0) {
+    listEl.innerHTML = '<div class="lb-empty">Rejoins un groupe pour voir le classement !</div>';
+    meEl.innerHTML = '';
+    return;
   }
 
   if (entries.length === 0) {
