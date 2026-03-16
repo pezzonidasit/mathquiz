@@ -1146,6 +1146,18 @@ function endGame() {
   }
 
   checkBadges();
+
+  // V6: Check mastery level-ups
+  const masteryUps = checkMasteryUp(state.category === 'all' ? 'all' : state.category);
+  masteryUps.forEach(b => {
+    state.badgesUnlocked.push(b);
+    const toast = document.createElement('div');
+    toast.className = 'coin-toast mastery-toast';
+    toast.textContent = '🌟 ' + b.name + ' !';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  });
+
   saveProfileData();
 
   // Display final score
@@ -1694,6 +1706,7 @@ async function renderProfileDetail() {
     <div style="display:flex;gap:0.5rem;margin-top:1rem;width:100%">
       <button class="btn-primary" id="btn-profile-groups" style="flex:1;font-size:0.85rem">👥 Mes Groupes</button>
       <button class="btn-secondary" id="btn-profile-riddle" style="flex:1;font-size:0.85rem">📝 Créer une énigme</button>
+      <button class="btn-secondary" id="btn-profile-progression" style="flex:1;font-size:0.85rem">📊 Progression</button>
     </div>
     <div style="margin-top:0.75rem;font-size:0.75rem;color:var(--text-secondary);text-align:center">
       Code de récupération : <strong style="color:var(--accent-yellow);letter-spacing:1px">${ProfileManager.get('recoveryCode', '...')}</strong>
@@ -1728,6 +1741,8 @@ async function renderProfileDetail() {
   if (groupsBtn) groupsBtn.addEventListener('click', () => renderGroupsScreen('screen-profile-detail'));
   const riddleBtn = document.getElementById('btn-profile-riddle');
   if (riddleBtn) riddleBtn.addEventListener('click', () => showCreateRiddleScreen());
+  const progressionBtn = document.getElementById('btn-profile-progression');
+  if (progressionBtn) progressionBtn.addEventListener('click', () => renderProgressionScreen());
 
   const allBadges = [...BADGE_DEFS, {id:'collector',name:'Collectionneur',icon:'🏅',category:'hidden',hidden:true}, {id:'lucky',name:'Chanceux',icon:'🍀',category:'hidden',hidden:true}];
 
@@ -2917,6 +2932,7 @@ async function banMemberAction(code, uid, name) {
 // ══════════════════════════════════════════════════════════════════════
 
 document.getElementById('btn-riddle-back').addEventListener('click', () => { showScreen('screen-home'); });
+document.getElementById('btn-progression-back').addEventListener('click', () => showScreen('screen-profile-detail'));
 
 async function showCreateRiddleScreen() {
   // Populate group dropdown
@@ -3249,6 +3265,101 @@ async function quickCreateGroup() {
   }
 }
 window.quickCreateGroup = quickCreateGroup;
+
+// ══════════════════════════════════════════════════════════════════════
+// V6 — PROGRESSION SCREEN
+// ══════════════════════════════════════════════════════════════════════
+
+function renderProgressionScreen() {
+  showScreen('screen-progression');
+
+  const catKeys = ['calcul', 'logique', 'geometrie', 'fractions', 'mesures', 'ouvert'];
+  const catIcons = { calcul: '🧮', logique: '⚙️', geometrie: '📐', fractions: '🔢', mesures: '📏', ouvert: '💡' };
+
+  // Section 1: Mastery bars
+  let barsHtml = '';
+  catKeys.forEach(cat => {
+    const prog = getMasteryProgress(cat);
+    const catLabel = CATEGORIES[cat]?.label || cat;
+    const catColor = CATEGORIES[cat]?.color || '#888';
+    const pct = prog.next ? Math.round(Math.min(prog.progressTotal, prog.progressRate) * 100) : 100;
+    const stats = ProfileManager.get('catStats', {})[cat] || { correct: 0, total: 0 };
+    const rate = stats.total > 0 ? Math.round(stats.correct / stats.total * 100) : 0;
+    const nextLabel = prog.next ? ' → ' + prog.next.label : '';
+
+    barsHtml += '<div class="mastery-row">' +
+      '<span class="mastery-cat-icon">' + (catIcons[cat] || '📚') + '</span>' +
+      '<div class="mastery-info">' +
+        '<div class="mastery-top">' +
+          '<span class="mastery-cat-name">' + catLabel + '</span>' +
+          '<span class="mastery-level-badge">' + prog.current.icon + ' ' + prog.current.label + '</span>' +
+        '</div>' +
+        '<div class="mastery-bar"><div class="mastery-bar-fill" style="width:' + pct + '%;background:' + catColor + '"></div></div>' +
+        '<div class="mastery-stats">' + stats.total + ' questions · ' + rate + '%' + nextLabel + '</div>' +
+      '</div></div>';
+  });
+  document.getElementById('mastery-bars').innerHTML = barsHtml;
+
+  // Section 2: Weekly delta
+  const lastWeekCatStats = ProfileManager.get('lastWeekCatStats', null);
+  const currentCatStats = ProfileManager.get('catStats', {});
+  let deltaHtml = '<h3>📈 Cette semaine</h3>';
+
+  if (!lastWeekCatStats) {
+    deltaHtml += '<p style="color:var(--text-secondary);font-size:0.85rem">Première semaine — les deltas apparaîtront lundi !</p>';
+  } else {
+    let hasData = false;
+    catKeys.forEach(cat => {
+      const cur = currentCatStats[cat] || { correct: 0, total: 0 };
+      const prev = lastWeekCatStats[cat] || { correct: 0, total: 0 };
+      if (cur.total === prev.total) return;
+      hasData = true;
+      const curRate = cur.total > 0 ? Math.round(cur.correct / cur.total * 100) : 0;
+      const prevRate = prev.total > 0 ? Math.round(prev.correct / prev.total * 100) : 0;
+      const diff = curRate - prevRate;
+      const cls = diff > 0 ? 'delta-up' : diff < 0 ? 'delta-down' : 'delta-same';
+      const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '=';
+      const sign = diff > 0 ? '+' : '';
+      deltaHtml += '<div class="delta-row">' +
+        '<span class="delta-cat">' + (CATEGORIES[cat]?.label || cat) + '</span>' +
+        '<span class="delta-change ' + cls + '">' + prevRate + '% → ' + curRate + '% (' + sign + diff + '%) ' + arrow + '</span>' +
+        '</div>';
+    });
+    if (!hasData) {
+      deltaHtml += '<p style="color:var(--text-secondary);font-size:0.85rem">Joue cette semaine pour voir tes progrès !</p>';
+    }
+  }
+  document.getElementById('weekly-delta').innerHTML = deltaHtml;
+
+  // Section 3: Mastery badges
+  const badges = ProfileManager.get('badges', []);
+  const masteryBadges = badges.filter(b => b.startsWith('mastery_'));
+  let badgesHtml = '<h3>🎓 Badges de maîtrise</h3>';
+  if (masteryBadges.length === 0) {
+    badgesHtml += '<p style="color:var(--text-secondary);font-size:0.85rem">Monte en niveau pour débloquer des badges !</p>';
+  } else {
+    badgesHtml += '<div class="mastery-badge-grid">';
+    masteryBadges.forEach(bid => {
+      const parts = bid.replace('mastery_', '').split('_');
+      let label, icon;
+      if (parts[0] === 'all') {
+        const cross = { apprenti: { n: 'Polyvalent', i: '📘' }, confirme: { n: 'Touche-à-tout', i: '⚔️' }, expert: { n: 'Maître absolu', i: '💎' } };
+        const c = cross[parts[1]] || { n: bid, i: '🏅' };
+        label = c.n; icon = c.i;
+      } else {
+        const catLabel = CATEGORIES[parts[0]]?.label || parts[0];
+        const lvl = MASTERY_LEVELS.find(l => l.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === parts[1]);
+        label = catLabel + ' ' + (lvl ? lvl.label : parts[1]);
+        icon = lvl ? lvl.icon : '🏅';
+      }
+      badgesHtml += '<div class="mastery-badge-item">' + icon + ' ' + label + '</div>';
+    });
+    badgesHtml += '</div>';
+  }
+  document.getElementById('mastery-badges').innerHTML = badgesHtml;
+}
+
+window.renderProgressionScreen = renderProgressionScreen;
 
 // Debug helper — accessible from browser console
 window._debug = { triggerBoss, state, showBossAppear, BOSS_POOL, renderLeaderboard, renderGroupsScreen, showCreateRiddleScreen, renderAdminDashboard };

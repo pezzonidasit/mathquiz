@@ -2982,6 +2982,60 @@ body.low-perf-mode .chest-open-overlay .chest-item {
   padding: 0.3rem 0;
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   V6 — MASTERY & PROGRESSION
+   ══════════════════════════════════════════════════════════════════════ */
+
+.mastery-bars { width: 100%; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+
+.mastery-row {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.mastery-cat-icon { font-size: 1.2rem; flex-shrink: 0; }
+.mastery-info { flex: 1; min-width: 0; }
+.mastery-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+.mastery-cat-name { font-weight: 700; font-size: 0.85rem; }
+.mastery-level-badge { font-size: 0.75rem; color: var(--accent-orange); font-weight: 600; }
+.mastery-bar { height: 6px; border-radius: 3px; background: var(--bg-card-hover); overflow: hidden; }
+.mastery-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.mastery-stats { font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.2rem; }
+
+.weekly-delta { margin-bottom: 1.5rem; }
+.weekly-delta h3 { margin-bottom: 0.5rem; }
+.delta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+.delta-cat { font-weight: 600; }
+.delta-change { font-weight: 700; }
+.delta-up { color: #4caf50; }
+.delta-down { color: #f44336; }
+.delta-same { color: var(--text-secondary); }
+
+.mastery-badges h3 { margin-bottom: 0.5rem; }
+.mastery-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.mastery-badge-item {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.mastery-badge-item.recent { box-shadow: 0 0 8px var(--accent-orange); }
+
+.mastery-toast { background: linear-gradient(135deg, #ffa726, #ff7043) !important; }
+
 .title-section { margin: 1rem 0; width: 100%; }
 .title-section h3 { margin-bottom: 0.5rem; }
 .title-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }

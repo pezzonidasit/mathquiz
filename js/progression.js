@@ -281,6 +281,96 @@ const TITLE_NAMES = {
   boss_kraken: 'Dompteur de Kraken',
 };
 
+// ─── Mastery Levels ─────────────────────────────────────────────────
+
+const MASTERY_LEVELS = [
+  { level: 1, label: 'Novice',    icon: '🌱', minTotal: 0,   minRate: 0 },
+  { level: 2, label: 'Apprenti',  icon: '📘', minTotal: 10,  minRate: 0.40 },
+  { level: 3, label: 'Confirmé',  icon: '⚔️', minTotal: 25,  minRate: 0.55 },
+  { level: 4, label: 'Expert',    icon: '💎', minTotal: 50,  minRate: 0.70 },
+  { level: 5, label: 'Légende',   icon: '👑', minTotal: 100, minRate: 0.85 },
+];
+
+function getMasteryLevel(cat) {
+  const stats = ProfileManager.get('catStats', {})[cat] || { correct: 0, total: 0 };
+  const rate = stats.total > 0 ? stats.correct / stats.total : 0;
+  const total = stats.total;
+  for (let i = MASTERY_LEVELS.length - 1; i >= 0; i--) {
+    if (total >= MASTERY_LEVELS[i].minTotal && rate >= MASTERY_LEVELS[i].minRate) {
+      return MASTERY_LEVELS[i];
+    }
+  }
+  return MASTERY_LEVELS[0];
+}
+
+function getMasteryProgress(cat) {
+  const stats = ProfileManager.get('catStats', {})[cat] || { correct: 0, total: 0 };
+  const rate = stats.total > 0 ? stats.correct / stats.total : 0;
+  const current = getMasteryLevel(cat);
+  if (current.level >= 5) return { current, next: null, progressTotal: 1, progressRate: 1 };
+  const next = MASTERY_LEVELS[current.level];
+  const progressTotal = next.minTotal > 0 ? Math.min(1, stats.total / next.minTotal) : 1;
+  const progressRate = next.minRate > 0 ? Math.min(1, rate / next.minRate) : 1;
+  return { current, next, progressTotal, progressRate, totalQuestions: stats.total, rate };
+}
+
+// ─── Mastery Badge Check ────────────────────────────────────────────
+
+const MASTERY_BADGE_LEVELS = ['apprenti', 'confirme', 'expert', 'legende'];
+const MASTERY_BADGE_LEVEL_NUMS = { apprenti: 2, confirme: 3, expert: 4, legende: 5 };
+const CAT_KEYS = ['calcul', 'logique', 'geometrie', 'fractions', 'mesures', 'ouvert'];
+
+function checkMasteryUp(playedCategory) {
+  const cats = playedCategory === 'all' ? CAT_KEYS : [playedCategory];
+  const oldLevels = ProfileManager.get('masteryLevels', {});
+  const newLevels = { ...oldLevels };
+  const newBadges = [];
+
+  cats.forEach(cat => {
+    const ml = getMasteryLevel(cat);
+    const oldLevel = oldLevels[cat] || 1;
+    newLevels[cat] = ml.level;
+
+    if (ml.level > oldLevel) {
+      MASTERY_BADGE_LEVELS.forEach(blabel => {
+        const bnum = MASTERY_BADGE_LEVEL_NUMS[blabel];
+        if (bnum > oldLevel && bnum <= ml.level) {
+          const badgeId = 'mastery_' + cat + '_' + blabel;
+          const badges = ProfileManager.get('badges', []);
+          if (!badges.includes(badgeId)) {
+            badges.push(badgeId);
+            ProfileManager.set('badges', badges);
+            const catLabel = typeof CATEGORIES !== 'undefined' ? (CATEGORIES[cat]?.label || cat) : cat;
+            newBadges.push({ id: badgeId, icon: ml.icon, name: catLabel + ' ' + MASTERY_LEVELS[bnum - 1].label });
+          }
+        }
+      });
+    }
+  });
+
+  // Cross-category badges
+  const allLevels = CAT_KEYS.map(c => newLevels[c] || getMasteryLevel(c).level);
+  const minLevel = Math.min(...allLevels);
+  const crossBadges = [
+    { minLevel: 2, id: 'mastery_all_apprenti', name: 'Polyvalent', icon: '📘' },
+    { minLevel: 3, id: 'mastery_all_confirme', name: 'Touche-à-tout', icon: '⚔️' },
+    { minLevel: 4, id: 'mastery_all_expert', name: 'Maître absolu', icon: '💎' },
+  ];
+  crossBadges.forEach(cb => {
+    if (minLevel >= cb.minLevel) {
+      const badges = ProfileManager.get('badges', []);
+      if (!badges.includes(cb.id)) {
+        badges.push(cb.id);
+        ProfileManager.set('badges', badges);
+        newBadges.push(cb);
+      }
+    }
+  });
+
+  ProfileManager.set('masteryLevels', newLevels);
+  return newBadges;
+}
+
 function calculateBossReward(boss, playerHP, maxPlayerHP) {
   const baseReward = boss.stake * 3;
   const flawlessBonus = (playerHP === maxPlayerHP) ? 50 : 0;

@@ -34,6 +34,8 @@ const MQSync = {
           weekOf: lastWeek,
         });
         ProfileManager.set('showWeeklyCeremony', true);
+        // V6: Snapshot catStats for progression delta
+        ProfileManager.set('lastWeekCatStats', ProfileManager.get('catStats', {}));
       }
       ProfileManager.set('weekStart', weekStart);
       ProfileManager.set('weeklyXP', 0);
