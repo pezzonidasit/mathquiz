@@ -508,7 +508,7 @@ function renderBoostSelector() {
   const hasBoosts = Object.values(boosts).some(v => v > 0);
 
   if (!hasBoosts) {
-    container.innerHTML = '';
+    container.innerHTML = '<div class="boost-hint">⚡ Boosts disponibles en boutique</div>';
     state.activeBoost = null;
     return;
   }
