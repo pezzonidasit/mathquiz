@@ -3236,6 +3236,7 @@ window.quickCreateGroup = quickCreateGroup;
 
 // Debug helper — accessible from browser console
 window._debug = { triggerBoss, state, showBossAppear, BOSS_POOL, renderLeaderboard, renderGroupsScreen, showCreateRiddleScreen, renderAdminDashboard };
+window.showScreen = showScreen;
 
 async function addRewardToGroup(groupCode) {
   const name = prompt('Nom de la récompense (ex: 30 min de jeux, bowling...) :');
