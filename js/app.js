@@ -2435,6 +2435,8 @@ async function renderGroupDetail(code) {
     if (!group) { alert('Groupe introuvable'); return; }
 
     const isAdmin = group.createdBy === firebaseUid;
+    const isParent = isParentInGroup(group);
+    const canViewDashboard = isAdmin || isParent;
     const memberCount = group.membersList ? group.membersList.length : 0;
 
     headerEl.innerHTML = '<div class="gd-group-name">' + group.name + '</div>' +
@@ -2470,13 +2472,52 @@ async function renderGroupDetail(code) {
     }
 
     // Actions
-    let actHtml = '<button class="btn-secondary" onclick="leaveGroupAction(\'' + code + '\')">Quitter le groupe</button>';
+    let actHtml = '';
 
+    // Dashboard visible for admin and parents
+    if (canViewDashboard) {
+      actHtml += '<button class="btn-primary" onclick="showDashboard(\'' + code + '\')">📊 Dashboard</button>';
+    }
+
+    // Admin-only actions
     if (isAdmin) {
-      actHtml = '<button class="btn-primary" onclick="showDashboard(\'' + code + '\')">📊 Dashboard</button>' + actHtml;
       actHtml += '<button class="btn-danger" style="margin-top:0.5rem" onclick="regenerateCodeAction(\'' + code + '\')">🔄 Régénérer le code</button>';
       actHtml += '<button class="btn-primary" style="margin-top:0.5rem;font-size:0.85rem" onclick="addRewardToGroup(\'' + code + '\')">🎁 Ajouter une récompense</button>';
+
+      // Show parent requests for admin
+      const requests = group.parentRequests || {};
+      const requestKeys = Object.keys(requests);
+      if (requestKeys.length > 0) {
+        actHtml += '<div style="margin-top:1rem;padding:0.75rem;background:rgba(255,215,0,0.1);border:1px solid var(--accent-gold, #ffd700);border-radius:8px">';
+        actHtml += '<p style="font-weight:600;margin-bottom:0.5rem">👪 Demandes de rôle parent :</p>';
+        requestKeys.forEach(uid => {
+          const req = requests[uid];
+          actHtml += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem">' +
+            '<span>' + (req.name || 'Joueur') + '</span>' +
+            '<button class="btn-primary" style="font-size:0.7rem;padding:0.2rem 0.5rem" onclick="acceptParentAction(\'' + code + '\',\'' + uid + '\')">✅ Accepter</button>' +
+            '<button class="btn-danger" style="font-size:0.7rem;padding:0.2rem 0.5rem" onclick="rejectParentAction(\'' + code + '\',\'' + uid + '\')">❌ Refuser</button>' +
+            '</div>';
+        });
+        actHtml += '</div>';
+      }
     }
+
+    // Show "Devenir parent" only if user is flagged as parentCapable in Firebase
+    if (!canViewDashboard) {
+      try {
+        const capSnap = await db.ref('players/' + firebaseUid + '/parentCapable').once('value');
+        if (capSnap.val() === true) {
+          const hasPendingRequest = group.parentRequests && group.parentRequests[firebaseUid];
+          if (hasPendingRequest) {
+            actHtml += '<p style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-secondary)">⏳ Demande de rôle parent en attente...</p>';
+          } else {
+            actHtml += '<button class="btn-secondary" style="margin-top:0.5rem;font-size:0.85rem" onclick="requestParentAction(\'' + code + '\')">👪 Devenir parent</button>';
+          }
+        }
+      } catch(e) { /* offline — hide button */ }
+    }
+
+    actHtml += '<button class="btn-secondary" style="margin-top:0.5rem" onclick="leaveGroupAction(\'' + code + '\')">Quitter le groupe</button>';
 
     actionsEl.innerHTML = actHtml;
   } catch(e) {
@@ -2515,6 +2556,7 @@ async function showDashboard(code) {
   try {
     const group = await getGroupInfo(code);
     const dashData = await getGroupDashboard(code);
+    const dashIsAdmin = group.createdBy === firebaseUid;
     const catLabels = { calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes' };
     const allCats = ['calcul', 'logique', 'geometrie', 'fractions', 'mesures', 'ouvert'];
 
@@ -2560,8 +2602,8 @@ async function showDashboard(code) {
       });
       html += '</div>';
 
-      // Admin actions for this member
-      if (member.uid !== firebaseUid) {
+      // Admin actions for this member (parents can't ban)
+      if (dashIsAdmin && member.uid !== firebaseUid) {
         html += '<div style="margin-top:0.5rem;text-align:right"><button class="btn-danger" style="font-size:0.75rem;padding:0.3rem 0.75rem" onclick="banMemberAction(\'' + code + '\',\'' + member.uid + '\',\'' + member.name + '\')">Bannir</button></div>';
       }
 
@@ -2797,8 +2839,10 @@ async function renderAdminPlayers(el) {
     // UID
     html += '<div style="font-size:0.55rem;color:var(--text-secondary);opacity:0.4;margin-top:0.2rem">' + p.uid + '</div>';
 
-    // Delete button (not for self)
+    // Parent toggle + delete button (not for self)
     if (!isMe) {
+      const isPC = p.parentCapable === true;
+      html += '<button class="btn-secondary" style="font-size:0.7rem;padding:0.2rem 0.6rem;margin-top:0.4rem" onclick="toggleParentCapable(\'' + p.uid + '\',' + !isPC + ')">' + (isPC ? '👪 Retirer parent' : '👪 Marquer parent') + '</button> ';
       html += '<button class="btn-danger" style="font-size:0.7rem;padding:0.2rem 0.6rem;margin-top:0.4rem" onclick="adminDeletePlayerAction(\'' + p.uid + '\',\'' + (p.name || 'Joueur').replace(/'/g, '') + '\')">Supprimer ce joueur</button>';
     }
 
@@ -2900,6 +2944,15 @@ async function adminDeletePlayerAction(uid, name) {
 }
 window.adminDeletePlayerAction = adminDeletePlayerAction;
 
+async function toggleParentCapable(uid, value) {
+  try {
+    await db.ref('players/' + uid + '/parentCapable').set(value);
+    showToast(value ? 'Marqué comme parent' : 'Rôle parent retiré');
+    renderAdminDashboard();
+  } catch(e) { alert('Erreur : ' + e.message); }
+}
+window.toggleParentCapable = toggleParentCapable;
+
 async function adminDeleteGroupAction(code, name) {
   if (!confirm('Supprimer le groupe "' + name + '" (' + code + ') ? Tous les membres seront retirés.')) return;
   try {
@@ -2956,6 +3009,34 @@ async function removeRewardAction(groupCode, rewardId, name) {
   } catch(e) { alert('Erreur : ' + e.message); }
 }
 window.removeRewardAction = removeRewardAction;
+
+// ── Parent Role Actions ──
+
+async function requestParentAction(code) {
+  try {
+    await requestParentRole(code);
+    showToast('Demande envoyée !');
+    renderGroupDetail(code);
+  } catch(e) { alert('Erreur : ' + e.message); }
+}
+window.requestParentAction = requestParentAction;
+
+async function acceptParentAction(code, uid) {
+  try {
+    await acceptParentRequest(code, uid);
+    showToast('Rôle parent accepté');
+    renderGroupDetail(code);
+  } catch(e) { alert('Erreur : ' + e.message); }
+}
+window.acceptParentAction = acceptParentAction;
+
+async function rejectParentAction(code, uid) {
+  try {
+    await rejectParentRequest(code, uid);
+    renderGroupDetail(code);
+  } catch(e) { alert('Erreur : ' + e.message); }
+}
+window.rejectParentAction = rejectParentAction;
 
 // ── Duel Event Handlers ──
 

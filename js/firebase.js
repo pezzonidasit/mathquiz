@@ -113,6 +113,7 @@ async function createGroup(name) {
     createdBy: firebaseUid,
     createdAt: firebase.database.ServerValue.TIMESTAMP,
     members: { [firebaseUid]: true },
+    parents: { [firebaseUid]: true },
   });
   await db.ref('players/' + firebaseUid + '/groups/' + code).set(true);
   return { code, name };
@@ -560,6 +561,40 @@ async function getAllRecoveryCodes() {
     codes[i].name = nSnap.val() || 'Inconnu';
   });
   return codes;
+}
+
+// ── Parent Role ──
+
+/** Request to become a parent in a group */
+async function requestParentRole(groupCode) {
+  if (!firebaseUid) throw new Error('Not signed in');
+  const profile = ProfileManager.getActive();
+  const name = profile ? profile.name.split(' ')[0] : 'Joueur';
+  await db.ref('groups/' + groupCode + '/parentRequests/' + firebaseUid).set({
+    name: name,
+    requestedAt: firebase.database.ServerValue.TIMESTAMP,
+  });
+}
+
+/** Accept a parent request (admin only) */
+async function acceptParentRequest(groupCode, uid) {
+  await db.ref('groups/' + groupCode + '/parents/' + uid).set(true);
+  await db.ref('groups/' + groupCode + '/parentRequests/' + uid).remove();
+}
+
+/** Reject a parent request (admin only) */
+async function rejectParentRequest(groupCode, uid) {
+  await db.ref('groups/' + groupCode + '/parentRequests/' + uid).remove();
+}
+
+/** Remove parent role */
+async function removeParentRole(groupCode, uid) {
+  await db.ref('groups/' + groupCode + '/parents/' + uid).remove();
+}
+
+/** Check if current user is parent in a group */
+function isParentInGroup(group) {
+  return group.parents && group.parents[firebaseUid];
 }
 
 // ── Group Rewards ──
