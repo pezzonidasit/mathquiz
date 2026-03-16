@@ -2303,6 +2303,14 @@ function endBossFight(victory) {
     if (!defeated.includes(boss.id)) defeated.push(boss.id);
     ProfileManager.set('defeatedBosses', defeated);
     ProfileManager.set('lastBossCategory', boss.category);
+    // Award boss title on every boss defeat
+    const titleId = 'boss_' + boss.id;
+    if (TITLE_NAMES[titleId]) {
+      const titles = ProfileManager.get('bossTitles', []) || [];
+      if (!titles.includes(titleId)) {
+        ProfileManager.set('bossTitles', [...titles, titleId]);
+      }
+    }
     const loot = applyBossLoot(boss);
     let rewardsHtml = `<div class="reward-row"><span>Pièces gagnées</span><span class="reward-value">+${reward.coins} 🪙</span></div>`;
     rewardsHtml += `<div class="reward-row"><span>XP gagnés</span><span class="reward-value">+${reward.xp} XP</span></div>`;
@@ -2699,10 +2707,18 @@ async function renderGroupDetail(code) {
           const isMe = e.uid === firebaseUid;
           const rankNum = i + 1;
           const rankDisplay = rankNum <= 3 ? ['👑', '🥈', '🥉'][i] : rankNum;
+          let gTitleDisplay = '';
+          if (isMe) {
+            const myT = ProfileManager.get('activeTitle', null);
+            if (myT && TITLE_NAMES[myT]) gTitleDisplay = '<div class="player-title">' + TITLE_NAMES[myT] + '</div>';
+          } else if (e.activeTitle && TITLE_NAMES[e.activeTitle]) {
+            gTitleDisplay = '<div class="player-title">' + TITLE_NAMES[e.activeTitle] + '</div>';
+          }
           return '<div class="lb-entry ' + (isMe ? 'me' : '') + ' ' + (i === 0 ? 'champion' : '') + '">' +
             '<span class="lb-rank">' + rankDisplay + '</span>' +
             '<span class="lb-rank-icon">' + (rankIcons[e.rank] || '🥉') + '</span>' +
-            '<div class="lb-info"><div class="lb-name">' + (e.name || 'Joueur') + '</div></div>' +
+            '<div class="lb-info"><div class="lb-name">' + (e.name || 'Joueur') + '</div>' +
+            gTitleDisplay + '</div>' +
             '<span class="lb-xp">' + (e.xp || 0) + ' XP</span>' +
             '</div>';
         }).join('');

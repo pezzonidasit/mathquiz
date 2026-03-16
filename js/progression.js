@@ -273,7 +273,12 @@ function applyBossLoot(boss) {
 }
 
 const TITLE_NAMES = {
+  boss_dragon: 'Tueur de Dragon',
   boss_golem: 'Briseur de Golem',
+  boss_sorcier: 'Chasseur de Sorcier',
+  boss_sphinx: 'Déchiffreur du Sphinx',
+  boss_alchimiste: 'Maître Alchimiste',
+  boss_kraken: 'Dompteur de Kraken',
 };
 
 function calculateBossReward(boss, playerHP, maxPlayerHP) {
