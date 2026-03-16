@@ -217,6 +217,7 @@ document.querySelectorAll('.pill-group').forEach(group => {
     if (setting === 'category') state.category = value;
     else if (setting === 'difficulty') { state.difficulty = value; renderBoostSelector(); }
     else if (setting === 'count') state.questionCount = parseInt(value, 10);
+    updateSettingsSummary();
   });
 });
 
@@ -224,6 +225,13 @@ document.querySelectorAll('.pill-group').forEach(group => {
 document.getElementById('timer-toggle').addEventListener('change', (e) => {
   state.timerEnabled = e.target.checked;
 });
+
+function updateSettingsSummary() {
+  const catLabels = { all: '🎯 Toutes', calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes' };
+  const diffLabels = { easy: '😊 Facile', medium: '💪 Moyen', hard: '🔥 Difficile' };
+  const el = document.getElementById('settings-summary-text');
+  if (el) el.textContent = (catLabels[state.category] || 'Toutes') + ' · ' + (diffLabels[state.difficulty] || 'Moyen') + ' · #' + state.questionCount;
+}
 
 // ── Profile Selection Screen ──────────────────────────────────────
 function renderProfilesList() {
@@ -455,6 +463,11 @@ function updateProfileHeader() {
   renderNextGoals();
   // Render boost selector
   renderBoostSelector();
+  // V8: Settings summary
+  updateSettingsSummary();
+  // V8: Pet + Daily Question
+  renderPetZone();
+  checkDailyQuestion();
 
   // V4: Admin button only visible for admins (set manually in Firebase)
   const adminBtn = document.getElementById('btn-admin');
@@ -544,12 +557,16 @@ function renderBoostSelector() {
 function renderNextGoals() {
   let container = document.getElementById('next-goals');
   if (!container) {
-    // Create container after profile header
+    // Create container after records display (bottom of home)
     container = document.createElement('div');
     container.id = 'next-goals';
     container.className = 'next-goals';
-    const header = document.getElementById('profile-header');
-    header.parentNode.insertBefore(container, header.nextSibling);
+    const records = document.getElementById('records-display');
+    if (records) records.parentNode.insertBefore(container, records);
+    else {
+      const header = document.getElementById('profile-header');
+      header.parentNode.insertBefore(container, header.nextSibling);
+    }
   }
 
   // Find the 3 closest unfinished badges with progress
@@ -787,6 +804,8 @@ function showQuestion() {
   card.classList.add('slide-in');
 
   setTimeout(() => input.focus(), 100);
+
+  renderSkipButton();
 }
 
 // ── Hint System (with free hints support) ─────────────────────────
@@ -1244,6 +1263,22 @@ function endGame() {
   } else {
     const boostResultEl = document.getElementById('boost-result');
     if (boostResultEl) boostResultEl.style.display = 'none';
+  }
+
+  // V8: Pet XP + dragon skip
+  addPetXP(state.score);
+  checkDragonSkip(state.questionCount);
+
+  // V8: Pet passive bonus (Robot +10% XP, Fox +10% coins)
+  const petBonus = getPetBonus();
+  if (petBonus === 'xp') {
+    const bonusPetXP = Math.round(rewards.xp * 0.1);
+    rewards.xp += bonusPetXP;
+    ProfileManager.set('xp', ProfileManager.get('xp', 0) + bonusPetXP);
+  } else if (petBonus === 'coins') {
+    const bonusPetCoins = Math.round(rewards.coins * 0.1);
+    rewards.coins += bonusPetCoins;
+    ProfileManager.set('coins', ProfileManager.get('coins', 0) + bonusPetCoins);
   }
 
   // Re-read XP after potential boost bonus
@@ -1708,6 +1743,9 @@ async function renderProfileDetail() {
       <button class="btn-secondary" id="btn-profile-riddle" style="flex:1;font-size:0.85rem">📝 Créer une énigme</button>
       <button class="btn-secondary" id="btn-profile-progression" style="flex:1;font-size:0.85rem">📊 Progression</button>
     </div>
+    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;width:100%">
+      <button class="btn-secondary" id="btn-profile-pet" style="flex:1;font-size:0.85rem">🐾 Mon compagnon</button>
+    </div>
     <div style="margin-top:0.75rem;font-size:0.75rem;color:var(--text-secondary);text-align:center">
       Code de récupération : <strong style="color:var(--accent-yellow);letter-spacing:1px">${ProfileManager.get('recoveryCode', '...')}</strong>
     </div>
@@ -1743,6 +1781,8 @@ async function renderProfileDetail() {
   if (riddleBtn) riddleBtn.addEventListener('click', () => showCreateRiddleScreen());
   const progressionBtn = document.getElementById('btn-profile-progression');
   if (progressionBtn) progressionBtn.addEventListener('click', () => renderProgressionScreen());
+  const petProfileBtn = document.getElementById('btn-profile-pet');
+  if (petProfileBtn) petProfileBtn.addEventListener('click', () => showMyPet());
 
   const allBadges = [...BADGE_DEFS, {id:'collector',name:'Collectionneur',icon:'🏅',category:'hidden',hidden:true}, {id:'lucky',name:'Chanceux',icon:'🍀',category:'hidden',hidden:true}];
 
@@ -2350,6 +2390,7 @@ function endBossFight(victory) {
     document.getElementById('boss-end-message').textContent = boss.name + ' a gagné cette fois. Il reviendra... prépare-toi !';
     document.getElementById('boss-end-rewards').innerHTML = `<div class="reward-row"><span>Mise perdue</span><span class="reward-value" style="color:var(--accent-red)">−${boss.stake} 🪙</span></div>`;
     document.getElementById('boss-end-loot').style.display = 'none';
+    onBossLost();
   }
   state.pendingBoss = null;
   state.gamesSinceBoss = 0;
@@ -2933,6 +2974,13 @@ async function banMemberAction(code, uid, name) {
 
 document.getElementById('btn-riddle-back').addEventListener('click', () => { showScreen('screen-home'); });
 document.getElementById('btn-progression-back').addEventListener('click', () => showScreen('screen-profile-detail'));
+document.getElementById('btn-my-pet-back').addEventListener('click', () => { renderPetZone(); showScreen('screen-home'); });
+document.getElementById('btn-pet-choice-back').addEventListener('click', () => {
+  const petType = ProfileManager.get('petType', null);
+  if (petType) { renderMyPetScreen(); showScreen('screen-my-pet'); }
+  else { renderPetZone(); showScreen('screen-home'); }
+});
+// btn-pet click handled via inline onclick in HTML (stopPropagation needed)
 
 async function showCreateRiddleScreen() {
   // Populate group dropdown
@@ -3360,6 +3408,285 @@ function renderProgressionScreen() {
 }
 
 window.renderProgressionScreen = renderProgressionScreen;
+
+// ══════════════════════════════════════════════════════════════════════
+// V8 — PET SYSTEM UI
+// ══════════════════════════════════════════════════════════════════════
+
+function renderPetZone() {
+  const petType = ProfileManager.get('petType', null);
+  const zone = document.getElementById('pet-zone');
+  const petBtn = document.getElementById('btn-pet');
+
+  if (!petType) {
+    if (petBtn) petBtn.style.display = 'none';
+    const hb = document.getElementById('pet-hunger-header');
+    if (hb) hb.style.display = 'none';
+    if (zone) zone.innerHTML = '<button class="btn-secondary" onclick="showPetChoice()" style="font-size:0.8rem;padding:0.4rem 1rem">🐾 Choisis ton compagnon</button>';
+    return;
+  }
+
+  updatePetHunger();
+  const pet = PET_TYPES[petType];
+  if (!pet) return;
+  const hunger = ProfileManager.get('petHunger', 100);
+  const xp = ProfileManager.get('petXP', 0);
+  const stage = getPetStage(xp);
+  const isHungry = hunger < 25;
+  const vacation = ProfileManager.get('vacationMode', false);
+
+  // Header pet icon (left of rank)
+  if (petBtn) {
+    petBtn.style.display = '';
+    petBtn.textContent = pet.emoji;
+    petBtn.className = 'pet-icon-header' + (isHungry ? ' hungry' : '');
+  }
+
+  // Hunger bar in header (under XP bar)
+  const hungerBar = document.getElementById('pet-hunger-header');
+  const hungerFill = document.getElementById('pet-hunger-header-fill');
+  if (hungerBar && hungerFill) {
+    hungerBar.style.display = '';
+    hungerFill.style.width = hunger + '%';
+    hungerFill.className = 'pet-hunger-mini-fill' + (hunger < 30 ? ' low' : '');
+  }
+
+  // Hide pet zone in middle
+  if (zone) zone.innerHTML = '';
+}
+window.renderPetZone = renderPetZone;
+
+function showMyPet() {
+  renderMyPetScreen();
+  showScreen('screen-my-pet');
+}
+window.showMyPet = showMyPet;
+
+function showPetChoice() {
+  const petType = ProfileManager.get('petType', null);
+  if (!petType) {
+    renderPetChoiceScreen();
+    showScreen('screen-pet-choice');
+  } else {
+    showMyPet();
+  }
+}
+window.showPetChoice = showPetChoice;
+
+function buyPetFood(foodId) {
+  if (feedPet(foodId)) {
+    renderMyPetScreen();
+    renderPetZone();
+    document.getElementById('home-coins').textContent = ProfileManager.get('coins', 0);
+  } else {
+    alert('Pas assez de pièces !');
+  }
+}
+window.buyPetFood = buyPetFood;
+
+function renderMyPetScreen() {
+  const petType = ProfileManager.get('petType', null);
+  const content = document.getElementById('my-pet-content');
+  if (!petType || !content) return;
+
+  const pet = PET_TYPES[petType];
+  const xp = ProfileManager.get('petXP', 0);
+  const hunger = ProfileManager.get('petHunger', 100);
+  const stage = getPetStage(xp);
+  const prog = getPetStageProgress(xp);
+  const pct = prog.next ? Math.round(prog.progress * 100) : 100;
+  const vacation = ProfileManager.get('vacationMode', false);
+  const isHungry = hunger < 25;
+  const hasBonus = hunger >= 50;
+  const coins = ProfileManager.get('coins', 0);
+
+  let html = '<div style="text-align:center">' +
+    '<div style="font-size:4rem;margin:0.5rem 0' + (isHungry ? ';filter:grayscale(0.7);opacity:0.7' : '') + '">' + pet.emoji + '</div>' +
+    '<div style="font-size:1.3rem;font-weight:700">' + pet.name + '</div>' +
+    '<div style="font-size:0.85rem;color:var(--accent-orange);margin:0.25rem 0">' + stage.label + '</div>' +
+    (hasBonus ? '<div style="font-size:0.75rem;color:var(--text-secondary)">✨ ' + pet.bonusDesc + '</div>' : '') +
+    (isHungry ? '<div style="font-size:0.85rem;color:#f44336;margin-top:0.25rem">😢 A faim !</div>' : '') +
+    '</div>';
+
+  // XP bar
+  html += '<div style="margin:1rem 0">' +
+    '<div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.3rem">' +
+      '<span>XP</span><span>' + xp + (prog.next ? ' / ' + prog.next.minXP : ' (MAX)') + '</span></div>' +
+    '<div class="mastery-bar"><div class="mastery-bar-fill" style="width:' + pct + '%;background:var(--accent)"></div></div>' +
+    '</div>';
+
+  // Hunger bar
+  html += '<div style="margin:1rem 0">' +
+    '<div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.3rem">' +
+      '<span>Faim</span><span>' + hunger + '%</span></div>' +
+    '<div class="pet-hunger-bar" style="width:100%"><div class="pet-hunger-fill' + (hunger < 30 ? ' low' : '') + '" style="width:' + hunger + '%"></div></div>' +
+    '</div>';
+
+  // Food
+  html += '<h3 style="margin-top:1rem">🍖 Nourrir</h3>' +
+    '<div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.5rem">Solde : ' + coins + ' 🪙</div>' +
+    '<div class="pet-food-grid">' +
+    PET_FOOD.map(f => '<button class="pet-food-btn" onclick="buyPetFood(\'' + f.id + '\')">' + f.icon + ' ' + f.name + '<br><span class="food-price">' + f.price + ' 🪙</span></button>').join('') +
+    '</div>';
+
+  // Vacation + change pet
+  html += '<div style="display:flex;gap:0.5rem;margin-top:1.5rem">' +
+    '<button class="btn-secondary" id="btn-vacation-toggle" style="flex:1;font-size:0.85rem">' +
+    (vacation ? '☀️ Fin vacances' : '🏖️ Vacances') + '</button>' +
+    '<button class="btn-secondary" id="btn-change-pet" style="flex:1;font-size:0.85rem">🔄 Changer</button>' +
+    '</div>';
+
+  content.innerHTML = html;
+
+  document.getElementById('btn-vacation-toggle')?.addEventListener('click', () => {
+    ProfileManager.set('vacationMode', !vacation);
+    renderMyPetScreen();
+  });
+  document.getElementById('btn-change-pet')?.addEventListener('click', () => {
+    renderPetChoiceScreen();
+    showScreen('screen-pet-choice');
+  });
+}
+window.renderMyPetScreen = renderMyPetScreen;
+
+function renderPetChoiceScreen() {
+  const currentPet = ProfileManager.get('petType', null);
+  const grid = document.getElementById('pet-choice-grid');
+  let html = '';
+  Object.entries(PET_TYPES).forEach(([id, pet]) => {
+    const isActive = id === currentPet;
+    html += '<div class="pet-choice-card ' + (isActive ? 'active' : '') + '" data-pet="' + id + '">' +
+      '<span class="pet-choice-emoji">' + pet.emoji + '</span>' +
+      '<div class="pet-choice-name">' + pet.name + '</div>' +
+      '<div class="pet-choice-bonus">✨ ' + pet.bonusDesc + '</div>' +
+      (isActive ? '<div style="color:var(--accent-orange);margin-top:0.5rem;font-weight:700">Actuel</div>' : '') +
+      '</div>';
+  });
+
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.pet-choice-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const petId = card.dataset.pet;
+      if (petId === currentPet) return;
+      if (currentPet && !confirm('Changer de compagnon remet son évolution à zéro. Continuer ?')) return;
+      changePet(petId);
+      if (currentPet) { renderMyPetScreen(); showScreen('screen-my-pet'); }
+      else { renderPetZone(); showScreen('screen-home'); }
+    });
+  });
+}
+window.renderPetChoiceScreen = renderPetChoiceScreen;
+
+// V8: Skip button (dragon pet ability)
+function renderSkipButton() {
+  let skipBtn = document.getElementById('btn-skip-question');
+  if (skipBtn) skipBtn.remove();
+  const skips = ProfileManager.get('skipStock', 0);
+  const petType = ProfileManager.get('petType', null);
+  if (petType !== 'dragon' || skips <= 0) return;
+
+  const answerSection = document.querySelector('#screen-game .answer-section');
+  if (!answerSection) return;
+  skipBtn = document.createElement('button');
+  skipBtn.id = 'btn-skip-question';
+  skipBtn.className = 'btn-secondary';
+  skipBtn.style.cssText = 'font-size:0.75rem;padding:0.3rem 0.8rem;margin-top:0.5rem;width:100%';
+  skipBtn.textContent = '🐉 Skip (' + skips + ')';
+  skipBtn.addEventListener('click', () => {
+    if (useSkip()) {
+      state.currentIndex++;
+      if (state.currentIndex >= state.questionCount) {
+        endGame();
+      } else {
+        showQuestion();
+      }
+    }
+  });
+  answerSection.parentNode.appendChild(skipBtn);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// V8 — DAILY QUESTION
+// ══════════════════════════════════════════════════════════════════════
+
+async function checkDailyQuestion() {
+  const btn = document.getElementById('btn-daily-question');
+  if (!btn || typeof isOnline !== 'function' || !isOnline()) { if (btn) btn.style.display = 'none'; return; }
+  try {
+    const data = await getDailyQuestion();
+    if (data.alreadyAnswered) {
+      const rank = await getDailyRank(data.date);
+      btn.style.display = '';
+      btn.textContent = rank.rank > 0
+        ? '✅ Question du jour — ' + rank.rank + (rank.rank === 1 ? 'er' : 'ème') + ' sur ' + rank.total
+        : '✅ Question du jour — répondu';
+      btn.onclick = null;
+    } else {
+      btn.style.display = '';
+      btn.textContent = '🌟 Question du jour';
+      btn.onclick = () => openDailyQuestion(data);
+    }
+  } catch(e) { if (btn) btn.style.display = 'none'; }
+}
+
+function openDailyQuestion(data) {
+  showScreen('screen-daily');
+  const q = data.question;
+  document.getElementById('daily-question-card').innerHTML =
+    '<span class="category-badge" style="background:' + (CATEGORIES[q.category]?.color || '#888') + '">' +
+    (CATEGORIES[q.category]?.label || q.category) + '</span>' +
+    '<p class="question-text">' + q.text + '</p>' +
+    (q.unit ? '<p class="question-unit">' + q.unit + '</p>' : '');
+
+  document.getElementById('daily-answer-section').style.display = '';
+  document.getElementById('daily-result').style.display = 'none';
+  const input = document.getElementById('daily-answer-input');
+  input.value = '';
+  setTimeout(() => input.focus(), 100);
+
+  const startTime = Date.now();
+
+  const validateBtn = document.getElementById('btn-daily-validate');
+  const newBtn = validateBtn.cloneNode(true);
+  validateBtn.parentNode.replaceChild(newBtn, validateBtn);
+
+  const submitHandler = async () => {
+    const val = input.value.trim();
+    if (!val) return;
+    const elapsed = Date.now() - startTime;
+    newBtn.disabled = true;
+    try {
+      const correct = await submitDailyAnswer(data.date, Number(val), elapsed);
+      document.getElementById('daily-answer-section').style.display = 'none';
+      const rank = await getDailyRank(data.date);
+      let html = correct
+        ? '<div style="text-align:center"><div style="font-size:2rem;margin-bottom:0.5rem">✅</div>' +
+          '<div style="font-weight:700;font-size:1.2rem;color:#4caf50">Bonne réponse !</div>'
+        : '<div style="text-align:center"><div style="font-size:2rem;margin-bottom:0.5rem">❌</div>' +
+          '<div style="font-weight:700;font-size:1.2rem;color:#f44336">Mauvaise réponse</div>' +
+          '<div style="margin-top:0.5rem;color:var(--text-secondary)">Réponse : ' + q.answer + '</div>';
+      if (correct && rank.rank > 0) {
+        html += '<div class="daily-rank">' + rank.rank + (rank.rank === 1 ? 'er' : 'ème') + ' sur ' + rank.total + ' joueurs</div>';
+      }
+      if (q.explanation) html += '<div style="margin-top:1rem;font-size:0.85rem;color:var(--text-secondary)">' + q.explanation + '</div>';
+      html += '</div>';
+      document.getElementById('daily-result').innerHTML = html;
+      document.getElementById('daily-result').style.display = '';
+
+      if (correct) {
+        ProfileManager.set('coins', ProfileManager.get('coins', 0) + 15);
+        ProfileManager.set('xp', ProfileManager.get('xp', 0) + 10);
+      }
+      checkDailyQuestion();
+    } catch(e) { alert('Erreur : ' + e.message); newBtn.disabled = false; }
+  };
+
+  newBtn.addEventListener('click', submitHandler);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitHandler(); });
+}
+
+document.getElementById('btn-daily-back')?.addEventListener('click', () => showScreen('screen-home'));
 
 // Debug helper — accessible from browser console
 window._debug = { triggerBoss, state, showBossAppear, BOSS_POOL, renderLeaderboard, renderGroupsScreen, showCreateRiddleScreen, renderAdminDashboard };

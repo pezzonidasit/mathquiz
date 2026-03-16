@@ -419,7 +419,7 @@ function generateOuvert(subLevel) {
 const RIDDLE_BANK = [
 
   // ═══════════════════════════════════════════════════════════════════
-  // CALCUL (18 riddles: 8 original + 10 new)
+  // CALCUL (~8 riddles)
   // ═══════════════════════════════════════════════════════════════════
   {
     category: 'calcul',
@@ -1644,83 +1644,7 @@ const RIDDLE_BANK = [
     answer: 2,
     hint: 'Avec un poids de 1 kg et un de 2 kg, tu peux aussi les combiner.',
     explanation: 'Avec 1 kg et 2 kg : tu pèses 1 kg (le poids de 1), 2 kg (le poids de 2), et 3 kg (les deux ensemble). Il suffit de 2 poids.'
-  },
-
-  // ═══════════════════════════════════════════════════════════════════
-  // NEW 60 RIDDLES (10 per category)
-  // ═══════════════════════════════════════════════════════════════════
-
-  // NEW CALCUL (10 riddles)
-  { category: 'calcul', text: '53 billes doivent être réparties équitablement entre 6 joueurs. Combien chaque joueur reçoit-il de billes entières ?', unit: '', answer: 8, hint: 'Combien de fois 6 rentre-t-il dans 53 ?', explanation: '53 ÷ 6 = 8 et il reste 5. Chaque joueur reçoit 8 billes.' },
-  { category: 'calcul', text: 'La maîtresse veut distribuer 47 feutres en lots de 5. Combien de lots complets peut-elle faire ?', unit: '', answer: 9, hint: 'Divise 47 par 5.', explanation: '47 ÷ 5 = 9 lots complets (et 2 feutres restants).' },
-  { category: 'calcul', text: '4 cahiers coûtent 12 CHF. Combien coûtent 7 cahiers au même prix ?', unit: 'CHF', answer: 21, hint: 'Calcule d\'abord le prix d\'un seul cahier.', explanation: 'Un cahier = 12 ÷ 4 = 3 CHF. Donc 7 cahiers = 7 × 3 = 21 CHF.' },
-  { category: 'calcul', text: 'Un cycliste parcourt 60 km en 3 heures. Combien de kilomètres parcourt-il en 5 heures au même rythme ?', unit: 'km', answer: 100, hint: 'Calcule la distance parcourue en 1 heure.', explanation: 'En 1 heure : 60 ÷ 3 = 20 km. En 5 heures : 20 × 5 = 100 km.' },
-  { category: 'calcul', text: 'Tu achètes un sandwich à 3,50 CHF et un jus à 1,25 CHF. Tu paies avec un billet de 10 CHF. Combien te rend-on ?', unit: 'CHF', answer: 5.25, hint: 'Additionne les deux prix, puis soustrais de 10.', explanation: '3,50 + 1,25 = 4,75 CHF. 10 − 4,75 = 5,25 CHF.' },
-  { category: 'calcul', text: 'Des petits pains coûtent 0,75 CHF pièce. Tu en achètes 8. Quel est le prix total ?', unit: 'CHF', answer: 6, hint: 'Multiplie 0,75 par 8.', explanation: '0,75 × 8 = 6 CHF.' },
-  { category: 'calcul', text: 'Un sac coûte 40 CHF. La boutique offre une réduction de 25 %. Quel est le prix après réduction ?', unit: 'CHF', answer: 30, hint: '25 % de 40, c\'est le quart de 40.', explanation: '25 % de 40 = 40 ÷ 4 = 10 CHF. Prix réduit = 40 − 10 = 30 CHF.' },
-  { category: 'calcul', text: 'Léa a marqué 80 % des paniers lors d\'un entraînement de basket. Elle a tiré 20 fois. Combien de paniers a-t-elle réussis ?', unit: '', answer: 16, hint: '80 % de 20, c\'est 80 ÷ 100 × 20.', explanation: '80 ÷ 100 × 20 = 16 paniers réussis.' },
-  { category: 'calcul', text: 'Théo a 45 CHF. Il gagne 12 CHF en rendant service à son voisin. Il achète un livre à 8 CHF et offre 5 CHF à sa sœur. Combien lui reste-t-il ?', unit: 'CHF', answer: 44, hint: 'Fais les opérations dans l\'ordre : + 12, − 8, − 5.', explanation: '45 + 12 = 57. 57 − 8 = 49. 49 − 5 = 44 CHF.' },
-  { category: 'calcul', text: 'Une boulangerie cuit 3 fournées de 24 pains le matin. Elle en vend 58 dans la journée et reçoit une livraison de 15 pains en fin d\'après-midi. Combien de pains reste-t-il le soir ?', unit: '', answer: 29, hint: 'Étape 1 : total produit (3 × 24). Étape 2 : soustraire les ventes. Étape 3 : ajouter la livraison.', explanation: '3 × 24 = 72 pains. 72 − 58 = 14. 14 + 15 = 29 pains.' },
-
-  // NEW LOGIQUE (10 riddles)
-  { category: 'logique', text: 'Qui suis-je ?\n• Je suis un nombre à 2 chiffres.\n• La somme de mes chiffres est 9.\n• Mon double vaut 54.', unit: '', answer: 27, hint: 'Cherche un nombre à 2 chiffres dont les chiffres font 9. Puis vérifie le double.', explanation: '2 + 7 = 9 et 27 × 2 = 54. Je suis 27.' },
-  { category: 'logique', text: 'Qui suis-je ?\n• Je suis un nombre pair à 2 chiffres.\n• Mon chiffre des dizaines est 3.\n• La somme de mes chiffres est 7.', unit: '', answer: 34, hint: 'Le chiffre des dizaines est 3. Si la somme est 7, quel est le chiffre des unités ?', explanation: '3 + ? = 7 → unités = 4. Et 34 est bien pair. Je suis 34.' },
-  { category: 'logique', text: 'Trois amis ont chacun un animal : un chat, un chien ou un poisson.\nAna n\'a pas de poisson. Ben a un chat.\nQui a le poisson ? (1=Ana, 2=Ben, 3=Clara)', unit: '', answer: 3, hint: 'Ben a le chat. Ana n\'a pas le poisson. Il reste qui ?', explanation: 'Ben → chat. Ana → pas de poisson, donc Ana → chien. Clara → poisson. Réponse : 3.' },
-  { category: 'logique', text: 'Léo, Mia et Noa jouent à trois sports : foot, natation, tennis.\nMia ne joue pas au foot. Noa joue au tennis.\nQuel sport fait Léo ? (1=foot, 2=natation, 3=tennis)', unit: '', answer: 1, hint: 'Noa prend le tennis. Mia n\'a pas le foot. Que reste-t-il pour Léo ?', explanation: 'Noa → tennis. Mia → pas foot → natation. Léo → foot. Réponse : 1.' },
-  { category: 'logique', text: 'Alice, Ben, Carla et Dim font la queue.\n• Alice est 1ère.\n• Dim est 3ème.\nQuelle est la position de Ben si Carla est la dernière ?', unit: '', answer: 2, hint: 'Alice=1, Dim=3, Carla=4. Il ne reste qu\'une place pour Ben.', explanation: 'Alice=1ère, Dim=3ème, Carla=4ème. La seule place restante est la 2ème. Ben est 2ème.' },
-  { category: 'logique', text: 'Trouve le nombre mystère :\n• Je suis entre 1 et 50.\n• Je suis impair.\n• Mon chiffre des dizaines est le double de mon chiffre des unités.\n• Je suis inférieur à 50.', unit: '', answer: 21, hint: 'Dizaines = 2 × unités. Essaie unité=1 → dizaine=2 → 21.', explanation: 'Unité=1 → dizaine=2 → 21 (impair ✓, <50 ✓). Unité=2 → 42 (pair ✗). Réponse : 21.' },
-  { category: 'logique', text: 'Sur une balance, 3 billes bleues et 1 bille rouge sont en équilibre avec 1 bille dorée.\nUne bille dorée pèse 120 g. Une bille rouge pèse 30 g.\nCombien pèse une bille bleue ?', unit: 'g', answer: 30, hint: '3 bleues + 1 rouge = 120 g. Retire le poids de la rouge.', explanation: '3 bleues + 30 = 120. 3 bleues = 90. 1 bleue = 90 ÷ 3 = 30 g.' },
-  { category: 'logique', text: 'Un chat pèse 3 fois plus qu\'un lapin. Le lapin pèse 1 200 g. Combien pèse le chat ?', unit: 'g', answer: 3600, hint: 'Multiplie le poids du lapin par 3.', explanation: '3 × 1 200 = 3 600 g.' },
-  { category: 'logique', text: 'Éva, Félix, Gaël et Hana arrivent dans l\'ordre à un jeu.\n• Gaël est 2ème.\n• Hana est 4ème.\n• Éva arrive avant Félix.\nQuelle est la position d\'Éva ?', unit: '', answer: 1, hint: 'Gaël=2, Hana=4. Il reste 1 et 3 pour Éva et Félix.', explanation: 'Gaël=2ème, Hana=4ème. Places libres : 1 et 3. Éva avant Félix → Éva=1ère, Félix=3ème.' },
-  { category: 'logique', text: 'Trois sachets A, B et C. A pèse 30 g de plus que B. B pèse 20 g de plus que C. C pèse 50 g. Combien pèse A ?', unit: 'g', answer: 100, hint: 'Calcule B = C + 20, puis A = B + 30.', explanation: 'C = 50 g. B = 50 + 20 = 70 g. A = 70 + 30 = 100 g.' },
-
-  // NEW GÉOMÉTRIE (10 riddles)
-  { category: 'geometrie', text: 'Un triangle isocèle a deux côtés égaux de 9 cm et un troisième côté de 6 cm. Quel est son périmètre ?', unit: 'cm', answer: 24, hint: 'Additionne les trois côtés : 9 + 9 + 6.', explanation: '9 + 9 + 6 = 24 cm.' },
-  { category: 'geometrie', text: 'Un triangle a une base de 8 cm et une hauteur de 5 cm. Quelle est son aire ?', unit: 'cm²', answer: 20, hint: 'Aire du triangle = base × hauteur ÷ 2.', explanation: '8 × 5 = 40, puis 40 ÷ 2 = 20 cm².' },
-  { category: 'geometrie', text: 'Une piscine ronde a un diamètre de 6 m. Quel est son périmètre ? (Utilise π ≈ 3)', unit: 'm', answer: 18, hint: 'Circonférence ≈ diamètre × 3.', explanation: '6 × 3 = 18 m.' },
-  { category: 'geometrie', text: 'Un cercle a un rayon de 5 cm. Quelle est son aire approchée ? (Utilise π ≈ 3)', unit: 'cm²', answer: 75, hint: 'Aire ≈ rayon × rayon × 3.', explanation: '5 × 5 = 25, puis 25 × 3 = 75 cm².' },
-  { category: 'geometrie', text: 'Dans un angle droit (90°), un des deux angles complémentaires mesure 35°. Combien mesure l\'autre ?', unit: '°', answer: 55, hint: 'Les deux angles doivent faire 90° ensemble.', explanation: '90° − 35° = 55°.' },
-  { category: 'geometrie', text: 'Deux angles supplémentaires sont côte à côte sur une droite. L\'un mesure 110°. Combien mesure l\'autre ?', unit: '°', answer: 70, hint: 'Deux angles supplémentaires font 180° en tout.', explanation: '180° − 110° = 70°.' },
-  { category: 'geometrie', text: 'Une brique rectangulaire mesure 20 cm de long, 10 cm de large et 6 cm de haut. Quel est son volume ?', unit: 'cm³', answer: 1200, hint: 'Volume = longueur × largeur × hauteur.', explanation: '20 × 10 × 6 = 1 200 cm³.' },
-  { category: 'geometrie', text: 'Une boîte de jeu a une longueur de 5 cm, une largeur de 4 cm et une hauteur de 3 cm. Quel est son volume ?', unit: 'cm³', answer: 60, hint: 'Multiplie les trois dimensions.', explanation: '5 × 4 × 3 = 60 cm³.' },
-  { category: 'geometrie', text: 'Sur un quadrillage, le point M est en (2 ; 3). On trace l\'axe de symétrie vertical x = 5. Quelle est l\'abscisse du symétrique de M ?', unit: '', answer: 8, hint: 'M est à 3 cases de l\'axe (5 − 2 = 3). Reporte 3 cases de l\'autre côté.', explanation: 'Distance à l\'axe : 5 − 2 = 3. Symétrique : 5 + 3 = 8.' },
-  { category: 'geometrie', text: 'Sur un quadrillage, le point P est en (4 ; 1). On trace l\'axe horizontal y = 4. Quelle est l\'ordonnée du symétrique de P ?', unit: '', answer: 7, hint: 'P est à 3 cases de l\'axe (4 − 1 = 3). Reporte 3 cases de l\'autre côté.', explanation: 'Distance à l\'axe : 4 − 1 = 3. Symétrique : 4 + 3 = 7.' },
-
-  // NEW FRACTIONS (10 riddles)
-  { category: 'fractions', text: 'Complète : 3/4 = ?/12. Quel est le numérateur manquant ?', unit: '', answer: 9, hint: '4 a été multiplié par 3 pour faire 12. Fais pareil avec 3.', explanation: '4 × 3 = 12, donc 3 × 3 = 9. La fraction équivalente est 9/12.' },
-  { category: 'fractions', text: 'Deux élèves ont mangé la même quantité de tarte. Lola a mangé 2/3 et Marc a mangé ?/6. Quel est le numérateur de la part de Marc ?', unit: '', answer: 4, hint: 'Si 2/3 = ?/6, le dénominateur a été multiplié par 2.', explanation: '3 × 2 = 6, donc 2 × 2 = 4. Marc a mangé 4/6.' },
-  { category: 'fractions', text: 'Paul court 5/8 de km, Sophie court 3/8 de km. Qui court le plus loin ? Donne le numérateur de la plus grande distance.', unit: '', answer: 5, hint: 'Les dénominateurs sont identiques, compare les numérateurs.', explanation: 'Même dénominateur (8), donc 5/8 > 3/8. Numérateur = 5.' },
-  { category: 'fractions', text: 'Une bouteille A est remplie aux 2/5 et une bouteille B aux 4/5. Quelle est la plus pleine ? Donne son numérateur.', unit: '', answer: 4, hint: 'Les bouteilles ont le même dénominateur. Compare 2 et 4.', explanation: '4/5 > 2/5. La bouteille B est la plus pleine, numérateur = 4.' },
-  { category: 'fractions', text: 'Une ferme a 48 animaux. Les 3/4 sont des vaches. Combien de vaches y a-t-il ?', unit: '', answer: 36, hint: 'Calcule d\'abord 1/4 de 48, puis multiplie par 3.', explanation: '1/4 de 48 = 12. Donc 3/4 = 3 × 12 = 36 vaches.' },
-  { category: 'fractions', text: 'Dans une boîte de 60 crayons, 2/5 sont rouges. Combien de crayons rouges y a-t-il ?', unit: '', answer: 24, hint: 'Calcule 1/5 de 60, puis multiplie par 2.', explanation: '1/5 de 60 = 12. Donc 2/5 = 2 × 12 = 24 crayons rouges.' },
-  { category: 'fractions', text: 'Une corde mesure 7/8 de mètre. On en coupe 3/8. Quel numérateur décrit la longueur restante (dénominateur = 8) ?', unit: '', answer: 4, hint: 'Même dénominateur : soustrais les numérateurs.', explanation: '7/8 − 3/8 = 4/8. Le numérateur est 4.' },
-  { category: 'fractions', text: 'Un biberon contient 9/10 de litre. Bébé boit 4/10 de litre. Quel numérateur décrit ce qui reste (dénominateur = 10) ?', unit: '', answer: 5, hint: 'Soustrais les numérateurs : 9 − 4.', explanation: '9/10 − 4/10 = 5/10. Le numérateur est 5.' },
-  { category: 'fractions', text: 'Un vendeur dit qu\'une réduction de 1/4 est la même chose que 0,25. Combien vaut 3/4 en décimal ?', unit: '', answer: 0.75, hint: '1/4 = 0,25. Donc 3/4 = 3 × 0,25.', explanation: '3/4 = 3 × 0,25 = 0,75.' },
-  { category: 'fractions', text: 'Une planche de 1 mètre est coupée en 5 morceaux égaux. Chaque morceau mesure combien en décimal ?', unit: '', answer: 0.2, hint: '1 divisé par 5 = ?', explanation: '1 ÷ 5 = 0,2. Chaque morceau vaut 0,2 mètre.' },
-
-  // NEW MESURES (10 riddles)
-  { category: 'mesures', text: 'Le film commence à 14h20 et se termine à 16h05. Combien de minutes a-t-il duré ?', unit: 'min', answer: 105, hint: 'De 14h20 à 15h20 = 60 min. De 15h20 à 16h05 = 45 min.', explanation: '60 + 45 = 105 min.' },
-  { category: 'mesures', text: 'L\'école commence à 8h30 et finit à 11h45. Combien de minutes dure la matinée ?', unit: 'min', answer: 195, hint: 'De 8h30 à 11h30 = 3h = 180 min. + 15 min.', explanation: '180 + 15 = 195 min.' },
-  { category: 'mesures', text: 'Pour faire un gâteau, tu mélanges 25 cL de lait et 75 cL de crème. Combien de mL au total ? (1 cL = 10 mL)', unit: 'mL', answer: 1000, hint: 'Convertis chaque quantité en mL.', explanation: '250 + 750 = 1000 mL.' },
-  { category: 'mesures', text: 'Une bouteille de sirop contient 75 cL. Tu en verses 4 verres de 150 mL. Combien de mL reste-t-il ? (1 cL = 10 mL)', unit: 'mL', answer: 150, hint: '75 cL = 750 mL. Soustrait 4 × 150.', explanation: '750 − 600 = 150 mL.' },
-  { category: 'mesures', text: 'Le bus part à 13h45 et le trajet dure 55 minutes. Donne les minutes de l\'heure d\'arrivée.', unit: '', answer: 40, hint: '13h45 + 55 min : attention, 45 + 55 dépasse 60 !', explanation: '13h45 + 15 min = 14h00 + 40 min = 14h40. Minutes = 40.' },
-  { category: 'mesures', text: 'Tu pars à vélo à 8h50. Le trajet dure 25 minutes. Donne les minutes de l\'heure d\'arrivée.', unit: '', answer: 15, hint: '8h50 + 25 min : passe par 9h00.', explanation: '8h50 + 10 = 9h00 + 15 = 9h15. Minutes = 15.' },
-  { category: 'mesures', text: 'Un jardin rectangulaire mesure 15 m de long et 8 m de large. Quelle longueur de grillage faut-il pour l\'entourer ?', unit: 'm', answer: 46, hint: 'Périmètre = 2 × (longueur + largeur).', explanation: '2 × (15 + 8) = 46 m.' },
-  { category: 'mesures', text: 'Un coureur fait 6 tours d\'une piste de 250 m. Quelle distance en km ?', unit: 'km', answer: 1.5, hint: 'Distance en mètres, puis convertis.', explanation: '6 × 250 = 1500 m = 1,5 km.' },
-  { category: 'mesures', text: 'Un bébé pèse 3 kg 850 g. Il prend 200 g par semaine pendant 4 semaines. Quel est son poids en grammes ?', unit: 'g', answer: 4650, hint: 'Poids initial en grammes + prise de poids.', explanation: '3850 + 800 = 4650 g.' },
-  { category: 'mesures', text: 'Camille porte un sac de 4 kg 500 g. Théo porte un sac de 3 kg 800 g. Combien de grammes de plus Camille porte-t-elle ?', unit: 'g', answer: 700, hint: 'Convertis en grammes, puis soustrait.', explanation: '4500 − 3800 = 700 g.' },
-
-  // NEW PROBLÈMES OUVERTS (10 riddles)
-  { category: 'ouvert', text: 'Julie a le double de l\'âge de son frère. Dans 6 ans, elle aura le triple de son âge actuel à lui. Quel âge a son frère maintenant ?', unit: '', answer: 6, hint: 'Frère = X, Julie = 2X. Dans 6 ans, Julie aura 2X+6 = 3X.', explanation: '2X + 6 = 3X → X = 6. Le frère a 6 ans.' },
-  { category: 'ouvert', text: 'Un randonneur parcourt 24 km en 4 heures le matin, puis 18 km en 3 heures l\'après-midi. Quelle est sa vitesse moyenne ?', unit: 'km/h', answer: 6, hint: 'Vitesse moyenne = distance totale ÷ temps total.', explanation: '42 ÷ 7 = 6 km/h.' },
-  { category: 'ouvert', text: 'On partage 48 billes entre Axel et Zoé. Axel reçoit le triple de Zoé. Combien Zoé reçoit-elle ?', unit: '', answer: 12, hint: 'Zoé = X, Axel = 3X. Total = 48.', explanation: '4X = 48 → X = 12.' },
-  { category: 'ouvert', text: 'Trois amis ramassent des châtaignes. Baptiste en ramasse 10 de plus que Chloé, et Damien 5 de moins que Baptiste. Ensemble ils en ont 75. Combien Chloé en a-t-elle ?', unit: '', answer: 20, hint: 'Chloé = X, Baptiste = X+10, Damien = X+5.', explanation: '3X + 15 = 75 → X = 20.' },
-  { category: 'ouvert', text: 'Un robinet remplit une baignoire de 120 litres. Son débit est de 6 L/min mais la bonde fuit à 2 L/min. Combien de temps pour la remplir ?', unit: 'min', answer: 30, hint: 'Débit net = 6 − 2 = 4 L/min.', explanation: '120 ÷ 4 = 30 minutes.' },
-  { category: 'ouvert', text: 'Un réservoir contient 200 litres. On ouvre un robinet qui vide 8 litres par minute. Après combien de minutes reste-t-il 40 litres ?', unit: 'min', answer: 20, hint: 'Il faut vider 200 − 40 = 160 litres.', explanation: '160 ÷ 8 = 20 minutes.' },
-  { category: 'ouvert', text: 'Un code secret a 2 chiffres différents parmi 1, 2, 3, 4 (l\'ordre compte). Combien de codes ?', unit: '', answer: 12, hint: '4 choix pour le 1er chiffre, 3 pour le 2e.', explanation: '4 × 3 = 12 codes.' },
-  { category: 'ouvert', text: 'Dans un tournoi, 6 équipes jouent chacune une fois contre les autres. Combien de matchs ?', unit: '', answer: 15, hint: 'Chaque paire joue un match.', explanation: '6 × 5 ÷ 2 = 15 matchs.' },
-  { category: 'ouvert', text: 'La somme des âges d\'un père et son fils est 50 ans. Le père a 4 fois l\'âge du fils. Quel âge a le fils ?', unit: '', answer: 10, hint: 'Fils = X, Père = 4X. Total = 50.', explanation: '5X = 50 → X = 10.' },
-  { category: 'ouvert', text: 'Emma a deux fois plus de billes que Luca. Ensemble, ils en ont 36. Combien Luca en a-t-il ?', unit: '', answer: 12, hint: 'Luca = X, Emma = 2X. Total = 36.', explanation: '3X = 36 → X = 12.' }
+  }
 ];
 
 // ── Main Entry Point ────────────────────────────────────────────────

@@ -63,12 +63,16 @@
   <div id="screen-home" class="screen">
     <div id="profile-header" class="profile-header">
       <div class="profile-info" id="btn-profile-detail">
+        <span id="btn-pet" class="pet-icon-header" style="display:none" onclick="event.stopPropagation();showMyPet()">🐾</span>
         <span id="profile-rank-icon" class="rank-icon">🥉</span>
         <div class="profile-text">
           <span id="profile-name-display" class="profile-name"></span>
           <div class="xp-bar-container">
             <div id="xp-bar" class="xp-bar"></div>
             <span id="xp-text" class="xp-text"></span>
+          </div>
+          <div id="pet-hunger-header" class="pet-hunger-mini" style="display:none">
+            <div id="pet-hunger-header-fill" class="pet-hunger-mini-fill"></div>
           </div>
         </div>
       </div>
@@ -81,9 +85,11 @@
     </div>
     <h1>QuizHero</h1>
 
-    <div id="regularity-streak" class="regularity-streak"></div>
-
-    <div class="settings-card">
+    <div class="settings-summary" id="settings-summary" onclick="document.getElementById('settings-card').classList.toggle('open')">
+      <span id="settings-summary-text"></span>
+      <span class="settings-toggle-icon">⚙️</span>
+    </div>
+    <div class="settings-card" id="settings-card">
       <div class="setting-group">
         <label>Catégorie</label>
         <div class="pill-group" data-setting="category">
@@ -129,6 +135,9 @@
       <button id="btn-play" class="btn-primary btn-play-main" style="flex:3;min-width:0">⚔️ Jouer !</button>
       <button id="btn-duel" class="btn-primary btn-play-main" style="flex:2;min-width:0;background:linear-gradient(135deg, var(--accent-orange), var(--accent-gold, #ffd700))">🤺 Duel</button>
     </div>
+
+    <div id="pet-zone" class="pet-zone"></div>
+    <button id="btn-daily-question" class="btn-secondary" style="width:100%;display:none">🌟 Question du jour</button>
 
     <div id="records-display" class="records-section"></div>
   </div>
@@ -235,6 +244,33 @@
     <div id="mastery-bars" class="mastery-bars"></div>
     <div id="weekly-delta" class="weekly-delta"></div>
     <div id="mastery-badges" class="mastery-badges"></div>
+  </div>
+
+  <!-- ÉCRAN MON COMPAGNON -->
+  <div id="screen-my-pet" class="screen">
+    <div class="screen-header" style="cursor:pointer" id="btn-my-pet-back">← Retour</div>
+    <h2>🐾 Mon compagnon</h2>
+    <div id="my-pet-content"></div>
+  </div>
+
+  <!-- ÉCRAN CHANGER DE PET -->
+  <div id="screen-pet-choice" class="screen">
+    <div class="screen-header" style="cursor:pointer" id="btn-pet-choice-back">← Retour</div>
+    <h2>🔄 Changer de compagnon</h2>
+    <p style="color:var(--text-secondary);text-align:center;font-size:0.85rem">Attention : changer de compagnon remet son évolution à zéro !</p>
+    <div id="pet-choice-grid" class="pet-choice-grid"></div>
+  </div>
+
+  <!-- ÉCRAN QUESTION DU JOUR -->
+  <div id="screen-daily" class="screen">
+    <div class="screen-header" style="cursor:pointer" id="btn-daily-back">← Retour</div>
+    <h2>🌟 Question du jour</h2>
+    <div id="daily-question-card" class="question-card"></div>
+    <div id="daily-answer-section" class="answer-section" style="display:none">
+      <input type="number" id="daily-answer-input" class="answer-input" placeholder="Ta réponse...">
+      <button id="btn-daily-validate" class="btn-primary">Valider</button>
+    </div>
+    <div id="daily-result" style="display:none"></div>
   </div>
 
   <!-- ÉCRAN APPARITION BOSS -->

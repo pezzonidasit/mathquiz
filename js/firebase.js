@@ -660,6 +660,60 @@ async function getAllMyRewards() {
   return allRewards;
 }
 
+// ─── Daily Question ──────────────────────────────────────────────────
+
+async function getDailyQuestion() {
+  const today = new Date().toISOString().slice(0, 10);
+  const ref = db.ref('dailyQuestion/' + today);
+  let snap = await ref.child('question').once('value');
+
+  if (!snap.exists()) {
+    const q = generateQuestion('all', 2, null);
+    await ref.child('question').set({
+      text: q.text, answer: q.answer, unit: q.unit || '',
+      hint: q.hint || '', explanation: q.explanation || '',
+      category: q.category, generatedAt: firebase.database.ServerValue.TIMESTAMP,
+    });
+    snap = await ref.child('question').once('value');
+  }
+
+  const answerSnap = await ref.child('answers/' + firebaseUid).once('value');
+  const alreadyAnswered = answerSnap.exists();
+  const myAnswer = alreadyAnswered ? answerSnap.val() : null;
+
+  return { question: snap.val(), alreadyAnswered, myAnswer, date: today };
+}
+
+async function submitDailyAnswer(date, value, time) {
+  const ref = db.ref('dailyQuestion/' + date + '/answers/' + firebaseUid);
+  const snap = await ref.once('value');
+  if (snap.exists()) throw new Error('Déjà répondu');
+
+  const questionSnap = await db.ref('dailyQuestion/' + date + '/question/answer').once('value');
+  const correctAnswer = questionSnap.val();
+  const correct = Math.abs(Number(value) - correctAnswer) < 0.01;
+
+  await ref.set({
+    correct, time, answeredAt: firebase.database.ServerValue.TIMESTAMP,
+  });
+
+  return correct;
+}
+
+async function getDailyRank(date) {
+  const snap = await db.ref('dailyQuestion/' + date + '/answers').once('value');
+  if (!snap.exists()) return { rank: 0, total: 0 };
+  const answers = snap.val();
+  const total = Object.keys(answers).length;
+  const myAnswer = answers[firebaseUid];
+  if (!myAnswer || !myAnswer.correct) return { rank: 0, total };
+
+  const correctAnswers = Object.values(answers).filter(a => a.correct);
+  correctAnswers.sort((a, b) => a.time - b.time);
+  const rank = correctAnswers.findIndex(a => a.time === myAnswer.time && a.answeredAt === myAnswer.answeredAt) + 1;
+  return { rank, total };
+}
+
 /** Restore profile from Firebase backup. Returns true if restored. */
 async function restoreProfile() {
   if (!firebaseUid) return false;

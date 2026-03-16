@@ -371,6 +371,124 @@ function checkMasteryUp(playedCategory) {
   return newBadges;
 }
 
+// ─── Pet System ─────────────────────────────────────────────────────
+
+const PET_TYPES = {
+  dragon: { name: 'Dragon', emoji: '🐉', bonus: 'skip', bonusDesc: '1 skip / 20 questions (max 3)' },
+  robot:  { name: 'Robot',  emoji: '🤖', bonus: 'xp',   bonusDesc: '+10% XP' },
+  fox:    { name: 'Renard', emoji: '🦊', bonus: 'coins', bonusDesc: '+10% pièces' },
+};
+
+const PET_STAGES = [
+  { stage: 1, label: 'Œuf',        minXP: 0 },
+  { stage: 2, label: 'Bébé',       minXP: 100 },
+  { stage: 3, label: 'Jeune',      minXP: 350 },
+  { stage: 4, label: 'Adulte',     minXP: 800 },
+  { stage: 5, label: 'Majestueux', minXP: 1500 },
+];
+
+const PET_FOOD = [
+  { id: 'kibble',    name: 'Croquettes',       price: 20, hunger: 25, icon: '🍖' },
+  { id: 'feast',     name: 'Festin',           price: 50, hunger: 100, icon: '🍗' },
+  { id: 'treat',     name: 'Friandise dorée',  price: 30, hunger: 25, icon: '🍬', xpBoost: 3 },
+];
+
+function getPetStage(petXP) {
+  for (let i = PET_STAGES.length - 1; i >= 0; i--) {
+    if (petXP >= PET_STAGES[i].minXP) return PET_STAGES[i];
+  }
+  return PET_STAGES[0];
+}
+
+function getPetStageProgress(petXP) {
+  const current = getPetStage(petXP);
+  if (current.stage >= 5) return { current, next: null, progress: 1 };
+  const next = PET_STAGES[current.stage];
+  const progress = (petXP - current.minXP) / (next.minXP - current.minXP);
+  return { current, next, progress: Math.min(1, progress) };
+}
+
+function updatePetHunger() {
+  if (ProfileManager.get('vacationMode', false)) return;
+  const lastLogin = ProfileManager.get('petLastLogin', Date.now());
+  const daysMissed = Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24));
+  if (daysMissed > 0) {
+    const hunger = ProfileManager.get('petHunger', 100);
+    const newHunger = Math.max(0, hunger - (daysMissed * 10));
+    ProfileManager.set('petHunger', newHunger);
+  }
+  ProfileManager.set('petLastLogin', Date.now());
+}
+
+function feedPet(foodId) {
+  const food = PET_FOOD.find(f => f.id === foodId);
+  if (!food) return false;
+  const coins = ProfileManager.get('coins', 0);
+  if (coins < food.price) return false;
+  ProfileManager.set('coins', coins - food.price);
+  const hunger = ProfileManager.get('petHunger', 100);
+  ProfileManager.set('petHunger', Math.min(100, hunger + food.hunger));
+  if (food.xpBoost) {
+    ProfileManager.set('petFriandiseBoost', (ProfileManager.get('petFriandiseBoost', 0) || 0) + food.xpBoost);
+  }
+  return true;
+}
+
+function addPetXP(score) {
+  const petType = ProfileManager.get('petType', null);
+  if (!petType) return;
+  let xp = Math.round(score * 0.5);
+  const boost = ProfileManager.get('petFriandiseBoost', 0);
+  if (boost > 0) {
+    xp *= 2;
+    ProfileManager.set('petFriandiseBoost', boost - 1);
+  }
+  ProfileManager.set('petXP', (ProfileManager.get('petXP', 0) || 0) + xp);
+}
+
+function getPetBonus() {
+  const petType = ProfileManager.get('petType', null);
+  if (!petType) return null;
+  const hunger = ProfileManager.get('petHunger', 100);
+  if (hunger < 50) return null;
+  return PET_TYPES[petType]?.bonus || null;
+}
+
+function onBossLost() {
+  const hunger = ProfileManager.get('petHunger', 100);
+  ProfileManager.set('petHunger', Math.max(0, hunger - 20));
+}
+
+function changePet(newType) {
+  ProfileManager.set('petType', newType);
+  ProfileManager.set('petXP', 0);
+  ProfileManager.set('petHunger', 100);
+  ProfileManager.set('petFriandiseBoost', 0);
+  ProfileManager.set('skipStock', 0);
+  ProfileManager.set('questionsForSkip', 0);
+  ProfileManager.set('petLastLogin', Date.now());
+}
+
+function checkDragonSkip(questionsAnswered) {
+  const petType = ProfileManager.get('petType', null);
+  if (petType !== 'dragon' || getPetBonus() !== 'skip') return;
+  let counter = ProfileManager.get('questionsForSkip', 0) + questionsAnswered;
+  let skips = ProfileManager.get('skipStock', 0);
+  while (counter >= 20 && skips < 3) {
+    skips++;
+    counter -= 20;
+  }
+  ProfileManager.set('questionsForSkip', counter);
+  ProfileManager.set('skipStock', skips);
+}
+
+function useSkip() {
+  const skips = ProfileManager.get('skipStock', 0);
+  if (skips <= 0) return false;
+  ProfileManager.set('skipStock', skips - 1);
+  return true;
+}
+
 function calculateBossReward(boss, playerHP, maxPlayerHP) {
   const baseReward = boss.stake * 3;
   const flawlessBonus = (playerHP === maxPlayerHP) ? 50 : 0;
