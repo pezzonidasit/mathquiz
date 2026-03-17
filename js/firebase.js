@@ -64,6 +64,9 @@ async function pushPlayerStats(profile, stats) {
     activeTitle: stats.activeTitle || null,
     updatedAt: firebase.database.ServerValue.TIMESTAMP,
   };
+  if (stats.catStats) data.catStats = stats.catStats;
+  if (stats.weeklyTimeSpent !== undefined) data.weeklyTimeSpent = stats.weeklyTimeSpent;
+  if (stats.contractsCompleted) data.contractsCompleted = stats.contractsCompleted;
   try {
     await db.ref('players/' + firebaseUid).update(data);
     // Also update weekly leaderboard
