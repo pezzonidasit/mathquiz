@@ -1723,6 +1723,41 @@ async function renderProfileDetail() {
       <div class="stat-box"><span class="stat-value">${gamesPlayed}</span><span class="stat-label">Parties</span></div>
     </div>`;
 
+  // === Stats de jeu ===
+  const catStats = ProfileManager.get('catStats', {});
+  const totalQ = Object.values(catStats).reduce((s, c) => s + (c.total || 0), 0);
+  const totalC = Object.values(catStats).reduce((s, c) => s + (c.correct || 0), 0);
+  const pct = totalQ > 0 ? Math.round(totalC / totalQ * 100) : 0;
+  const timeSpent = ProfileManager.get('weeklyTimeSpent', 0);
+  const timeMin = Math.round(timeSpent / 60);
+  const contracts = ProfileManager.get('contractsCompleted', { bronze: 0, silver: 0, gold: 0 });
+  const totalContracts = (contracts.bronze || 0) + (contracts.silver || 0) + (contracts.gold || 0);
+
+  let statsHtml = '<div class="profile-game-stats"><h3>📊 Mes Stats</h3>';
+  statsHtml += '<div class="stat-grid">';
+  statsHtml += '<div class="stat-box"><span class="stat-value">' + totalQ + '</span><span class="stat-label">Questions</span></div>';
+  statsHtml += '<div class="stat-box"><span class="stat-value">' + pct + '%</span><span class="stat-label">Réussite</span></div>';
+  statsHtml += '<div class="stat-box"><span class="stat-value">' + timeMin + 'min</span><span class="stat-label">Temps</span></div>';
+  statsHtml += '<div class="stat-box"><span class="stat-value">' + totalContracts + '</span><span class="stat-label">Contrats</span></div>';
+  statsHtml += '</div>';
+
+  const catLabels = { calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes' };
+  const catColors = { calcul: '#4a9eff', logique: '#a855f7', geometrie: '#4ecdc4', fractions: '#ff8c42', mesures: '#ff6b6b', ouvert: '#ffd93d' };
+  statsHtml += '<div class="category-bars">';
+  for (const [cat, label] of Object.entries(catLabels)) {
+    const cs = catStats[cat] || { correct: 0, total: 0 };
+    const catPct = cs.total > 0 ? Math.round(cs.correct / cs.total * 100) : 0;
+    const barColor = catPct >= 60 ? (catColors[cat] || '#4a9eff') : '#ff6b6b';
+    statsHtml += '<div class="cat-bar-row">' +
+      '<span class="cat-bar-label">' + label + '</span>' +
+      '<div class="cat-bar-track"><div class="cat-bar-fill" style="width:' + catPct + '%;background:' + barColor + '"></div></div>' +
+      '<span class="cat-bar-pct" style="color:' + barColor + '">' + catPct + '%</span>' +
+      (catPct < 50 ? ' <span style="font-size:0.7rem">⚠️</span>' : '') +
+      '</div>';
+  }
+  statsHtml += '</div></div>';
+  document.getElementById('profile-card').innerHTML += statsHtml;
+
   // === Theme selector ===
   const ownedThemeIds = ProfileManager.get('ownedThemes', []);
   const activeThemeId = ProfileManager.get('activeTheme', 'nuit');
@@ -2922,15 +2957,27 @@ async function showDashboard(code) {
       const timeMin = Math.round((data.timeSpent || 0) / 60);
       const contracts = data.contractsCompleted || {};
 
+      const memberId = 'dash-member-' + member.uid.slice(0, 8);
+      const totalMQ = Object.values(catStats).reduce((s, c) => s + (c.total || 0), 0);
+      const totalMC = Object.values(catStats).reduce((s, c) => s + (c.correct || 0), 0);
+      const overallPct = totalMQ > 0 ? Math.round(totalMC / totalMQ * 100) : 0;
+      const totalContr = (contracts.gold || 0) + (contracts.silver || 0) + (contracts.bronze || 0);
+
       html += '<div class="dash-member">';
-      html += '<div class="dash-member-name">👤 ' + member.name + '</div>';
+      html += '<div class="dash-member-header" onclick="document.getElementById(\'' + memberId + '\').classList.toggle(\'open\')">';
+      html += '<span class="dash-member-name">👤 ' + member.name + '</span>';
+      html += '<span class="dash-member-summary">' + overallPct + '% · ' + (data.weeklyGames || 0) + ' parties · ' + timeMin + 'min</span>';
+      html += '<span class="dash-expand-icon">▸</span>';
+      html += '</div>';
+
+      html += '<div class="dash-member-details" id="' + memberId + '">';
 
       // Stats row
       html += '<div class="dash-stats-row">';
       html += '<div class="dash-stat"><div class="dash-stat-value">' + (data.weeklyGames || 0) + '</div><div class="dash-stat-label">Parties</div></div>';
       html += '<div class="dash-stat"><div class="dash-stat-value">' + timeMin + 'min</div><div class="dash-stat-label">Temps</div></div>';
-      html += '<div class="dash-stat"><div class="dash-stat-value">' + Math.round((data.recentRate || 0) * 100) + '%</div><div class="dash-stat-label">Réussite</div></div>';
-      html += '<div class="dash-stat"><div class="dash-stat-value">' + ((contracts.gold || 0) + (contracts.silver || 0) + (contracts.bronze || 0)) + '</div><div class="dash-stat-label">Contrats</div></div>';
+      html += '<div class="dash-stat"><div class="dash-stat-value">' + overallPct + '%</div><div class="dash-stat-label">Réussite</div></div>';
+      html += '<div class="dash-stat"><div class="dash-stat-value">' + totalContr + '</div><div class="dash-stat-label">Contrats</div></div>';
       html += '</div>';
 
       // Category bars
@@ -2956,7 +3003,8 @@ async function showDashboard(code) {
         html += '<div style="margin-top:0.5rem;text-align:right"><button class="btn-danger" style="font-size:0.75rem;padding:0.3rem 0.75rem" onclick="banMemberAction(\'' + code + '\',\'' + member.uid + '\',\'' + member.name + '\')">Bannir</button></div>';
       }
 
-      html += '</div>';
+      html += '</div>'; // close details
+      html += '</div>'; // close member
     }
 
     // Group rewards section
@@ -3165,11 +3213,15 @@ async function renderAdminPlayers(el) {
 
   let html = '<p style="text-align:center;color:var(--text-secondary);font-size:0.85rem">' + players.length + ' joueur' + (players.length > 1 ? 's' : '') + '</p>';
 
+  const allCats = ['calcul', 'logique', 'geometrie', 'fractions', 'mesures', 'ouvert'];
+  const catLabelsAdmin = { calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes' };
+
   players.forEach(p => {
     const rankIcon = rankIcons[p.rank] || '🥉';
     const groupCodes = p.groups ? Object.keys(p.groups) : [];
     const recovery = recoveryCodes.find(r => r.uid === p.uid);
     const isMe = p.uid === firebaseUid;
+    const detailId = 'admin-player-' + p.uid.slice(0, 8);
 
     html += '<div class="dash-member">';
     html += '<div class="dash-member-name">' + rankIcon + ' ' + (p.name || 'Joueur') + (isMe ? ' <span style="font-size:0.65rem;color:var(--accent-green)">(toi)</span>' : '') + '</div>';
@@ -3191,6 +3243,48 @@ async function renderAdminPlayers(el) {
         html += '<span style="font-size:0.65rem;background:var(--bg-card-hover);padding:0.15rem 0.4rem;border-radius:6px;margin-right:0.3rem">' + c + '</span>';
       });
       html += '</div>';
+    }
+
+    // Expandable stats
+    const catStats = p.catStats || {};
+    const totalQ = Object.values(catStats).reduce((s, c) => s + (c.total || 0), 0);
+    const totalC = Object.values(catStats).reduce((s, c) => s + (c.correct || 0), 0);
+    const overallPct = totalQ > 0 ? Math.round(totalC / totalQ * 100) : 0;
+    const pTimeMin = Math.round((p.weeklyTimeSpent || 0) / 60);
+    const pContracts = p.contractsCompleted || {};
+    const pTotalContr = (pContracts.gold || 0) + (pContracts.silver || 0) + (pContracts.bronze || 0);
+
+    if (totalQ > 0) {
+      html += '<div class="dash-member-header" onclick="document.getElementById(\'' + detailId + '\').classList.toggle(\'open\')" style="margin-top:0.4rem">';
+      html += '<span style="font-size:0.8rem;color:var(--accent-blue)">📊 Stats détaillées</span>';
+      html += '<span class="dash-member-summary">' + overallPct + '% · ' + totalQ + ' questions</span>';
+      html += '<span class="dash-expand-icon">▸</span>';
+      html += '</div>';
+
+      html += '<div class="dash-member-details" id="' + detailId + '">';
+      html += '<div class="dash-stats-row">';
+      html += '<div class="dash-stat"><div class="dash-stat-value">' + totalQ + '</div><div class="dash-stat-label">Questions</div></div>';
+      html += '<div class="dash-stat"><div class="dash-stat-value">' + overallPct + '%</div><div class="dash-stat-label">Réussite</div></div>';
+      html += '<div class="dash-stat"><div class="dash-stat-value">' + pTimeMin + 'min</div><div class="dash-stat-label">Temps</div></div>';
+      html += '<div class="dash-stat"><div class="dash-stat-value">' + pTotalContr + '</div><div class="dash-stat-label">Contrats</div></div>';
+      html += '</div>';
+
+      html += '<div class="dash-cat-bars">';
+      allCats.forEach(cat => {
+        const stat = catStats[cat];
+        const pct = stat && stat.total > 0 ? Math.round(stat.correct / stat.total * 100) : 0;
+        const played = stat && stat.total > 0;
+        const isWeak = !played || pct < 50;
+        const barColor = pct >= 70 ? 'var(--accent-green)' : pct >= 50 ? 'var(--accent-orange)' : 'var(--accent-red)';
+        html += '<div class="dash-cat-row">';
+        html += '<span class="dash-cat-name">' + (catLabelsAdmin[cat] || cat) + '</span>';
+        html += '<div class="dash-cat-bar"><div class="dash-cat-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div>';
+        html += '<span class="dash-cat-pct ' + (isWeak ? 'dash-weak' : '') + '">' + (played ? pct + '%' : '—') + '</span>';
+        if (isWeak) html += '<span class="dash-cat-warning">⚠️</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '</div>'; // close details
     }
 
     // UID

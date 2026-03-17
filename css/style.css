@@ -2764,6 +2764,33 @@ h2 {
   color: var(--accent-orange);
 }
 
+/* Dashboard expandable members */
+.dash-member-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  user-select: none;
+}
+.dash-member-header .dash-member-name { flex: 1; font-weight: 600; }
+.dash-member-summary { font-size: 0.75rem; color: var(--text-secondary); }
+.dash-expand-icon { font-size: 0.8rem; color: var(--text-secondary); transition: transform 0.2s; }
+.dash-member-details { display: none; padding-top: 0.5rem; }
+.dash-member-details.open { display: block; }
+.dash-member-details.open ~ .dash-member-header .dash-expand-icon,
+.dash-member-header:has(+ .dash-member-details.open) .dash-expand-icon { transform: rotate(90deg); }
+
+/* Profile game stats */
+.profile-game-stats { width: 100%; margin-top: 1rem; }
+.profile-game-stats h3 { text-align: center; margin-bottom: 0.5rem; }
+.category-bars { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.75rem; }
+.cat-bar-row { display: flex; align-items: center; gap: 0.5rem; }
+.cat-bar-label { font-size: 0.8rem; min-width: 110px; color: var(--text-secondary); }
+.cat-bar-track { flex: 1; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 5px; transition: width 0.5s; }
+.cat-bar-pct { font-size: 0.8rem; font-weight: 600; min-width: 35px; text-align: right; }
+
 .dash-weak {
   color: var(--accent-red);
 }
