@@ -308,6 +308,7 @@ const TITLE_NAMES = {
   boss_sphinx: 'Déchiffreur du Sphinx',
   boss_alchimiste: 'Maître Alchimiste',
   boss_kraken: 'Dompteur de Kraken',
+  dresseur_legendaire: 'Dresseur Légendaire 🐾',
 };
 
 // ─── Mastery Levels ─────────────────────────────────────────────────
@@ -409,11 +410,11 @@ const PET_TYPES = {
 };
 
 const PET_STAGES = [
-  { stage: 1, label: 'Œuf',        minXP: 0 },
-  { stage: 2, label: 'Bébé',       minXP: 100 },
-  { stage: 3, label: 'Jeune',      minXP: 350 },
-  { stage: 4, label: 'Adulte',     minXP: 800 },
-  { stage: 5, label: 'Majestueux', minXP: 1500 },
+  { stage: 1, label: 'Œuf',        minXP: 0,    bonusPct: 0.05, dragonThreshold: 25, dragonMax: 1 },
+  { stage: 2, label: 'Bébé',       minXP: 100,  bonusPct: 0.10, dragonThreshold: 20, dragonMax: 2 },
+  { stage: 3, label: 'Jeune',      minXP: 350,  bonusPct: 0.15, dragonThreshold: 15, dragonMax: 3 },
+  { stage: 4, label: 'Adulte',     minXP: 800,  bonusPct: 0.20, dragonThreshold: 12, dragonMax: 4 },
+  { stage: 5, label: 'Majestueux', minXP: 1500, bonusPct: 0.25, dragonThreshold: 10, dragonMax: 5 },
 ];
 
 const PET_FOOD = [
@@ -483,6 +484,55 @@ function getPetBonus() {
   return PET_TYPES[petType]?.bonus || null;
 }
 
+/** Returns the bonus multiplier (0.05–0.25) based on current pet stage. 0 if no pet or hungry. */
+function getPetBonusPct() {
+  const petType = ProfileManager.get('petType', null);
+  if (!petType) return 0;
+  const hunger = ProfileManager.get('petHunger', 100);
+  if (hunger < 50) return 0;
+  const xp = ProfileManager.get('petXP', 0);
+  return getPetStage(xp).bonusPct;
+}
+
+/** Returns dragon skip config {threshold, max} based on current pet stage. */
+function getPetDragonConfig() {
+  const xp = ProfileManager.get('petXP', 0);
+  const stage = getPetStage(xp);
+  return { threshold: stage.dragonThreshold, max: stage.dragonMax };
+}
+
+/**
+ * Checks if the pet just reached Majestueux for the first time.
+ * Grants +200 coins, badge, and title. Returns reward info or null.
+ */
+function checkPetMajestueux() {
+  const petType = ProfileManager.get('petType', null);
+  if (!petType) return null;
+  const xp = ProfileManager.get('petXP', 0);
+  if (getPetStage(xp).stage < 5) return null;
+
+  const key = 'petMajestueuxRewarded_' + petType;
+  if (ProfileManager.get(key, false)) return null;
+
+  ProfileManager.set(key, true);
+  ProfileManager.set('coins', (ProfileManager.get('coins', 0)) + 200);
+
+  const badgeId = 'pet_majestueux_' + petType;
+  const badges = ProfileManager.get('badges', []);
+  if (!badges.includes(badgeId)) {
+    badges.push(badgeId);
+    ProfileManager.set('badges', badges);
+  }
+
+  const titles = ProfileManager.get('unlockedTitles', []);
+  if (!titles.includes('dresseur_legendaire')) {
+    titles.push('dresseur_legendaire');
+    ProfileManager.set('unlockedTitles', titles);
+  }
+
+  return { petType, emoji: PET_TYPES[petType]?.emoji || '🐾', name: PET_TYPES[petType]?.name || petType };
+}
+
 function onBossLost() {
   const hunger = ProfileManager.get('petHunger', 100);
   ProfileManager.set('petHunger', Math.max(0, hunger - 20));
@@ -509,11 +559,12 @@ function changePet(newType) {
 function checkDragonSkip(questionsAnswered) {
   const petType = ProfileManager.get('petType', null);
   if (petType !== 'dragon' || getPetBonus() !== 'skip') return;
+  const { threshold, max } = getPetDragonConfig();
   let counter = ProfileManager.get('questionsForSkip', 0) + questionsAnswered;
   let skips = ProfileManager.get('skipStock', 0);
-  while (counter >= 20 && skips < 3) {
+  while (counter >= threshold && skips < max) {
     skips++;
-    counter -= 20;
+    counter -= threshold;
   }
   ProfileManager.set('questionsForSkip', counter);
   ProfileManager.set('skipStock', skips);

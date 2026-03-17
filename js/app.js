@@ -1144,6 +1144,20 @@ const BADGE_DEFS = [
     progress: () => ({ cur: ProfileManager.get('daysPlayedThisWeek', []).length, max: 7 }),
   },
 
+  // ── Compagnons Majestueux ──
+  { id: 'pet_majestueux_dragon', name: 'Dragon Majestueux', icon: '🐉', category: 'pet',
+    description: 'Faire évoluer le Dragon jusqu\'au stade Majestueux',
+    check: () => ProfileManager.get('petMajestueuxRewarded_dragon', false),
+  },
+  { id: 'pet_majestueux_robot', name: 'Robot Majestueux', icon: '🤖', category: 'pet',
+    description: 'Faire évoluer le Robot jusqu\'au stade Majestueux',
+    check: () => ProfileManager.get('petMajestueuxRewarded_robot', false),
+  },
+  { id: 'pet_majestueux_fox', name: 'Renard Majestueux', icon: '🦊', category: 'pet',
+    description: 'Faire évoluer le Renard jusqu\'au stade Majestueux',
+    check: () => ProfileManager.get('petMajestueuxRewarded_fox', false),
+  },
+
 ];
 
 function checkBadges() {
@@ -1293,17 +1307,22 @@ function endGame() {
   drainPetHunger();
   checkDragonSkip(state.questionCount);
 
-  // V8: Pet passive bonus (Robot +10% XP, Fox +10% coins)
+  // V8: Pet passive bonus — scaled by stage (5%→25%)
   const petBonus = getPetBonus();
-  if (petBonus === 'xp') {
-    const bonusPetXP = Math.round(rewards.xp * 0.1);
+  const petPct = getPetBonusPct();
+  if (petBonus === 'xp' && petPct > 0) {
+    const bonusPetXP = Math.round(rewards.xp * petPct);
     rewards.xp += bonusPetXP;
     ProfileManager.set('xp', ProfileManager.get('xp', 0) + bonusPetXP);
-  } else if (petBonus === 'coins') {
-    const bonusPetCoins = Math.round(rewards.coins * 0.1);
+  } else if (petBonus === 'coins' && petPct > 0) {
+    const bonusPetCoins = Math.round(rewards.coins * petPct);
     rewards.coins += bonusPetCoins;
     ProfileManager.set('coins', ProfileManager.get('coins', 0) + bonusPetCoins);
   }
+
+  // V8: First time reaching Majestueux → reward
+  const majReward = checkPetMajestueux();
+  if (majReward) state.pendingMajReward = majReward;
 
   // Re-read XP after potential boost bonus
   const finalXP = ProfileManager.get('xp', 0);
@@ -1418,6 +1437,18 @@ function endGame() {
   ProfileManager.set('weeklyTimeSpent', (ProfileManager.get('weeklyTimeSpent', 0)) + gameElapsed);
 
   MQSync.syncAfterGame(rewards.xp).catch(() => {});
+
+  // V8: Majestueux notification
+  const majEl = document.getElementById('pet-majestueux-display');
+  if (state.pendingMajReward && majEl) {
+    const r = state.pendingMajReward;
+    majEl.style.display = '';
+    majEl.innerHTML = r.emoji + ' Ton ' + r.name + ' est devenu <strong>Majestueux</strong> ! +200🪙 · Badge · Titre débloqué !';
+    launchBigConfetti();
+    state.pendingMajReward = null;
+  } else if (majEl) {
+    majEl.style.display = 'none';
+  }
 
   // V5: Session limit check (30 min gentle nudge)
   const sessionMinutes = (Date.now() - sessionStartTime) / 60000;
@@ -3603,6 +3634,14 @@ function buyPetFood(foodId) {
 }
 window.buyPetFood = buyPetFood;
 
+function getPetBonusDesc(petType, stage) {
+  const pct = Math.round(stage.bonusPct * 100);
+  if (petType === 'dragon') return '1 skip / ' + stage.dragonThreshold + ' questions (max ' + stage.dragonMax + ')';
+  if (petType === 'robot')  return '+' + pct + '% XP';
+  if (petType === 'fox')    return '+' + pct + '% pièces';
+  return '';
+}
+
 function renderMyPetScreen() {
   const petType = ProfileManager.get('petType', null);
   const content = document.getElementById('my-pet-content');
@@ -3623,7 +3662,7 @@ function renderMyPetScreen() {
     '<div style="font-size:4rem;margin:0.5rem 0' + (isHungry ? ';filter:grayscale(0.7);opacity:0.7' : '') + '">' + pet.emoji + '</div>' +
     '<div style="font-size:1.3rem;font-weight:700">' + pet.name + '</div>' +
     '<div style="font-size:0.85rem;color:var(--accent-orange);margin:0.25rem 0">' + stage.label + '</div>' +
-    (hasBonus ? '<div style="font-size:0.75rem;color:var(--text-secondary)">✨ ' + pet.bonusDesc + '</div>' : '') +
+    (hasBonus ? '<div style="font-size:0.75rem;color:var(--text-secondary)">✨ ' + getPetBonusDesc(petType, stage) + '</div>' : '') +
     (isHungry ? '<div style="font-size:0.85rem;color:#f44336;margin-top:0.25rem">😢 A faim !</div>' : '') +
     '</div>';
 
