@@ -1288,8 +1288,9 @@ function endGame() {
     if (boostResultEl) boostResultEl.style.display = 'none';
   }
 
-  // V8: Pet XP + dragon skip
+  // V8: Pet XP + dragon skip + hunger drain
   addPetXP(state.score);
+  drainPetHunger();
   checkDragonSkip(state.questionCount);
 
   // V8: Pet passive bonus (Robot +10% XP, Fox +10% coins)

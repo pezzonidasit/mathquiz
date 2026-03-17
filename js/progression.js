@@ -488,6 +488,14 @@ function onBossLost() {
   ProfileManager.set('petHunger', Math.max(0, hunger - 20));
 }
 
+/** Drain pet hunger after each game played (−10 per game). */
+function drainPetHunger() {
+  const petType = ProfileManager.get('petType', null);
+  if (!petType) return;
+  const hunger = ProfileManager.get('petHunger', 100);
+  ProfileManager.set('petHunger', Math.max(0, hunger - 10));
+}
+
 function changePet(newType) {
   ProfileManager.set('petType', newType);
   ProfileManager.set('petXP', 0);
