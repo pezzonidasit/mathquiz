@@ -52,14 +52,43 @@ function getRankProgress(xp) {
 
 /**
  * Calculate rewards for a quiz session.
- * XP = score (x1.5 if hard, x2 if boost). Coins = Math.round(score/2).
+ * XP = score (x1.5 if hard, x2 if boost). Coins = Math.round(score/2) × daily multiplier.
  */
 function calculateRewards(score, difficulty, xpBoostActive) {
   let xp = score;
   if (difficulty === 'hard') xp = Math.round(xp * 1.5);
   if (xpBoostActive) xp *= 2;
-  const coins = Math.round(score / 2);
+  const rawCoins = Math.round(score / 2);
+  const coinMult = getDailyCoinMultiplier();
+  const coins = Math.max(1, Math.round(rawCoins * coinMult));
   return { xp, coins };
+}
+
+/**
+ * Diminishing returns on coins per day.
+ * Games 1-3: ×1.0, game 4: ×0.5, game 5: ×0.3, game 6+: ×0.1
+ * Resets at midnight.
+ */
+function getDailyCoinMultiplier() {
+  const pm = ProfileManager;
+  const today = new Date().toISOString().slice(0, 10);
+  const storedDate = pm.get('dailyCoinDate', '');
+  let count = pm.get('dailyGameCount', 0);
+  if (storedDate !== today) count = 0;
+  if (count < 3) return 1.0;
+  if (count === 3) return 0.5;
+  if (count === 4) return 0.3;
+  return 0.1;
+}
+
+/** Increment daily game counter (call at end of each game). */
+function incrementDailyGameCount() {
+  const pm = ProfileManager;
+  const today = new Date().toISOString().slice(0, 10);
+  const storedDate = pm.get('dailyCoinDate', '');
+  let count = pm.get('dailyGameCount', 0);
+  if (storedDate !== today) { count = 0; pm.set('dailyCoinDate', today); }
+  pm.set('dailyGameCount', count + 1);
 }
 
 // ─── Chest Milestones ───────────────────────────────────────────────

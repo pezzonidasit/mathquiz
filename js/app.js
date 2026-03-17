@@ -1287,6 +1287,7 @@ function endGame() {
   // Game streak for chest milestones
   let gamesPlayed = ProfileManager.get('gamesPlayed', 0) + 1;
   ProfileManager.set('gamesPlayed', gamesPlayed);
+  incrementDailyGameCount();
   let goodStreak = ProfileManager.get('goodGamesStreak', 0);
   const maxPossible = state.questionCount * 15;
   if (state.score >= maxPossible * 0.5) {
