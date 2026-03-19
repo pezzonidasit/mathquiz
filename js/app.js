@@ -2209,24 +2209,6 @@ async function renderProfileDetail() {
   ageHtml += '</div></div>';
   document.getElementById('profile-card').innerHTML += ageHtml;
 
-  // Age selector click handler
-  document.querySelectorAll('[data-setting="profile-age"] .pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      const newAge = parseInt(pill.dataset.value, 10);
-      ProfileManager.set('age', newAge);
-      // Update profile metadata
-      ProfileManager.updateMeta(ProfileManager.getActiveId(), { age: newAge });
-      // Recalculate catLevel based on new age
-      const newLevel = newAge <= 9 ? 1 : newAge >= 11 ? 3 : 2;
-      const catLevel = {};
-      ['calcul', 'logique', 'geometrie', 'fractions', 'mesures', 'ouvert'].forEach(k => { catLevel[k] = newLevel; });
-      ProfileManager.set('catLevel', catLevel);
-      ProfileManager.set('catStreak', {});
-      renderProfileDetail();
-      renderCatLevelIndicators();
-    });
-  });
-
   // === Theme selector ===
   const ownedThemeIds = ProfileManager.get('ownedThemes', []);
   const activeThemeId = ProfileManager.get('activeTheme', 'nuit');
@@ -2299,6 +2281,22 @@ async function renderProfileDetail() {
       const titleId = chip.dataset.title;
       ProfileManager.set('activeTitle', titleId || null);
       renderProfileDetail();
+    });
+  });
+
+  // V6: Age selector click handler
+  document.querySelectorAll('[data-setting="profile-age"] .pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const newAge = parseInt(pill.dataset.value, 10);
+      ProfileManager.set('age', newAge);
+      ProfileManager.updateMeta(ProfileManager.getActiveId(), { age: newAge });
+      const newLevel = newAge <= 9 ? 1 : newAge >= 11 ? 3 : 2;
+      const catLevel = {};
+      ['calcul', 'logique', 'geometrie', 'fractions', 'mesures', 'ouvert'].forEach(k => { catLevel[k] = newLevel; });
+      ProfileManager.set('catLevel', catLevel);
+      ProfileManager.set('catStreak', {});
+      renderProfileDetail();
+      renderCatLevelIndicators();
     });
   });
 
