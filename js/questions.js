@@ -3468,15 +3468,21 @@ function generateQuestion(category, subLevel, lastCategory) {
   const catKeys = Object.keys(CATEGORIES);
   let cat;
   if (category === 'all') {
-    const available = lastCategory ? catKeys.filter(k => k !== lastCategory) : catKeys;
+    const available = lastCategory ? catKeys.filter(k => k !== lastCategory && k !== 'revision') : catKeys.filter(k => k !== 'revision');
     cat = pick(available);
   } else {
     cat = category;
   }
 
+  // If subLevel is a catLevel map (object), resolve to number for this category
+  let level = subLevel;
+  if (typeof subLevel === 'object' && subLevel !== null) {
+    level = Math.max(1, Math.min(3, subLevel[cat] || 2));
+  }
+
   // 20% chance to pick from RIDDLE_BANK
   if (Math.random() < 0.2) {
-    const matches = RIDDLE_BANK.filter(r => r.category === cat && (!r.level || r.level === subLevel));
+    const matches = RIDDLE_BANK.filter(r => r.category === cat && (!r.level || r.level === level));
     if (matches.length > 0) {
       return { ...pick(matches) };
     }
@@ -3485,7 +3491,7 @@ function generateQuestion(category, subLevel, lastCategory) {
   // Use the generator
   const generator = GENERATORS[cat];
   if (generator) {
-    return generator(subLevel);
+    return generator(level);
   }
 
   // Fallback — should not happen

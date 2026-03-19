@@ -86,10 +86,11 @@ const DIFFICULTY_BASE = { easy: 1, medium: 2, hard: 3 };
 
 function getSubLevel(category) {
   const catLevel = ProfileManager.get('catLevel', null);
-  if (catLevel && category) {
-    return Math.max(1, Math.min(3, catLevel[category] || 2));
-  }
-  return 2;
+  if (!catLevel) return 2;
+  // If no specific category (e.g. 'all' mode), return the full map
+  // so generateQuestion can resolve per-category after picking
+  if (!category) return catLevel;
+  return Math.max(1, Math.min(3, catLevel[category] || 2));
 }
 
 // ── Profile-aware Persistence ──────────────────────────────────────
