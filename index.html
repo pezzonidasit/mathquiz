@@ -49,6 +49,16 @@
         <input type="text" id="profile-name-input" class="answer-input" placeholder="Entre ton prénom..." maxlength="20" style="width:100%">
       </div>
       <div class="setting-group">
+        <label>Ton âge</label>
+        <div class="pill-group" data-setting="age">
+          <button class="pill" data-value="8">8 ans</button>
+          <button class="pill" data-value="9">9 ans</button>
+          <button class="pill active" data-value="10">10 ans</button>
+          <button class="pill" data-value="11">11 ans</button>
+          <button class="pill" data-value="12">12 ans</button>
+        </div>
+      </div>
+      <div class="setting-group">
         <label>Choisis ton thème</label>
         <div id="theme-picker" class="theme-picker"></div>
       </div>
@@ -100,15 +110,6 @@
           <button class="pill" data-value="fractions">🍕 Fractions</button>
           <button class="pill" data-value="mesures">📏 Mesures</button>
           <button class="pill" data-value="ouvert">💡 Problèmes ouverts</button>
-        </div>
-      </div>
-
-      <div class="setting-group">
-        <label>Difficulté</label>
-        <div class="pill-group" data-setting="difficulty">
-          <button class="pill" data-value="easy">😊 Facile</button>
-          <button class="pill active" data-value="medium">💪 Moyen</button>
-          <button class="pill" data-value="hard">🔥 Difficile</button>
         </div>
       </div>
 

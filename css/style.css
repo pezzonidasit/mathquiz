@@ -314,6 +314,15 @@ h2 {
   background: linear-gradient(135deg, #ffd93d, #e0c030);
 }
 
+/* --- Category level indicator --- */
+.cat-level {
+  display: block;
+  font-size: 0.55rem;
+  line-height: 1;
+  margin-top: 2px;
+  opacity: 0.7;
+}
+
 /* --- Toggle Switch --- */
 .toggle-label {
   position: relative;

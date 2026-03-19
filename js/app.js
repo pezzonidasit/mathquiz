@@ -1,6 +1,6 @@
 /* QuizHero V2 — App Logic (profile-aware) */
 
-const APP_VERSION = '5.0';
+const APP_VERSION = '6.0';
 
 // ── HTML Sanitization ────────────────────────────────────────────
 function escapeHtml(str) {
@@ -84,9 +84,12 @@ const state = {
 // ── Difficulty ─────────────────────────────────────────────────────
 const DIFFICULTY_BASE = { easy: 1, medium: 2, hard: 3 };
 
-function getSubLevel() {
-  const base = DIFFICULTY_BASE[state.difficulty];
-  return Math.max(1, Math.min(3, base + (state.subLevel - 2)));
+function getSubLevel(category) {
+  const catLevel = ProfileManager.get('catLevel', null);
+  if (catLevel && category) {
+    return Math.max(1, Math.min(3, catLevel[category] || 2));
+  }
+  return 2;
 }
 
 // ── Profile-aware Persistence ──────────────────────────────────────
@@ -105,7 +108,6 @@ function saveProfileData() {
 function saveGameState() {
   ProfileManager.set('gameState', {
     category: state.category,
-    difficulty: state.difficulty,
     questionCount: state.questionCount,
     timerEnabled: state.timerEnabled,
     questions: state.questions,
@@ -113,7 +115,6 @@ function saveGameState() {
     score: state.score,
     streak: state.streak,
     bestStreakThisGame: state.bestStreakThisGame,
-    subLevel: state.subLevel,
     consecutiveCorrect: state.consecutiveCorrect,
     consecutiveWrong: state.consecutiveWrong,
     noHintCount: state.noHintCount,
@@ -227,7 +228,7 @@ document.querySelectorAll('.pill-group').forEach(group => {
     const value = pill.dataset.value;
 
     if (setting === 'category') state.category = value;
-    else if (setting === 'difficulty') { state.difficulty = value; renderBoostSelector(); }
+    else if (setting === 'age') selectedAge = parseInt(value, 10);
     else if (setting === 'count') state.questionCount = parseInt(value, 10);
     updateSettingsSummary();
   });
@@ -240,9 +241,24 @@ document.getElementById('timer-toggle').addEventListener('change', (e) => {
 
 function updateSettingsSummary() {
   const catLabels = { all: '🎯 Toutes', calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes' };
-  const diffLabels = { easy: '😊 Facile', medium: '💪 Moyen', hard: '🔥 Difficile' };
   const el = document.getElementById('settings-summary-text');
-  if (el) el.textContent = (catLabels[state.category] || 'Toutes') + ' · ' + (diffLabels[state.difficulty] || 'Moyen') + ' · #' + state.questionCount;
+  if (el) el.textContent = (catLabels[state.category] || 'Toutes') + ' · #' + state.questionCount;
+  renderCatLevelIndicators();
+}
+
+function renderCatLevelIndicators() {
+  const catLevel = ProfileManager.get('catLevel', {});
+  document.querySelectorAll('[data-setting="category"] .pill').forEach(pill => {
+    const cat = pill.dataset.value;
+    if (cat === 'all') return;
+    const existing = pill.querySelector('.cat-level');
+    if (existing) existing.remove();
+    const level = catLevel[cat] || 2;
+    const span = document.createElement('span');
+    span.className = 'cat-level';
+    span.textContent = '⭐'.repeat(level);
+    pill.appendChild(span);
+  });
 }
 
 // ── Profile Selection Screen ──────────────────────────────────────
@@ -269,10 +285,15 @@ function renderProfilesList() {
 
 // ── Profile Creation ──────────────────────────────────────────────
 let selectedTheme = 'nuit';
+let selectedAge = 10;
 
 document.getElementById('btn-new-profile').addEventListener('click', () => {
   renderThemePicker();
   document.getElementById('profile-name-input').value = '';
+  selectedAge = 10;
+  document.querySelectorAll('[data-setting="age"] .pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.value === '10');
+  });
   showScreen('screen-create-profile');
 });
 
@@ -316,7 +337,7 @@ function renderThemePicker() {
 document.getElementById('btn-create-profile').addEventListener('click', () => {
   const name = document.getElementById('profile-name-input').value.trim();
   if (!name) return;
-  const profile = ProfileManager.create(name, selectedTheme);
+  const profile = ProfileManager.create(name, selectedTheme, selectedAge);
   selectProfile(profile.id);
 
   // V4: Sign in to Firebase on first profile creation
@@ -337,6 +358,7 @@ document.getElementById('btn-create-profile').addEventListener('click', () => {
 // ── Select Profile (entry point to home) ──────────────────────────
 function selectProfile(id) {
   ProfileManager.setActive(id);
+  ProfileManager.migrate(id);
   applyTheme(ProfileManager.get('activeTheme', 'nuit'));
   loadProfileData();
   loadBossState();
@@ -346,7 +368,6 @@ function selectProfile(id) {
   const savedGame = loadGameState();
   if (savedGame) {
     state.category = savedGame.category;
-    state.difficulty = savedGame.difficulty;
     state.questionCount = savedGame.questionCount;
     state.timerEnabled = savedGame.timerEnabled;
     state.questions = savedGame.questions;
@@ -354,7 +375,6 @@ function selectProfile(id) {
     state.score = savedGame.score;
     state.streak = savedGame.streak;
     state.bestStreakThisGame = savedGame.bestStreakThisGame;
-    state.subLevel = savedGame.subLevel;
     state.consecutiveCorrect = savedGame.consecutiveCorrect;
     state.consecutiveWrong = savedGame.consecutiveWrong;
     state.noHintCount = savedGame.noHintCount;
@@ -366,7 +386,7 @@ function selectProfile(id) {
       clearGameState();
     } else {
       const lastCat = state.questions[state.currentIndex - 1]?.category;
-      state.questions.push(generateQuestion(state.category, getSubLevel(), lastCat));
+      state.questions.push(generateQuestion(state.category, getSubLevel(lastCat || state.category), lastCat));
       showScreen('screen-game');
       if (state.timerEnabled) {
         document.getElementById('timer-stat').style.display = '';
@@ -551,9 +571,12 @@ function renderBoostSelector() {
 
   // Show difficulty warning
   if (state.activeBoost) {
-    const mult = getBoostMultiplier(state.difficulty);
-    const pctLabel = mult === 0.5 ? '50%' : mult === 1 ? '100%' : '×2';
-    html += `<div class="boost-warning">⚠️ Effet ${pctLabel} en ${state.difficulty === 'easy' ? 'Facile' : state.difficulty === 'hard' ? 'Difficile' : 'Moyen'} — perdu si pas 100% correct !</div>`;
+    const catLevel = ProfileManager.get('catLevel', {});
+    const currentLevel = state.category !== 'all' ? (catLevel[state.category] || 2) : 2;
+    const mult = getBoostMultiplier(currentLevel);
+    const pctLabel = mult === 0.75 ? '75%' : mult === 1.5 ? '×1.5' : '100%';
+    const levelLabel = currentLevel === 1 ? 'Débutant' : currentLevel === 3 ? 'Avancé' : 'Normal';
+    html += `<div class="boost-warning">⚠️ Effet ${pctLabel} en ${levelLabel} — perdu si pas 100% correct !</div>`;
   }
 
   container.innerHTML = html;
@@ -681,7 +704,6 @@ function startGame() {
   state.bestStreakThisGame = 0;
   state.hintUsed = false;
   state.answered = false;
-  state.subLevel = 2;
   state.consecutiveCorrect = 0;
   state.consecutiveWrong = 0;
   state.badgesUnlocked = [];
@@ -706,8 +728,9 @@ function startGame() {
   // hint_pack boost: add free hints immediately
   if (state.activeBoost === 'hint_pack') {
     const current = ProfileManager.get('freeHints', 0);
-    const mult = getBoostMultiplier(state.difficulty);
-    const hintsToAdd = Math.round(3 * (mult === 0.5 ? 1 : mult === 2 ? 2 : 1)); // 3 hints base, 6 in hard
+    const catLevel = ProfileManager.get('catLevel', {});
+    const currentLevel = state.category !== 'all' ? (catLevel[state.category] || 2) : 2;
+    const hintsToAdd = currentLevel === 3 ? 6 : 3;
     ProfileManager.set('freeHints', current + hintsToAdd);
   }
 
@@ -717,7 +740,8 @@ function startGame() {
   // coin_rain boost: flag to bypass diminishing returns
   state.coinRainActive = (state.activeBoost === 'coin_rain');
 
-  state.questions.push(generateQuestion(state.category, getSubLevel(), null));
+  const firstCat = state.category === 'all' ? null : state.category;
+  state.questions.push(generateQuestion(state.category, getSubLevel(firstCat), null));
 
   showScreen('screen-game');
 
@@ -1137,7 +1161,12 @@ function processAnswer(isCorrect, q) {
     if (!state.hintUsed) state.noHintCount++;
 
     if (state.consecutiveCorrect >= 3) {
-      state.subLevel = Math.min(3, state.subLevel + 1);
+      const cat = q.category;
+      if (cat && cat !== 'revision') {
+        const catLevel = ProfileManager.get('catLevel', {});
+        catLevel[cat] = Math.min(3, (catLevel[cat] || 2) + 1);
+        ProfileManager.set('catLevel', catLevel);
+      }
       state.consecutiveCorrect = 0;
     }
   } else {
@@ -1155,7 +1184,12 @@ function processAnswer(isCorrect, q) {
     state.consecutiveCorrect = 0;
 
     if (state.consecutiveWrong >= 2) {
-      state.subLevel = Math.max(1, state.subLevel - 1);
+      const cat = q.category;
+      if (cat && cat !== 'revision') {
+        const catLevel = ProfileManager.get('catLevel', {});
+        catLevel[cat] = Math.max(1, (catLevel[cat] || 2) - 1);
+        ProfileManager.set('catLevel', catLevel);
+      }
       state.consecutiveWrong = 0;
     }
   }
@@ -1293,7 +1327,7 @@ document.getElementById('btn-next').addEventListener('click', () => {
     endGame();
   } else {
     const lastCat = state.questions[state.currentIndex - 1]?.category;
-    state.questions.push(generateQuestion(state.category, getSubLevel(), lastCat));
+    state.questions.push(generateQuestion(state.category, getSubLevel(lastCat || state.category), lastCat));
     showQuestion();
   }
 });
@@ -1316,10 +1350,10 @@ const BOOSTS = [
   { id: 'coin_rain', name: 'Pluie de pièces', icon: '🌧️', price: 100, desc: 'Ignore le diminishing returns (1 partie)', effect: 'rain' },
 ];
 
-function getBoostMultiplier(difficulty) {
-  if (difficulty === 'easy') return 0.5;
-  if (difficulty === 'hard') return 2;
-  return 1; // medium
+function getBoostMultiplier(catLevelValue) {
+  if (catLevelValue === 1) return 0.75;
+  if (catLevelValue === 3) return 1.5;
+  return 1;
 }
 
 // ── Stickers (saisonniers — ajoutés régulièrement) ──────────────
@@ -1353,15 +1387,15 @@ const BADGE_DEFS = [
   { id: 'no_hints_10', name: 'Cerveau d\'acier', icon: '🦾', category: 'perf', check: () => state.noHintCount >= 10, hint: '10 réponses sans indice en 1 partie' },
   { id: 'speedster', name: 'Rapide', icon: '⚡', category: 'perf', check: () => state.timerEnabled && (Date.now() - state.gameStartTime) < 120000, hint: 'Finis en moins de 2 min (chrono)' },
   { id: 'flash', name: 'Flash', icon: '💨', category: 'perf', check: () => state.timerEnabled && (Date.now() - state.gameStartTime) < 60000, hint: 'Finis en moins de 1 min (chrono)' },
-  { id: 'hard_mode', name: 'Mode difficile', icon: '💪', category: 'perf', check: () => state.difficulty === 'hard', hint: 'Joue en mode Difficile' },
-  { id: 'hard_perfect', name: 'Difficile parfait', icon: '🏅', category: 'perf', check: () => state.difficulty === 'hard' && state.bestStreakThisGame >= state.questionCount, hint: 'Score parfait en Difficile' },
+  { id: 'hard_mode', name: 'Mode avancé', icon: '💪', category: 'perf', check: () => { const cl = ProfileManager.get('catLevel', {}); return Object.values(cl).some(v => v === 3); }, hint: 'Atteins le niveau 3 dans une catégorie' },
+  { id: 'hard_perfect', name: 'Avancé parfait', icon: '🏅', category: 'perf', check: () => { const cl = ProfileManager.get('catLevel', {}); return Object.values(cl).some(v => v === 3) && state.bestStreakThisGame >= state.questionCount; }, hint: 'Score parfait avec un niveau 3' },
   { id: 'score_100', name: 'Score 100+', icon: '📈', category: 'perf', check: () => state.score >= 100, hint: 'Atteins 100 points en 1 partie' },
   { id: 'score_200', name: 'Score 200+', icon: '📊', category: 'perf', check: () => state.score >= 200, hint: 'Atteins 200 points en 1 partie' },
   { id: 'score_300', name: 'Score 300+', icon: '🚀', category: 'perf', check: () => state.score >= 300, hint: 'Atteins 300 points en 1 partie' },
 
   // ── Exploration ──
   { id: 'explorer', name: 'Explorateur', icon: '🌍', category: 'explore', check: () => Object.keys(state.categoryStats).length >= 6, progress: () => ({ cur: Object.keys(state.categoryStats).length, max: 6 }), hint: 'Joue dans les 6 catégories' },
-  { id: 'try_easy', name: 'Échauffement', icon: '😊', category: 'explore', check: () => state.difficulty === 'easy', hint: 'Joue en mode Facile' },
+  { id: 'try_easy', name: 'Échauffement', icon: '😊', category: 'explore', check: () => { const cl = ProfileManager.get('catLevel', {}); return Object.values(cl).some(v => v === 1); }, hint: 'Avoir un niveau 1 dans une catégorie' },
   { id: 'try_chrono', name: 'Contre la montre', icon: '⏱️', category: 'explore', check: () => state.timerEnabled, hint: 'Active le chronomètre' },
   { id: 'marathon', name: 'Marathon', icon: '🏃', category: 'explore', check: () => state.questionCount === 20, hint: 'Joue une partie de 20 questions' },
 
@@ -1556,7 +1590,12 @@ function endGame() {
 
   // ── V2: XP, coins, chest milestones, rank-up ──
   const xpBoost = ProfileManager.get('xpBoostActive', false);
-  const rewards = calculateRewards(state.score, state.difficulty, xpBoost, state.coinRainActive);
+  const catLevel = ProfileManager.get('catLevel', {});
+  const playedCats = Object.keys(state.categoryStats);
+  const avgLevel = playedCats.length > 0
+    ? Math.round(playedCats.reduce((sum, c) => sum + (catLevel[c] || 2), 0) / playedCats.length)
+    : 2;
+  const rewards = calculateRewards(state.score, avgLevel, xpBoost, state.coinRainActive);
   // Apply revision XP multiplier
   if (state.xpMultiplier > 1) {
     rewards.xp = Math.round(rewards.xp * state.xpMultiplier);
@@ -1571,7 +1610,7 @@ function endGame() {
   if (state.activeBoost) {
     const isPerfect = state.bestStreakThisGame >= state.questionCount;
     const boost = BOOSTS.find(b => b.id === state.activeBoost);
-    const mult = getBoostMultiplier(state.difficulty);
+    const mult = getBoostMultiplier(avgLevel);
 
     if (isPerfect && boost) {
       if (boost.effect === 'xp') {
@@ -1583,7 +1622,7 @@ function endGame() {
         rewards.coins += bonusCoins;
         ProfileManager.set('coins', ProfileManager.get('coins', 0) + bonusCoins);
       } else if (boost.effect === 'score') {
-        const bonusScore = Math.round(state.score * (mult === 2 ? 1 : mult === 0.5 ? 0.5 : 0.5));
+        const bonusScore = Math.round(state.score * (mult === 1.5 ? 1 : mult === 0.75 ? 0.5 : 0.5));
         // Score boost gives bonus XP equal to the extra score
         rewards.xp += bonusScore;
         rewards.coins += Math.round(bonusScore / 2);
@@ -1828,7 +1867,12 @@ document.getElementById('btn-replay').addEventListener('click', () => {
 document.getElementById('btn-share-score').addEventListener('click', () => {
   const score = state.score;
   const cat = state.category === 'all' ? 'toutes catégories' : (CATEGORIES[state.category]?.label || state.category);
-  const diff = state.difficulty === 'easy' ? 'Facile' : state.difficulty === 'hard' ? 'Difficile' : 'Moyen';
+  const catLevel = ProfileManager.get('catLevel', {});
+  const playedCats2 = Object.keys(state.categoryStats);
+  const avgLevel2 = playedCats2.length > 0
+    ? Math.round(playedCats2.reduce((sum, c) => sum + (catLevel[c] || 2), 0) / playedCats2.length)
+    : 2;
+  const diff = avgLevel2 === 1 ? 'Débutant' : avgLevel2 === 3 ? 'Avancé' : 'Normal';
   const text = `🎯 QuizHero — ${score} points en ${cat} (${diff}) !\nTu peux faire mieux ? 🧮`;
   if (navigator.share) {
     navigator.share({ title: 'QuizHero', text, url: 'https://pezzonidasit.github.io/quizhero/' }).catch(() => {});
@@ -2544,7 +2588,7 @@ function startBossFight(boss) {
   const isEnraged = defeated.includes(boss.id);
   const maxPlayerHP = 3;
   const maxBossHP = isEnraged ? boss.hp + 2 : boss.hp;
-  const subLevel = Math.min(3, getSubLevel() + 1);
+  const subLevel = Math.min(3, getSubLevel(boss.category) + 1);
   const phase1Questions = [];
   let lastCat = null;
   for (let i = 0; i < 3; i++) {
@@ -2920,8 +2964,10 @@ function renderBossWaitingIcon() {
 // ══════════════════════════════════════════════════════════════════════
 
 function showContractScreen() {
+  const catLevel = ProfileManager.get('catLevel', {});
+  const contractLevel = state.category !== 'all' ? (catLevel[state.category] || 2) : 2;
   const contracts = generateContracts(
-    state.category, state.difficulty, state.questionCount, state.categoryStats
+    state.category, contractLevel, state.questionCount, state.categoryStats
   );
   const container = document.getElementById('contract-options');
   container.innerHTML = contracts.map(c => {

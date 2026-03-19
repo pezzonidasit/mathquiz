@@ -54,9 +54,10 @@ function getRankProgress(xp) {
  * Calculate rewards for a quiz session.
  * XP = score (x1.5 if hard, x2 if boost). Coins = Math.round(score/2) × daily multiplier.
  */
-function calculateRewards(score, difficulty, xpBoostActive, coinRainActive) {
+function calculateRewards(score, catLevelValue, xpBoostActive, coinRainActive) {
   let xp = score;
-  if (difficulty === 'hard') xp = Math.round(xp * 1.5);
+  if (catLevelValue === 3) xp = Math.round(xp * 1.5);
+  if (catLevelValue === 1) xp = Math.round(xp * 0.75);
   if (xpBoostActive) xp *= 2;
   const rawCoins = Math.round(score / 2);
   const coinMult = coinRainActive ? 1.0 : getDailyCoinMultiplier();
@@ -585,7 +586,7 @@ function calculateBossReward(boss, playerHP, maxPlayerHP) {
 
 // ─── Contrat d'Objectif ──────────────────────────────────────────────
 
-function generateContracts(category, difficulty, questionCount, catStats) {
+function generateContracts(category, catLevelValue, questionCount, catStats) {
   const cats = category === 'all'
     ? Object.values(catStats)
     : [catStats[category] || { correct: 0, total: 0 }];
@@ -596,7 +597,7 @@ function generateContracts(category, difficulty, questionCount, catStats) {
   if (totalQuestions >= 10) {
     recentRate = totalCorrect / totalQuestions;
   } else {
-    recentRate = difficulty === 'easy' ? 0.8 : difficulty === 'hard' ? 0.6 : 0.7;
+    recentRate = catLevelValue === 1 ? 0.8 : catLevelValue === 3 ? 0.6 : 0.7;
   }
 
   const bronzeRate = Math.max(0.2, recentRate - 0.1);

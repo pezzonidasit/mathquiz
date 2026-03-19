@@ -9,15 +9,22 @@ const ProfileManager = {
     localStorage.setItem('mq_profiles', JSON.stringify(profiles));
   },
 
-  // Create profile with name and themeId, initializes all data fields
-  create(name, themeId) {
+  // Create profile with name, themeId, and age (8-12)
+  create(name, themeId, age) {
     const profiles = this.getAll();
     const id = Date.now().toString(36);
-    const profile = { id, name, theme: themeId, createdAt: Date.now() };
+    const profile = { id, name, theme: themeId, age: age || 10, createdAt: Date.now() };
     profiles.push(profile);
     this._saveList(profiles);
 
+    // Compute initial catLevel from age
+    const level = (age || 10) <= 9 ? 1 : (age || 10) >= 11 ? 3 : 2;
+    const catLevel = { calcul: level, logique: level, geometrie: level, fractions: level, mesures: level, ouvert: level };
+
     // Initialize all data fields
+    this._setData(id, 'age', age || 10);
+    this._setData(id, 'catLevel', catLevel);
+    this._setData(id, 'catStreak', {});
     this._setData(id, 'xp', 0);
     this._setData(id, 'coins', 0);
     this._setData(id, 'gamesPlayed', 0);
@@ -114,5 +121,18 @@ const ProfileManager = {
     Object.assign(profile, updates);
     this._saveList(profiles);
     return profile;
+  },
+
+  // Migrate existing profile to add new fields
+  migrate(id) {
+    if (this._getData(id, 'age', null) === null) {
+      this._setData(id, 'age', 10);
+    }
+    if (this._getData(id, 'catLevel', null) === null) {
+      this._setData(id, 'catLevel', { calcul: 2, logique: 2, geometrie: 2, fractions: 2, mesures: 2, ouvert: 2 });
+    }
+    if (this._getData(id, 'catStreak', null) === null) {
+      this._setData(id, 'catStreak', {});
+    }
   },
 };
