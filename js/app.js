@@ -196,6 +196,13 @@ const screenBackMap = {
 };
 
 window.addEventListener('popstate', (e) => {
+  // Block back-navigation from home when a profile is active — home IS the root screen
+  const current = document.querySelector('.screen.active');
+  if (current && current.id === 'screen-home' && ProfileManager.getActiveId()) {
+    history.pushState({ screen: 'screen-home' }, '');
+    return;
+  }
+
   if (e.state && e.state.screen) {
     showScreen(e.state.screen, { fromPop: true });
   } else if (screenHistory.length > 0) {
@@ -203,7 +210,6 @@ window.addEventListener('popstate', (e) => {
     showScreen(prev, { fromPop: true });
   } else {
     // Fallback: use the back map based on current screen
-    const current = document.querySelector('.screen.active');
     if (current && screenBackMap[current.id]) {
       showScreen(screenBackMap[current.id], { fromPop: true });
     }
@@ -286,6 +292,11 @@ let selectedTheme = 'nuit';
 let selectedAge = 10;
 
 document.getElementById('btn-new-profile').addEventListener('click', () => {
+  // Guard: confirm if profiles already exist to prevent accidental creation
+  const existing = ProfileManager.getAll();
+  if (existing.length > 0) {
+    if (!confirm('Tu as déjà ' + existing.length + ' profil(s). Créer un nouveau joueur ?')) return;
+  }
   renderThemePicker();
   document.getElementById('profile-name-input').value = '';
   selectedAge = 10;
