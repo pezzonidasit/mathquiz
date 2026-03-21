@@ -3363,7 +3363,11 @@ body.low-perf-mode .chest-open-overlay .chest-item {
   padding: 0.4rem 0.9rem; border-radius: 0.5rem; border: none;
   font-size: 0.85rem; font-weight: 600; cursor: pointer; background: var(--accent); color: var(--bg-dark);
 }
-.admin-fb-reply-send { font-size: 0.9rem; padding: 0.5rem 1rem; }
+.admin-fb-reply-send {
+  font-size: 0.9rem; padding: 0.5rem 1.2rem;
+  background: var(--accent) !important; color: var(--bg-dark) !important;
+  border: 2px solid var(--accent) !important; font-weight: 700;
+}
 .btn-danger-small { background: var(--accent-red, #e74c3c); color: white; }
 .admin-fb-reply-sent {
   background: var(--bg-dark); padding: 0.5rem 0.75rem; border-radius: 0.5rem;
