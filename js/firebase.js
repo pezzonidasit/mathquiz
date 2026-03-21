@@ -627,6 +627,62 @@ function isParentInGroup(group) {
   return !!(group.parents && group.parents[firebaseUid]);
 }
 
+// ── Homework Uploads ──
+
+/** Upload homework photo (parent only) */
+async function uploadHomework(groupCode, title, subject, photoBase64) {
+  if (!firebaseUid) throw new Error('Not signed in');
+  const profile = ProfileManager.getActive();
+  const parentName = profile ? profile.name : 'Parent';
+  const ref = db.ref('homeworkUploads').push();
+  await ref.set({
+    groupCode: groupCode,
+    parentUid: firebaseUid,
+    parentName: parentName,
+    title: title,
+    subject: subject,
+    photo: photoBase64,
+    status: 'pending',
+    createdAt: firebase.database.ServerValue.TIMESTAMP,
+  });
+  return ref.key;
+}
+
+/** Get homework upload notifications for current parent (processed/rejected, unread) */
+async function getHomeworkNotifications() {
+  if (!firebaseUid) return [];
+  const snap = await db.ref('homeworkUploads')
+    .orderByChild('parentUid')
+    .equalTo(firebaseUid)
+    .once('value');
+  const results = [];
+  snap.forEach(child => {
+    const val = child.val();
+    if (val.status !== 'pending' && !val.readByParent) {
+      results.push({ id: child.key, ...val });
+    }
+  });
+  return results;
+}
+
+/** Mark homework notification as read by parent */
+async function markHomeworkRead(uploadId) {
+  await db.ref('homeworkUploads/' + uploadId + '/readByParent').set(true);
+}
+
+/** Get all homework uploads for a group (admin) */
+async function getGroupHomeworkUploads(groupCode) {
+  const snap = await db.ref('homeworkUploads')
+    .orderByChild('groupCode')
+    .equalTo(groupCode)
+    .once('value');
+  const results = [];
+  snap.forEach(child => {
+    results.push({ id: child.key, ...child.val() });
+  });
+  return results.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+
 // ── Group Rewards ──
 
 /** Add a reward to a group */

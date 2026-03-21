@@ -4728,6 +4728,92 @@ document.getElementById('btn-session-stop').addEventListener('click', () => {
   });
 })();
 
+// ── Homework Upload (Parent) ─────────────────────────────────────────
+(function initHomeworkUpload() {
+  const overlay = document.getElementById('homework-overlay');
+  if (!overlay) return;
+
+  let selectedSubject = 'maths';
+  let compressedBase64 = null;
+
+  // Subject toggle
+  overlay.querySelectorAll('#homework-subject-selector .feedback-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      overlay.querySelectorAll('#homework-subject-selector .feedback-type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedSubject = btn.dataset.subject;
+    });
+  });
+
+  // Photo preview + compression
+  document.getElementById('homework-photo').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      document.getElementById('homework-preview').style.display = 'none';
+      compressedBase64 = null;
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        // Resize to max 1200px width, JPEG quality 0.6
+        const MAX_W = 1200;
+        let w = img.width, h = img.height;
+        if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        document.getElementById('homework-preview-img').src = compressedBase64;
+        document.getElementById('homework-preview').style.display = '';
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Cancel
+  document.getElementById('btn-homework-cancel').addEventListener('click', () => {
+    overlay.style.display = 'none';
+  });
+
+  // Send
+  document.getElementById('btn-homework-send').addEventListener('click', async () => {
+    const title = document.getElementById('homework-title').value.trim();
+    const statusEl = document.getElementById('homework-status');
+
+    if (!title) { statusEl.textContent = 'Le titre est obligatoire.'; statusEl.style.color = 'var(--error)'; return; }
+    if (!compressedBase64) { statusEl.textContent = 'Choisis une photo.'; statusEl.style.color = 'var(--error)'; return; }
+
+    statusEl.textContent = 'Envoi en cours...';
+    statusEl.style.color = '';
+    document.getElementById('btn-homework-send').disabled = true;
+
+    try {
+      await uploadHomework(currentGroupCode, title, selectedSubject, compressedBase64);
+      statusEl.textContent = 'Photo envoyée ! Le devoir sera disponible prochainement. 🎉';
+      statusEl.style.color = 'var(--accent-green)';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        document.getElementById('btn-homework-send').disabled = false;
+        // Reset form
+        document.getElementById('homework-title').value = '';
+        document.getElementById('homework-photo').value = '';
+        document.getElementById('homework-preview').style.display = 'none';
+        compressedBase64 = null;
+        statusEl.textContent = '';
+      }, 1500);
+    } catch (e) {
+      statusEl.textContent = 'Erreur — réessaie plus tard.';
+      statusEl.style.color = 'var(--error)';
+      document.getElementById('btn-homework-send').disabled = false;
+    }
+  });
+})();
+
 // ── User Inbox: launch popup + FAB badge ────────────────────────────
 (function initInbox() {
   let unreadReplies = [];

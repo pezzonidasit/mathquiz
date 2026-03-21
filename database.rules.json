@@ -144,6 +144,18 @@
           ".write": "auth != null && data.parent().child('uid').val() === auth.uid"
         }
       }
+    },
+
+    "homeworkUploads": {
+      ".read": "root.child('players').child(auth.uid).child('isAdmin').val() === true",
+      ".indexOn": ["status", "groupCode", "parentUid"],
+      "$uploadId": {
+        ".read": "auth != null && data.child('parentUid').val() === auth.uid",
+        ".write": "auth != null && ((!data.exists() && root.child('groups').child(newData.child('groupCode').val()).child('parents').child(auth.uid).exists()) || root.child('players').child(auth.uid).child('isAdmin').val() === true)",
+        "readByParent": {
+          ".write": "auth != null && data.parent().child('parentUid').val() === auth.uid"
+        }
+      }
     }
   }
 }

@@ -666,6 +666,37 @@
     </div>
   </div>
 
+  <!-- OVERLAY UPLOAD DEVOIR -->
+  <div id="homework-overlay" class="overlay" style="display:none;">
+    <div class="overlay-content feedback-popup">
+      <h2>📷 Envoyer un devoir</h2>
+      <div class="setting-group">
+        <label for="homework-title">Titre</label>
+        <input type="text" id="homework-title" class="answer-input" placeholder="ex: Vocabulaire Lektion 7" maxlength="100" style="width:100%">
+      </div>
+      <div class="setting-group">
+        <label>Matière</label>
+        <div id="homework-subject-selector" class="feedback-type-selector">
+          <button class="feedback-type-btn active" data-subject="maths">🧮 Maths</button>
+          <button class="feedback-type-btn" data-subject="francais">🇫🇷 Français</button>
+          <button class="feedback-type-btn" data-subject="allemand">🇩🇪 Allemand</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <label for="homework-photo">Photo du devoir</label>
+        <input type="file" id="homework-photo" accept="image/*" capture="environment" style="width:100%">
+      </div>
+      <div id="homework-preview" style="display:none;margin:0.5rem 0;text-align:center">
+        <img id="homework-preview-img" style="max-width:100%;max-height:200px;border-radius:8px" alt="Preview">
+      </div>
+      <p id="homework-status" style="font-size:0.85rem;margin-top:0.5rem;min-height:1.2em"></p>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+        <button id="btn-homework-cancel" class="btn-secondary" style="flex:1">Annuler</button>
+        <button id="btn-homework-send" class="btn-primary" style="flex:1">Envoyer</button>
+      </div>
+    </div>
+  </div>
+
   <!-- User Inbox: reply popup -->
   <div id="inbox-popup-overlay" class="overlay" style="display:none;">
     <div class="overlay-content feedback-popup">
