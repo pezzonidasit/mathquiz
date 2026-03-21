@@ -5,7 +5,7 @@ const APP_VERSION = '6.0';
 // ── HTML Sanitization ────────────────────────────────────────────
 const _escapeDiv = document.createElement('div');
 function escapeHtml(str) {
-  _escapeDiv.textContent = str;
+  _escapeDiv.textContent = str || '';
   return _escapeDiv.innerHTML;
 }
 
@@ -411,6 +411,7 @@ function selectProfile(id) {
     MQSync.checkWeeklyReset();
     renderRegularityStreak();
     checkLoginReward();
+    if (typeof checkInboxOnLaunch === 'function') checkInboxOnLaunch();
   }
 }
 
@@ -3709,6 +3710,8 @@ async function renderAdminDashboard() {
       await renderAdminGroups(contentEl);
     } else if (adminTab === 'riddles') {
       await renderAdminRiddles(contentEl);
+    } else if (adminTab === 'feedback') {
+      await renderAdminFeedback(contentEl);
     }
   } catch(e) {
     contentEl.innerHTML = '<p style="color:var(--accent-red)">Erreur : ' + e.message + '</p>';
@@ -3884,6 +3887,138 @@ async function renderAdminRiddles(el) {
   });
 
   el.innerHTML = html;
+}
+
+// ── Admin Feedback Tab ─────────────────────────────────────────────
+async function renderAdminFeedback(el) {
+  const feedbacks = await getAllFeedbacks();
+
+  if (!feedbacks.length) {
+    el.innerHTML = '<p style="text-align:center;color:var(--text-secondary)">Aucun feedback reçu.</p>';
+    return;
+  }
+
+  const groups = { new: [], implement: [], discard: [] };
+  feedbacks.forEach(fb => {
+    const s = fb.status || 'new';
+    if (groups[s]) groups[s].push(fb);
+    else groups['new'].push(fb);
+  });
+
+  const QUICK_REPLIES = [
+    "Merci, c'est noté !",
+    "C'est corrigé !",
+    "Bonne idée, on va l'ajouter !"
+  ];
+
+  function timeAgo(ts) {
+    if (!ts) return '';
+    const diff = Date.now() - ts;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'à l\'instant';
+    if (mins < 60) return 'il y a ' + mins + 'min';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return 'il y a ' + hrs + 'h';
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return 'il y a ' + days + 'j';
+    return new Date(ts).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  }
+
+  function renderCard(fb) {
+    const icon = fb.type === 'bug' ? '🐛' : '💡';
+    const name = escapeHtml(fb.profileName || 'Anonyme');
+    const text = escapeHtml(fb.text);
+    const screenshotHtml = fb.screenshot
+      ? '<img src="' + fb.screenshot + '" class="admin-fb-thumb" onclick="this.classList.toggle(\'admin-fb-thumb-expand\')" alt="screenshot">'
+      : '';
+    const replyHtml = fb.adminReply
+      ? '<div class="admin-fb-reply-sent">✉️ ' + escapeHtml(fb.adminReply) + '</div>'
+      : '<div class="admin-fb-reply-zone">' +
+           '<div class="admin-fb-quick-replies">' +
+             QUICK_REPLIES.map(function(r) { return '<button class="admin-fb-quick-btn" data-reply="' + escapeHtml(r) + '">' + escapeHtml(r) + '</button>'; }).join('') +
+           '</div>' +
+           '<div style="display:flex;gap:0.5rem;margin-top:0.5rem">' +
+             '<input type="text" class="admin-fb-reply-input" placeholder="Répondre..." maxlength="200" style="flex:1">' +
+             '<button class="admin-fb-reply-send btn-small btn-primary">Envoyer</button>' +
+           '</div>' +
+         '</div>';
+
+    const s = fb.status || 'new';
+    const statusBtns = {
+      new: '<button class="admin-fb-action btn-small" data-action="implement">✅ Implémenter</button>' +
+           '<button class="admin-fb-action btn-small btn-danger-small" data-action="discard">❌ Discard</button>',
+      implement: '<button class="admin-fb-action btn-small btn-danger-small" data-action="discard">❌ Discard</button>',
+      discard: '<button class="admin-fb-action btn-small" data-action="implement">✅ Implémenter</button>'
+    };
+
+    return '<div class="admin-fb-card ' + (s === 'discard' ? 'admin-fb-discarded' : '') + '" data-fb-id="' + fb.id + '">' +
+      '<div class="admin-fb-header">' +
+        '<span>' + icon + ' <strong>' + name + '</strong></span>' +
+        '<span class="admin-fb-time">' + timeAgo(fb.timestamp) + '</span>' +
+      '</div>' +
+      '<p class="admin-fb-text">' + text + '</p>' +
+      screenshotHtml +
+      '<div class="admin-fb-actions">' + statusBtns[s] + '</div>' +
+      replyHtml +
+    '</div>';
+  }
+
+  function renderSection(title, items, collapsed) {
+    if (!items.length) return '';
+    return '<div class="admin-fb-section ' + (collapsed ? 'collapsed' : '') + '">' +
+      '<div class="admin-fb-section-header" onclick="this.parentElement.classList.toggle(\'collapsed\')">' +
+        '<span>' + title + ' (' + items.length + ')</span>' +
+        '<span class="admin-fb-chevron">▼</span>' +
+      '</div>' +
+      '<div class="admin-fb-section-body">' +
+        items.map(renderCard).join('') +
+      '</div>' +
+    '</div>';
+  }
+
+  el.innerHTML =
+    renderSection('🆕 Nouveau', groups.new, false) +
+    renderSection('✅ À implémenter', groups.implement, true) +
+    renderSection('🗑️ Discard', groups.discard, true);
+
+  // Event delegation for actions (cleanup previous listener on re-render)
+  if (el._adminFbHandler) el.removeEventListener('click', el._adminFbHandler);
+  async function adminFbHandler(e) {
+    const card = e.target.closest('.admin-fb-card');
+    if (!card) return;
+    const fbId = card.dataset.fbId;
+
+    // Status change
+    const actionBtn = e.target.closest('.admin-fb-action');
+    if (actionBtn) {
+      const action = actionBtn.dataset.action;
+      await setFeedbackStatus(fbId, action);
+      await renderAdminFeedback(el);
+      return;
+    }
+
+    // Quick reply — fills the input
+    const quickBtn = e.target.closest('.admin-fb-quick-btn');
+    if (quickBtn) {
+      const input = card.querySelector('.admin-fb-reply-input');
+      if (input) input.value = quickBtn.dataset.reply;
+      return;
+    }
+
+    // Send reply
+    const sendBtn = e.target.closest('.admin-fb-reply-send');
+    if (sendBtn) {
+      const input = card.querySelector('.admin-fb-reply-input');
+      const text = input?.value?.trim();
+      if (!text) return;
+      sendBtn.disabled = true;
+      await sendAdminReply(fbId, text);
+      await renderAdminFeedback(el);
+      return;
+    }
+  }
+  el._adminFbHandler = adminFbHandler;
+  el.addEventListener('click', adminFbHandler);
 }
 
 async function adminDeleteRiddleAction(riddleId) {
@@ -4522,6 +4657,7 @@ document.getElementById('btn-session-stop').addEventListener('click', () => {
       const data = {
         type: feedbackType,
         text: text,
+        status: 'new',
         uid: firebaseUid || 'anonymous',
         profileName: ProfileManager.getActive()?.name || 'unknown',
         appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : 'unknown',
@@ -4567,6 +4703,138 @@ document.getElementById('btn-session-stop').addEventListener('click', () => {
       document.getElementById('btn-feedback-send').disabled = false;
     }
   });
+})();
+
+// ── User Inbox: launch popup + FAB badge ────────────────────────────
+(function initInbox() {
+  let unreadReplies = [];
+  let popupIndex = 0;
+
+  function showPopup(idx) {
+    if (idx >= unreadReplies.length) {
+      document.getElementById('inbox-popup-overlay').style.display = 'none';
+      return;
+    }
+    const fb = unreadReplies[idx];
+    const origText = fb.text.length > 80 ? fb.text.substring(0, 80) + '...' : fb.text;
+    document.getElementById('inbox-popup-original').textContent = '« ' + origText + ' »';
+    document.getElementById('inbox-popup-reply').textContent = fb.adminReply;
+    document.getElementById('inbox-popup-overlay').style.display = 'flex';
+    popupIndex = idx;
+  }
+
+  // OK button — mark read, show next
+  document.getElementById('btn-inbox-popup-ok')?.addEventListener('click', async () => {
+    const fb = unreadReplies[popupIndex];
+    if (fb) await markFeedbackRead(fb.id);
+    showPopup(popupIndex + 1);
+    updateBadge();
+  });
+
+  // View all messages
+  document.getElementById('btn-inbox-popup-view')?.addEventListener('click', () => {
+    document.getElementById('inbox-popup-overlay').style.display = 'none';
+    openInbox();
+  });
+
+  // Inbox close
+  document.getElementById('btn-inbox-close')?.addEventListener('click', () => {
+    document.getElementById('inbox-overlay').style.display = 'none';
+  });
+
+  // New message from inbox
+  document.getElementById('btn-inbox-new')?.addEventListener('click', () => {
+    document.getElementById('inbox-overlay').style.display = 'none';
+    document.getElementById('feedback-overlay').style.display = 'flex';
+    document.getElementById('feedback-text').value = '';
+    document.getElementById('feedback-status').textContent = '';
+  });
+
+  async function openInbox() {
+    const listEl = document.getElementById('inbox-list');
+    let items;
+    try {
+      items = (await getMyFeedbacks()).filter(function(fb) { return !fb.readByUser; });
+    } catch(e) {
+      listEl.innerHTML = '<p style="color:var(--text-secondary)">Impossible de charger tes messages.</p>';
+      document.getElementById('inbox-overlay').style.display = 'flex';
+      return;
+    }
+
+    if (!items.length) {
+      listEl.innerHTML = '<p style="color:var(--text-secondary)">Pas de nouveau message.</p>';
+    } else {
+      listEl.innerHTML = items.map(function(fb) {
+        const icon = fb.type === 'bug' ? '🐛' : '💡';
+        const origText = fb.text.length > 60 ? fb.text.substring(0, 60) + '...' : fb.text;
+        const date = fb.adminReplyAt ? new Date(fb.adminReplyAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
+        return '<div class="inbox-item inbox-item-unread" data-fb-id="' + fb.id + '">' +
+          '<div class="inbox-item-header">' +
+            '<span>' + icon + ' ' + escapeHtml(origText) + '</span>' +
+            '<span class="inbox-item-date">' + date + '</span>' +
+          '</div>' +
+          '<div class="inbox-item-reply">↪ ' + escapeHtml(fb.adminReply) + '</div>' +
+          '<button class="inbox-item-delete btn-small btn-danger-small">🗑️ Supprimer</button>' +
+        '</div>';
+      }).join('');
+    }
+    document.getElementById('inbox-overlay').style.display = 'flex';
+
+    // Delete handler
+    listEl.querySelectorAll('.inbox-item-delete').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        const item = btn.closest('.inbox-item');
+        const fbId = item.dataset.fbId;
+        await markFeedbackRead(fbId);
+        item.remove();
+        updateBadge();
+        if (!listEl.querySelector('.inbox-item')) {
+          listEl.innerHTML = '<p style="color:var(--text-secondary)">Pas de nouveau message.</p>';
+        }
+      });
+    });
+  }
+
+  function updateBadge(count) {
+    const fab = document.getElementById('btn-feedback');
+    const existing = fab?.querySelector('.inbox-badge');
+    if (existing) existing.remove();
+    if (count === undefined) {
+      getUnreadReplies().then(function(u) { updateBadge(u.length); }).catch(function() {});
+      return;
+    }
+    if (count > 0 && fab) {
+      const badge = document.createElement('span');
+      badge.className = 'inbox-badge';
+      badge.textContent = count;
+      fab.appendChild(badge);
+    }
+  }
+
+  // Override FAB click: if unread replies exist, show inbox instead of feedback form
+  const fab = document.getElementById('btn-feedback');
+  if (fab) {
+    fab.addEventListener('click', async function(e) {
+      let unreads = [];
+      try { unreads = await getUnreadReplies(); } catch(err) {}
+      if (unreads.length > 0) {
+        e.stopImmediatePropagation();
+        openInbox();
+      }
+    }, true); // capture phase to intercept before initFeedback handler
+  }
+
+  // Expose for startup call
+  window.checkInboxOnLaunch = async function() {
+    try {
+      unreadReplies = await getUnreadReplies();
+      if (unreadReplies.length > 0) {
+        showPopup(0);
+      }
+      updateBadge(unreadReplies.length);
+    } catch(e) {
+    }
+  };
 })();
 
 } // end initApp()

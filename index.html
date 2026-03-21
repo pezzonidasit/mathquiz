@@ -472,6 +472,7 @@
       <button class="lb-tab active" data-tab="players">👤 Joueurs</button>
       <button class="lb-tab" data-tab="groups">👥 Groupes</button>
       <button class="lb-tab" data-tab="riddles">📝 Énigmes</button>
+      <button class="lb-tab" data-tab="feedback">📬 Feedback</button>
     </div>
     <div id="admin-content" class="dash-content"></div>
     <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);width:100%;text-align:center">
@@ -661,6 +662,31 @@
         <button id="btn-feedback-send" class="btn btn-primary">Envoyer</button>
       </div>
       <div id="feedback-status" class="feedback-status"></div>
+    </div>
+  </div>
+
+  <!-- User Inbox: reply popup -->
+  <div id="inbox-popup-overlay" class="overlay" style="display:none;">
+    <div class="overlay-content feedback-popup">
+      <h2>📬 Réponse à ton message</h2>
+      <div id="inbox-popup-original" class="inbox-original-msg"></div>
+      <div id="inbox-popup-reply" class="inbox-reply-msg"></div>
+      <div class="feedback-actions">
+        <button id="btn-inbox-popup-ok" class="btn btn-primary">OK</button>
+        <button id="btn-inbox-popup-view" class="btn btn-secondary">Voir mes messages</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Inbox: full inbox view -->
+  <div id="inbox-overlay" class="overlay" style="display:none;">
+    <div class="overlay-content feedback-popup" style="max-height:80vh;overflow-y:auto">
+      <h2>📬 Mes messages</h2>
+      <div id="inbox-list"></div>
+      <div class="feedback-actions" style="margin-top:1rem">
+        <button id="btn-inbox-close" class="btn btn-secondary">Fermer</button>
+        <button id="btn-inbox-new" class="btn btn-primary">Nouveau message</button>
+      </div>
     </div>
   </div>
 

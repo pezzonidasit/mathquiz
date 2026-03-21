@@ -3324,6 +3324,87 @@ body.low-perf-mode .chest-open-overlay .chest-item {
   min-height: 1.2rem;
 }
 
+/* --- Admin Feedback Tab --- */
+.admin-fb-section { margin-bottom: 1rem; }
+.admin-fb-section.collapsed .admin-fb-section-body { display: none; }
+.admin-fb-section.collapsed .admin-fb-chevron { transform: rotate(-90deg); }
+.admin-fb-section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.75rem 1rem; background: var(--bg-card); border-radius: 0.75rem;
+  cursor: pointer; font-weight: 600; font-size: 0.95rem;
+}
+.admin-fb-chevron { transition: transform 0.2s; font-size: 0.7rem; }
+.admin-fb-card {
+  background: var(--bg-card); border-radius: 0.75rem; padding: 1rem;
+  margin-top: 0.5rem; border-left: 3px solid var(--accent);
+}
+.admin-fb-discarded { opacity: 0.5; border-left-color: var(--text-secondary); }
+.admin-fb-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.9rem; margin-bottom: 0.5rem;
+}
+.admin-fb-time { color: var(--text-secondary); font-size: 0.8rem; }
+.admin-fb-text { font-size: 0.9rem; line-height: 1.4; margin-bottom: 0.5rem; }
+.admin-fb-thumb {
+  max-width: 120px; border-radius: 0.5rem; cursor: pointer;
+  transition: max-width 0.3s; margin-bottom: 0.5rem;
+}
+.admin-fb-thumb-expand { max-width: 100%; }
+.admin-fb-actions { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+.btn-small {
+  padding: 0.3rem 0.7rem; border-radius: 0.5rem; border: none;
+  font-size: 0.8rem; cursor: pointer; background: var(--accent); color: var(--bg-dark);
+}
+.btn-danger-small { background: var(--accent-red, #e74c3c); color: white; }
+.admin-fb-reply-sent {
+  background: var(--bg-dark); padding: 0.5rem 0.75rem; border-radius: 0.5rem;
+  font-size: 0.85rem; color: var(--accent-green, #2ecc71); margin-top: 0.5rem;
+}
+.admin-fb-quick-replies { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.admin-fb-quick-btn {
+  padding: 0.25rem 0.5rem; border-radius: 0.5rem; border: 1px solid var(--border);
+  background: var(--bg-dark); color: var(--text-secondary); font-size: 0.75rem;
+  cursor: pointer;
+}
+.admin-fb-quick-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+.admin-fb-reply-input {
+  padding: 0.4rem 0.6rem; border-radius: 0.5rem; border: 1px solid var(--border);
+  background: var(--bg-dark); color: var(--text-primary); font-size: 0.85rem;
+}
+
+/* --- User Inbox --- */
+.inbox-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--accent-red, #e74c3c); color: white;
+  font-size: 0.65rem; font-weight: 700; min-width: 1.1rem; height: 1.1rem;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.feedback-fab { position: relative; }
+.inbox-original-msg {
+  background: var(--bg-dark); padding: 0.75rem; border-radius: 0.5rem;
+  font-size: 0.85rem; color: var(--text-secondary); font-style: italic;
+  margin: 0.75rem 0 0.5rem;
+}
+.inbox-reply-msg {
+  padding: 0.75rem; font-size: 1rem; color: var(--accent-green, #2ecc71);
+  font-weight: 600;
+}
+.inbox-item {
+  background: var(--bg-card); border-radius: 0.75rem; padding: 0.75rem;
+  margin-bottom: 0.5rem; border-left: 3px solid var(--accent);
+}
+.inbox-item-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.85rem; margin-bottom: 0.3rem;
+}
+.inbox-item-date { color: var(--text-secondary); font-size: 0.75rem; }
+.inbox-item-reply {
+  font-size: 0.9rem; color: var(--accent-green, #2ecc71);
+  margin: 0.3rem 0 0.5rem; font-weight: 500;
+}
+.inbox-item-unread { border-left-color: var(--accent-green, #2ecc71); border-left-width: 4px; }
+
 /* ── Fiche d'aide ─────────────────────────────────────────── */
 .btn-fiche {
   background: transparent;

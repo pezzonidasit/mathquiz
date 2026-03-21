@@ -833,3 +833,51 @@ async function saveRevisionScore(setId, score, total, pct) {
     lastPlayed: firebase.database.ServerValue.TIMESTAMP,
   });
 }
+
+// ── Admin Feedback Management ──────────────────────────────────────
+
+async function getAllFeedbacks() {
+  const snap = await db.ref('feedback').orderByChild('timestamp').limitToLast(100).once('value');
+  const result = [];
+  snap.forEach(child => {
+    result.push({ id: child.key, ...child.val() });
+  });
+  return result.reverse(); // newest first
+}
+
+async function setFeedbackStatus(feedbackId, status) {
+  await db.ref(`feedback/${feedbackId}/status`).set(status);
+}
+
+async function sendAdminReply(feedbackId, replyText) {
+  await db.ref(`feedback/${feedbackId}`).update({
+    adminReply: replyText,
+    adminReplyAt: firebase.database.ServerValue.TIMESTAMP
+  });
+}
+
+// ── User Inbox ─────────────────────────────────────────────────────
+
+async function getMyFeedbacks() {
+  if (!firebaseUid) return [];
+  const snap = await db.ref('feedback')
+    .orderByChild('uid')
+    .equalTo(firebaseUid)
+    .once('value');
+  const result = [];
+  snap.forEach(child => {
+    const val = child.val();
+    if (val.adminReply) {
+      result.push({ id: child.key, ...val });
+    }
+  });
+  return result;
+}
+
+async function getUnreadReplies() {
+  return (await getMyFeedbacks()).filter(fb => !fb.readByUser);
+}
+
+async function markFeedbackRead(feedbackId) {
+  await db.ref(`feedback/${feedbackId}/readByUser`).set(true);
+}

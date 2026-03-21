@@ -135,8 +135,15 @@
     },
 
     "feedback": {
-      ".read": "root.child('admin_uid').val() === auth.uid",
-      ".write": "auth != null"
+      ".read": "root.child('players').child(auth.uid).child('isAdmin').val() === true",
+      ".indexOn": ["uid", "timestamp"],
+      "$feedbackId": {
+        ".read": "data.child('uid').val() === auth.uid",
+        ".write": "auth != null && (!data.exists() || root.child('players').child(auth.uid).child('isAdmin').val() === true)",
+        "readByUser": {
+          ".write": "auth != null && data.parent().child('uid').val() === auth.uid"
+        }
+      }
     }
   }
 }
