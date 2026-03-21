@@ -3929,7 +3929,7 @@ async function renderAdminFeedback(el) {
     const name = escapeHtml(fb.profileName || 'Anonyme');
     const text = escapeHtml(fb.text);
     const screenshotHtml = fb.screenshot
-      ? '<img src="' + fb.screenshot + '" class="admin-fb-thumb" onclick="this.classList.toggle(\'admin-fb-thumb-expand\')" alt="screenshot">'
+      ? '<img src="' + fb.screenshot + '" class="admin-fb-thumb" onclick="var lb=document.createElement(\'div\');lb.className=\'admin-fb-lightbox\';lb.innerHTML=\'<img src=&quot;\'+this.src+\'&quot;>\';lb.onclick=function(){lb.remove()};document.body.appendChild(lb)" alt="screenshot">'
       : '';
     const replyHtml = fb.adminReply
       ? '<div class="admin-fb-reply-sent">✉️ ' + escapeHtml(fb.adminReply) + '</div>'

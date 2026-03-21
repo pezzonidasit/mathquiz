@@ -3349,8 +3349,15 @@ body.low-perf-mode .chest-open-overlay .chest-item {
   max-width: 200px; border-radius: 0.5rem; cursor: pointer;
   transition: max-width 0.3s; margin-bottom: 0.5rem;
 }
-.admin-fb-thumb-expand { max-width: 100%; }
 @media (min-width: 768px) { .admin-fb-thumb { max-width: 300px; } }
+.admin-fb-lightbox {
+  position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center; cursor: zoom-out;
+}
+.admin-fb-lightbox img {
+  max-width: 95vw; max-height: 95vh; border-radius: 0.5rem;
+  image-rendering: pixelated;
+}
 .admin-fb-actions { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
 .btn-small {
   padding: 0.4rem 0.9rem; border-radius: 0.5rem; border: none;
