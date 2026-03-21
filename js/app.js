@@ -507,6 +507,8 @@ function updateProfileHeader() {
   renderBoostSelector();
   // V8: Settings summary
   updateSettingsSummary();
+  const versionEl = document.getElementById('app-version-display');
+  if (versionEl) versionEl.textContent = 'v' + APP_VERSION;
   // V8: Pet + Daily Question
   renderPetZone();
   checkDailyQuestion();
