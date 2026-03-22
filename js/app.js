@@ -328,18 +328,6 @@ document.getElementById('btn-recover-profile').addEventListener('click', async (
   }
 });
 
-document.getElementById('btn-force-update').addEventListener('click', async () => {
-  if (!confirm('Forcer la mise à jour ? L\'app va redémarrer.')) return;
-  try {
-    const [regs, keys] = await Promise.all([
-      navigator.serviceWorker.getRegistrations(),
-      caches.keys()
-    ]);
-    await Promise.all([...regs.map(r => r.unregister()), ...keys.map(k => caches.delete(k))]);
-  } catch (e) { /* no SW support */ }
-  location.reload();
-});
-
 function renderThemePicker() {
   const container = document.getElementById('theme-picker');
   container.innerHTML = FREE_THEMES.map(id => {
@@ -2330,7 +2318,23 @@ async function renderProfileDetail() {
     <div style="margin-top:0.25rem;font-size:0.6rem;color:var(--text-secondary);word-break:break-all;text-align:center;opacity:0.5">
       ID : ${firebaseUid || 'non connecté'}
     </div>
+    <div style="margin-top:0.75rem;text-align:center">
+      <button id="btn-force-update-profile" style="background:none;border:none;color:var(--text-muted,#888);font-size:0.7rem;cursor:pointer;text-decoration:underline;opacity:0.6">🔄 Forcer la mise à jour</button>
+    </div>
   `;
+
+  // Force update button in profile
+  document.getElementById('btn-force-update-profile').addEventListener('click', async () => {
+    if (!confirm('Forcer la mise à jour ? L\'app va redémarrer.')) return;
+    try {
+      const [regs, keys] = await Promise.all([
+        navigator.serviceWorker.getRegistrations(),
+        caches.keys()
+      ]);
+      await Promise.all([...regs.map(r => r.unregister()), ...keys.map(k => caches.delete(k))]);
+    } catch (e) { /* no SW support */ }
+    location.reload();
+  });
 
   // Theme selector click handlers
   document.querySelectorAll('.theme-select-item').forEach(item => {
