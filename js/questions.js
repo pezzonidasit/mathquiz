@@ -9,6 +9,7 @@ const CATEGORIES = {
   mesures:   { label: 'Mesures',         color: '#ff6b6b' },
   ouvert:    { label: 'Problèmes ouverts', color: '#ffd93d' },
   geographie:{ label: 'Géographie',       color: '#22c55e' },
+  conjugaison:{ label: 'Conjugaison',    color: '#f472b6' },
   revision:  { label: 'Révision',         color: '#10b981' }
 };
 
@@ -3572,6 +3573,116 @@ function generateGeographie(subLevel) {
 }
 
 // ── Main Entry Point ────────────────────────────────────────────────
+// ── Conjugation Data ────────────────────────────────────────────────
+
+const CONJ_PRONOUNS = ['je', 'tu', 'il', 'nous', 'vous', 'ils'];
+
+const CONJ_VERBS = {
+  // ── Level 1: présent, 1er groupe + être/avoir ──
+  present: {
+    // 1er groupe
+    manger:   { group: 1, level: 1, forms: ['mange', 'manges', 'mange', 'mangeons', 'mangez', 'mangent'] },
+    jouer:    { group: 1, level: 1, forms: ['joue', 'joues', 'joue', 'jouons', 'jouez', 'jouent'] },
+    parler:   { group: 1, level: 1, forms: ['parle', 'parles', 'parle', 'parlons', 'parlez', 'parlent'] },
+    chanter:  { group: 1, level: 1, forms: ['chante', 'chantes', 'chante', 'chantons', 'chantez', 'chantent'] },
+    marcher:  { group: 1, level: 1, forms: ['marche', 'marches', 'marche', 'marchons', 'marchez', 'marchent'] },
+    regarder: { group: 1, level: 1, forms: ['regarde', 'regardes', 'regarde', 'regardons', 'regardez', 'regardent'] },
+    donner:   { group: 1, level: 1, forms: ['donne', 'donnes', 'donne', 'donnons', 'donnez', 'donnent'] },
+    aimer:    { group: 1, level: 1, forms: ['aime', 'aimes', 'aime', 'aimons', 'aimez', 'aiment'] },
+    // être / avoir
+    être:     { group: 3, level: 1, forms: ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'] },
+    avoir:    { group: 3, level: 1, forms: ['ai', 'as', 'a', 'avons', 'avez', 'ont'] },
+  },
+  // ── Level 2: passé composé + futur, 3 groupes ──
+  passe_compose: {
+    manger:   { group: 1, level: 2, aux: 'avoir', forms: ['ai mangé', 'as mangé', 'a mangé', 'avons mangé', 'avez mangé', 'ont mangé'] },
+    finir:    { group: 2, level: 2, aux: 'avoir', forms: ['ai fini', 'as fini', 'a fini', 'avons fini', 'avez fini', 'ont fini'] },
+    jouer:    { group: 1, level: 2, aux: 'avoir', forms: ['ai joué', 'as joué', 'a joué', 'avons joué', 'avez joué', 'ont joué'] },
+    choisir:  { group: 2, level: 2, aux: 'avoir', forms: ['ai choisi', 'as choisi', 'a choisi', 'avons choisi', 'avez choisi', 'ont choisi'] },
+    partir:   { group: 3, level: 2, aux: 'être', forms: ['suis parti', 'es parti', 'est parti', 'sommes partis', 'êtes partis', 'sont partis'] },
+    aller:    { group: 3, level: 2, aux: 'être', forms: ['suis allé', 'es allé', 'est allé', 'sommes allés', 'êtes allés', 'sont allés'] },
+    venir:    { group: 3, level: 2, aux: 'être', forms: ['suis venu', 'es venu', 'est venu', 'sommes venus', 'êtes venus', 'sont venus'] },
+  },
+  futur: {
+    manger:   { group: 1, level: 2, forms: ['mangerai', 'mangeras', 'mangera', 'mangerons', 'mangerez', 'mangeront'] },
+    finir:    { group: 2, level: 2, forms: ['finirai', 'finiras', 'finira', 'finirons', 'finirez', 'finiront'] },
+    parler:   { group: 1, level: 2, forms: ['parlerai', 'parleras', 'parlera', 'parlerons', 'parlerez', 'parleront'] },
+    grandir:  { group: 2, level: 2, forms: ['grandirai', 'grandiras', 'grandira', 'grandirons', 'grandirez', 'grandiront'] },
+    chanter:  { group: 1, level: 2, forms: ['chanterai', 'chanteras', 'chantera', 'chanterons', 'chanterez', 'chanteront'] },
+    être:     { group: 3, level: 2, forms: ['serai', 'seras', 'sera', 'serons', 'serez', 'seront'] },
+    avoir:    { group: 3, level: 2, forms: ['aurai', 'auras', 'aura', 'aurons', 'aurez', 'auront'] },
+  },
+  // ── Level 3: imparfait + impératif + irréguliers ──
+  imparfait: {
+    manger:   { group: 1, level: 3, forms: ['mangeais', 'mangeais', 'mangeait', 'mangions', 'mangiez', 'mangeaient'] },
+    finir:    { group: 2, level: 3, forms: ['finissais', 'finissais', 'finissait', 'finissions', 'finissiez', 'finissaient'] },
+    être:     { group: 3, level: 3, forms: ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient'] },
+    avoir:    { group: 3, level: 3, forms: ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient'] },
+    faire:    { group: 3, level: 3, forms: ['faisais', 'faisais', 'faisait', 'faisions', 'faisiez', 'faisaient'] },
+    aller:    { group: 3, level: 3, forms: ['allais', 'allais', 'allait', 'allions', 'alliez', 'allaient'] },
+    voir:     { group: 3, level: 3, forms: ['voyais', 'voyais', 'voyait', 'voyions', 'voyiez', 'voyaient'] },
+    prendre:  { group: 3, level: 3, forms: ['prenais', 'prenais', 'prenait', 'prenions', 'preniez', 'prenaient'] },
+    pouvoir:  { group: 3, level: 3, forms: ['pouvais', 'pouvais', 'pouvait', 'pouvions', 'pouviez', 'pouvaient'] },
+    dire:     { group: 3, level: 3, forms: ['disais', 'disais', 'disait', 'disions', 'disiez', 'disaient'] },
+    savoir:   { group: 3, level: 3, forms: ['savais', 'savais', 'savait', 'savions', 'saviez', 'savaient'] },
+    vouloir:  { group: 3, level: 3, forms: ['voulais', 'voulais', 'voulait', 'voulions', 'vouliez', 'voulaient'] },
+  },
+  present_irreg: {
+    faire:    { group: 3, level: 3, forms: ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'] },
+    aller:    { group: 3, level: 3, forms: ['vais', 'vas', 'va', 'allons', 'allez', 'vont'] },
+    pouvoir:  { group: 3, level: 3, forms: ['peux', 'peux', 'peut', 'pouvons', 'pouvez', 'peuvent'] },
+    vouloir:  { group: 3, level: 3, forms: ['veux', 'veux', 'veut', 'voulons', 'voulez', 'veulent'] },
+    voir:     { group: 3, level: 3, forms: ['vois', 'vois', 'voit', 'voyons', 'voyez', 'voient'] },
+    prendre:  { group: 3, level: 3, forms: ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'] },
+    dire:     { group: 3, level: 3, forms: ['dis', 'dis', 'dit', 'disons', 'dites', 'disent'] },
+    savoir:   { group: 3, level: 3, forms: ['sais', 'sais', 'sait', 'savons', 'savez', 'savent'] },
+    venir:    { group: 3, level: 3, forms: ['viens', 'viens', 'vient', 'venons', 'venez', 'viennent'] },
+  },
+};
+
+const CONJ_TENSE_LABELS = {
+  present: 'présent', passe_compose: 'passé composé', futur: 'futur',
+  imparfait: 'imparfait', present_irreg: 'présent',
+};
+
+function generateConjugaison(subLevel) {
+  // Collect tenses available at this level
+  const availableTenses = [];
+  for (const [tense, verbs] of Object.entries(CONJ_VERBS)) {
+    for (const [verb, data] of Object.entries(verbs)) {
+      if (data.level <= subLevel) {
+        availableTenses.push({ tense, verb, data });
+      }
+    }
+  }
+
+  const entry = pick(availableTenses);
+  const pronounIdx = rand(0, 5);
+  const pronoun = CONJ_PRONOUNS[pronounIdx];
+  const form = entry.data.forms[pronounIdx];
+  const tenseLabel = CONJ_TENSE_LABELS[entry.tense];
+
+  // Build display pronoun (je → j' before vowel)
+  const displayPronoun = (pronoun === 'je' && /^[aeéèêiîoôuûyhà]/i.test(form)) ? "j'" : pronoun + ' ';
+
+  const fullAnswer = displayPronoun + form;
+  const acceptedAnswers = [form, fullAnswer];
+  // Also accept without accents via the normalizer in app.js
+
+  const hintLetters = form.slice(0, 2);
+
+  return {
+    category: 'conjugaison',
+    text: `Conjugue le verbe « ${entry.verb} » au ${tenseLabel} avec « ${pronoun} ».`,
+    answer: null,
+    textAnswer: form,
+    acceptedAnswers: acceptedAnswers,
+    unit: '',
+    hint: `La réponse commence par "${hintLetters}..."`,
+    explanation: `${displayPronoun}${form} (verbe ${entry.verb}, ${tenseLabel}).`,
+  };
+}
+
 const GENERATORS = {
   calcul:    generateCalcul,
   logique:   generateLogique,
@@ -3579,7 +3690,8 @@ const GENERATORS = {
   fractions: generateFractions,
   mesures:   generateMesures,
   ouvert:    generateOuvert,
-  geographie: generateGeographie
+  geographie: generateGeographie,
+  conjugaison: generateConjugaison
 };
 
 function generateQuestion(category, subLevel, lastCategory) {

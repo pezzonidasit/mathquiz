@@ -1,6 +1,6 @@
 /* QuizHero V2 — App Logic (profile-aware) */
 
-const APP_VERSION = '6.2';
+const APP_VERSION = '6.3';
 
 // ── HTML Sanitization ────────────────────────────────────────────
 const _escapeDiv = document.createElement('div');
@@ -244,7 +244,7 @@ document.getElementById('timer-toggle').addEventListener('change', (e) => {
 });
 
 function updateSettingsSummary() {
-  const catLabels = { all: '🎯 Toutes', calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes', geographie: '🌍 Géographie' };
+  const catLabels = { all: '🎯 Toutes', calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes', geographie: '🌍 Géographie', conjugaison: '✏️ Conjugaison' };
   const el = document.getElementById('settings-summary-text');
   if (el) el.textContent = (catLabels[state.category] || 'Toutes') + ' · #' + state.questionCount;
   renderCatLevelIndicators();
@@ -1464,6 +1464,7 @@ const BADGE_DEFS = [
   { id: 'master_fractions', name: 'Maître Fractions', icon: '🍕', category: 'master', check: () => (state.categoryStats.fractions?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.fractions?.correct || 0, 50), max: 50 }) },
   { id: 'master_mesures', name: 'Maître Mesures', icon: '📏', category: 'master', check: () => (state.categoryStats.mesures?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.mesures?.correct || 0, 50), max: 50 }) },
   { id: 'master_geographie', name: 'Maître Géographie', icon: '🌍', category: 'master', check: () => (state.categoryStats.geographie?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.geographie?.correct || 0, 50), max: 50 }) },
+  { id: 'master_conjugaison', name: 'Maître Conjugaison', icon: '✏️', category: 'master', check: () => (state.categoryStats.conjugaison?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.conjugaison?.correct || 0, 50), max: 50 }) },
   { id: 'master_ouvert', name: 'Maître Ouvert', icon: '💡', category: 'master', check: () => (state.categoryStats.ouvert?.correct || 0) >= 50, progress: () => ({ cur: Math.min(state.categoryStats.ouvert?.correct || 0, 50), max: 50 }) },
   { id: 'grand_master', name: 'Grand Maître', icon: '🎓', category: 'master', check: () => {
     return ['calcul','logique','geometrie','fractions','mesures','ouvert'].every(c => (state.categoryStats[c]?.correct || 0) >= 50);
@@ -3800,7 +3801,7 @@ async function renderAdminPlayers(el) {
   let html = '<p style="text-align:center;color:var(--text-secondary);font-size:0.85rem">' + players.length + ' joueur' + (players.length > 1 ? 's' : '') + '</p>';
 
   const allCats = ['calcul', 'logique', 'geometrie', 'fractions', 'mesures', 'ouvert'];
-  const catLabelsAdmin = { calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes', geographie: '🌍 Géographie' };
+  const catLabelsAdmin = { calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes', geographie: '🌍 Géographie', conjugaison: '✏️ Conjugaison' };
 
   players.forEach(p => {
     const rankIcon = rankIcons[p.rank] || '🥉';
@@ -4181,7 +4182,7 @@ function renderProgressionScreen() {
   showScreen('screen-progression');
 
   const catKeys = ['calcul', 'logique', 'geometrie', 'fractions', 'mesures', 'ouvert'];
-  const catIcons = { calcul: '🧮', logique: '⚙️', geometrie: '📐', fractions: '🔢', mesures: '📏', ouvert: '💡', geographie: '🌍' };
+  const catIcons = { calcul: '🧮', logique: '⚙️', geometrie: '📐', fractions: '🔢', mesures: '📏', ouvert: '💡', geographie: '🌍', conjugaison: '✏️' };
 
   // Section 1: Mastery bars
   let barsHtml = '';
@@ -4658,7 +4659,7 @@ document.getElementById('btn-duel-find').addEventListener('click', async () => {
   const code = document.getElementById('duel-join-code').value;
   const duel = await Duel.find(code);
   if (!duel) return;
-  const catNames = { calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes', geographie: '🌍 Géographie', all: '🎯 Toutes' };
+  const catNames = { calcul: '🧮 Calcul', logique: '🧩 Logique', geometrie: '📐 Géométrie', fractions: '🍕 Fractions', mesures: '📏 Mesures', ouvert: '💡 Problèmes', geographie: '🌍 Géographie', conjugaison: '✏️ Conjugaison', all: '🎯 Toutes' };
   document.getElementById('duel-join-category').textContent = catNames[duel.category] || duel.category;
   document.getElementById('duel-join-stake').textContent = duel.stake.a + ' 🪙';
   document.getElementById('duel-join-opponent').textContent = duel.players.a.name;
