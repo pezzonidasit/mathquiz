@@ -1,6 +1,6 @@
 /* QuizHero V2 — App Logic (profile-aware) */
 
-const APP_VERSION = '6.3';
+const APP_VERSION = '6.3.1';
 
 // ── HTML Sanitization ────────────────────────────────────────────
 const _escapeDiv = document.createElement('div');
@@ -1285,7 +1285,9 @@ function processAnswer(isCorrect, q) {
     launchMiniConfetti();
   } else {
     const correctAnswer = q.textAnswer !== undefined ? q.textAnswer : q.answer;
-    feedbackResult.textContent = 'Pas encore ! La réponse était ' + correctAnswer;
+    const userInput = document.getElementById('answer-input').value.trim();
+    const acceptedList = q.acceptedAnswers && q.acceptedAnswers.length > 1 ? ' (ou ' + q.acceptedAnswers.map(a => escapeHtml(a)).join(', ') + ')' : '';
+    feedbackResult.innerHTML = 'Pas encore !<br>Ta réponse : <strong>' + escapeHtml(userInput) + '</strong><br>Réponse correcte : <strong>' + escapeHtml(String(correctAnswer)) + '</strong>' + acceptedList;
     feedbackResult.className = 'feedback-result incorrect';
     if (state.streakLostMessage) {
       feedbackResult.textContent += ' · ' + state.streakLostMessage;
@@ -1319,11 +1321,11 @@ function validateAnswer() {
   let isCorrect = false;
 
   if (q.acceptedAnswers) {
-    // Text mode: check against accepted answers (case + accent insensitive)
-    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    // Text mode: check against accepted answers (case + accent + whitespace insensitive)
+    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
     isCorrect = q.acceptedAnswers.some(a => norm(userAnswer) === norm(a));
   } else if (q.textAnswer !== undefined) {
-    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
     isCorrect = norm(userAnswer) === norm(q.textAnswer);
   } else {
     const numAnswer = parseFloat(userAnswer);
