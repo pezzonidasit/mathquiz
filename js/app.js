@@ -1,6 +1,6 @@
 /* QuizHero V2 — App Logic (profile-aware) */
 
-const APP_VERSION = '6.1.1';
+const APP_VERSION = '6.1.2';
 
 // ── HTML Sanitization ────────────────────────────────────────────
 const _escapeDiv = document.createElement('div');
@@ -358,6 +358,7 @@ document.getElementById('btn-create-profile').addEventListener('click', () => {
     firebaseSignIn().then(() => {
       MQSync._pushAll().catch(() => {});
       _consumePendingJoin();
+      Duel.purgeStale();
     }).catch(() => {});
   } else {
     MQSync._pushAll().catch(() => {});
@@ -1397,12 +1398,12 @@ function profileGames() { return ProfileManager.get('gamesPlayed', 0); }
 
 // ── Boosts System ───────────────────────────────────────────────
 const BOOSTS = [
-  { id: 'xp_boost', name: 'Boost XP', icon: '⚡', price: 50, desc: 'XP ×2 (×3 en difficile)', effect: 'xp' },
-  { id: 'coin_boost', name: 'Boost Pièces', icon: '💰', price: 60, desc: 'Pièces ×2 (×3 en difficile)', effect: 'coins' },
-  { id: 'score_boost', name: 'Boost Score', icon: '🎯', price: 40, desc: 'Score ×1.5 (×2 en difficile)', effect: 'score' },
+  { id: 'xp_boost', name: 'Boost XP', icon: '⚡', price: 50, desc: 'XP ×2 si score parfait (×3 en difficile)', effect: 'xp' },
+  { id: 'coin_boost', name: 'Boost Pièces', icon: '💰', price: 60, desc: 'Pièces ×2 si score parfait (×3 en difficile)', effect: 'coins' },
+  { id: 'score_boost', name: 'Boost Score', icon: '🎯', price: 40, desc: 'Score ×1.5 si score parfait (×2 en difficile)', effect: 'score' },
   { id: 'hint_pack', name: 'Pack Indices', icon: '💡', price: 30, desc: '3 indices gratuits pour cette partie', effect: 'hints' },
   { id: 'streak_shield', name: 'Bouclier de série', icon: '🛡️', price: 75, desc: 'Protège ta série 1 fois (1 erreur pardonnée)', effect: 'shield' },
-  { id: 'coin_rain', name: 'Pluie de pièces', icon: '🌧️', price: 100, desc: 'Ignore le diminishing returns (1 partie)', effect: 'rain' },
+  { id: 'coin_rain', name: 'Pluie de pièces', icon: '🌧️', price: 30, desc: 'Pas de réduction de pièces après 3 parties (1 partie)', effect: 'rain' },
 ];
 
 function getBoostMultiplier(catLevelValue) {

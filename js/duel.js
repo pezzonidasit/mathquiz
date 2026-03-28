@@ -404,6 +404,27 @@ const Duel = {
     showScreen('screen-duel-create');
   },
 
+  // ── Purge stale duels (>1h old) on app start ──
+
+  async purgeStale() {
+    try {
+      const snap = await db.ref('duels').once('value');
+      const duels = snap.val();
+      if (!duels) return;
+      const now = Date.now();
+      const maxAge = 3600000; // 1 hour
+      const deletes = {};
+      for (const [code, d] of Object.entries(duels)) {
+        if (d.createdAt && (now - d.createdAt) > maxAge) {
+          deletes['duels/' + code] = null;
+        }
+      }
+      if (Object.keys(deletes).length > 0) {
+        await db.ref().update(deletes);
+      }
+    } catch (e) { /* silent */ }
+  },
+
   // ── Cleanup ──
 
   _cleanup() {
