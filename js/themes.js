@@ -310,10 +310,33 @@ const THEMES = {
       '--accent-red': '#3060c0',
       '--accent-yellow': '#40b0ff'
     }
+  },
+
+  // === FREE THEME (chat) ===
+  chat: {
+    id: 'chat',
+    name: 'Royaume du Chat',
+    price: 0,
+    rarity: 'common',
+    preview: '🐱',
+    vars: {
+      '--bg-dark': '#2a1f1a',
+      '--bg-card': '#3d2e24',
+      '--bg-card-hover': '#4a382c',
+      '--text-primary': '#f5ebe0',
+      '--text-secondary': '#c4a882',
+      '--accent-blue': '#7eb8c9',
+      '--accent-green': '#6fbf73',
+      '--accent-orange': '#e8944c',
+      '--accent-violet': '#c48db8',
+      '--accent-red': '#e06858',
+      '--accent-yellow': '#f0c060'
+    },
+    pattern: 'paws'
   }
 };
 
-const FREE_THEMES = ['nuit', 'ocean', 'foret'];
+const FREE_THEMES = ['nuit', 'ocean', 'foret', 'chat'];
 
 /**
  * Apply a theme by setting CSS custom properties on :root
@@ -326,6 +349,12 @@ function applyTheme(themeId) {
   const root = document.documentElement.style;
   for (const [prop, value] of Object.entries(theme.vars)) {
     root.setProperty(prop, value);
+  }
+
+  // Pattern overlay (e.g. paw prints for chat theme)
+  document.body.classList.remove('theme-pattern-paws');
+  if (theme.pattern === 'paws') {
+    document.body.classList.add('theme-pattern-paws');
   }
 }
 
