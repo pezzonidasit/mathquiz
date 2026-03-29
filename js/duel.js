@@ -385,7 +385,10 @@ const Duel = {
 
     document.getElementById('duel-end-icon').textContent = isDraw ? '🤝' : iWon ? '🏆' : '😢';
     document.getElementById('duel-end-title').textContent = isDraw ? 'Égalité !' : iWon ? 'Victoire !' : 'Défaite...';
-    document.getElementById('duel-end-score').textContent = duel.players.a.score + ' - ' + (duel.players.b?.score || 0);
+    const myScore = duel.players[this.role]?.score || 0;
+    const otherRole = this.role === 'a' ? 'b' : 'a';
+    const otherScore = duel.players[otherRole]?.score || 0;
+    document.getElementById('duel-end-score').innerHTML = '<span style="color:var(--accent-green)">' + myScore + '</span> - <span style="opacity:0.7">' + otherScore + '</span><br><span style="font-size:0.6em;opacity:0.5">Toi · Adversaire</span>';
     document.getElementById('btn-duel-rematch')?.removeAttribute('disabled');
 
     // Only apply coin changes once per finished duel
