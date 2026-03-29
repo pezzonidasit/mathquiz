@@ -438,9 +438,9 @@ const PET_STAGES = [
 ];
 
 const PET_FOOD = [
-  { id: 'kibble',    name: 'Croquettes',       price: 20, hunger: 25, icon: '🍖' },
-  { id: 'feast',     name: 'Festin',           price: 50, hunger: 100, icon: '🍗' },
-  { id: 'treat',     name: 'Friandise dorée',  price: 30, hunger: 25, icon: '🍬', xpBoost: 3 },
+  { id: 'kibble',    name: 'Croquettes',       price: 40, hunger: 25, icon: '🍖' },
+  { id: 'feast',     name: 'Festin',           price: 100, hunger: 100, icon: '🍗' },
+  { id: 'treat',     name: 'Friandise dorée',  price: 60, hunger: 25, icon: '🍬', xpBoost: 3 },
 ];
 
 function getPetStage(petXP) {
@@ -464,7 +464,7 @@ function updatePetHunger() {
   const daysMissed = Math.floor((Date.now() - lastLogin) / (1000 * 60 * 60 * 24));
   if (daysMissed > 0) {
     const hunger = ProfileManager.get('petHunger', 100);
-    const newHunger = Math.max(0, hunger - (daysMissed * 10));
+    const newHunger = Math.max(0, hunger - (daysMissed * 20));
     ProfileManager.set('petHunger', newHunger);
   }
   ProfileManager.set('petLastLogin', Date.now());
@@ -499,15 +499,17 @@ function addPetXP(score) {
 function getPetBonus() {
   const petType = ProfileManager.get('petType', null);
   if (!petType) return null;
+  if (ProfileManager.get('vacationMode', false)) return null;
   const hunger = ProfileManager.get('petHunger', 100);
   if (hunger < 50) return null;
   return PET_TYPES[petType]?.bonus || null;
 }
 
-/** Returns the bonus multiplier (0.05–0.25) based on current pet stage. 0 if no pet or hungry. */
+/** Returns the bonus multiplier (0.05–0.25) based on current pet stage. 0 if no pet, hungry, or vacation. */
 function getPetBonusPct() {
   const petType = ProfileManager.get('petType', null);
   if (!petType) return 0;
+  if (ProfileManager.get('vacationMode', false)) return 0;
   const hunger = ProfileManager.get('petHunger', 100);
   if (hunger < 50) return 0;
   const xp = ProfileManager.get('petXP', 0);
@@ -558,12 +560,9 @@ function onBossLost() {
   ProfileManager.set('petHunger', Math.max(0, hunger - 20));
 }
 
-/** Drain pet hunger after each game played (−10 per game). */
+/** @deprecated No longer used — hunger now decays daily, not per game. Kept for reference. */
 function drainPetHunger() {
-  const petType = ProfileManager.get('petType', null);
-  if (!petType) return;
-  const hunger = ProfileManager.get('petHunger', 100);
-  ProfileManager.set('petHunger', Math.max(0, hunger - 10));
+  // No-op: per-game drain removed in v7.4.0
 }
 
 function changePet(newType) {

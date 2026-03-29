@@ -1,6 +1,6 @@
 /* QuizHero V2 — App Logic (profile-aware) */
 
-const APP_VERSION = '7.3.4';
+const APP_VERSION = '7.4.1';
 
 // ── Theme Helpers ───────────────────────────────────────────────
 function isCatTheme() {
@@ -1756,8 +1756,8 @@ function applyBoostRewards(rewards, avgLevel) {
 }
 
 function applyPetEffects(rewards) {
+  if (ProfileManager.get('vacationMode', false)) return;
   addPetXP(state.score);
-  drainPetHunger();
   checkDragonSkip(state.questionCount);
 
   const petBonus = getPetBonus();
@@ -4953,7 +4953,7 @@ function renderPetZone() {
   if (petBtn) {
     petBtn.style.display = '';
     petBtn.textContent = pet.emoji;
-    petBtn.className = 'pet-icon-header' + (isHungry ? ' hungry' : '');
+    petBtn.className = 'pet-icon-header' + ((isHungry || vacation) ? ' hungry' : '');
   }
 
   // Hunger bar in header (under XP bar)
@@ -5023,11 +5023,12 @@ function renderMyPetScreen() {
   const coins = ProfileManager.get('coins', 0);
 
   let html = '<div style="text-align:center">' +
-    '<div style="font-size:4rem;margin:0.5rem 0' + (isHungry ? ';filter:grayscale(0.7);opacity:0.7' : '') + '">' + pet.emoji + '</div>' +
+    '<div style="font-size:4rem;margin:0.5rem 0' + ((isHungry || vacation) ? ';filter:grayscale(0.7);opacity:0.7' : '') + '">' + pet.emoji + '</div>' +
     '<div style="font-size:1.3rem;font-weight:700">' + pet.name + '</div>' +
     '<div style="font-size:0.85rem;color:var(--accent-orange);margin:0.25rem 0">' + stage.label + '</div>' +
-    (hasBonus ? '<div style="font-size:0.75rem;color:var(--text-secondary)">✨ ' + getPetBonusDesc(petType, stage) + '</div>' : '') +
-    (isHungry ? '<div style="font-size:0.85rem;color:#f44336;margin-top:0.25rem">😢 A faim !</div>' : '') +
+    (vacation ? '<div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.25rem">🏖️ En vacances — bonus désactivés</div>' :
+      (hasBonus ? '<div style="font-size:0.75rem;color:var(--text-secondary)">✨ ' + getPetBonusDesc(petType, stage) + '</div>' : '')) +
+    (isHungry && !vacation ? '<div style="font-size:0.85rem;color:#f44336;margin-top:0.25rem">😢 A faim !</div>' : '') +
     '</div>';
 
   // XP bar
