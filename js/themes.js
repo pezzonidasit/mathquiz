@@ -570,7 +570,8 @@ function applyThemeCombo(paletteId, visualId) {
     ? PALETTES[paletteId].vars
     : (visual ? visual.defaultVars : PALETTES.nuit.vars);
   applyPalette(paletteId, visual ? visual.defaultVars : null);
-  applyVisual(visualId, activeVars);
+  // SVG overlays always use the visual theme's own colors (not the palette)
+  applyVisual(visualId, visual ? visual.defaultVars : PALETTES.nuit.vars);
 }
 
 /**
