@@ -412,13 +412,40 @@ const Duel = {
 
   // ── Rematch ──
 
-  rematch() {
+  async rematch() {
     const duel = this.state;
-    this._cleanup();
-    if (!duel) { showScreen('screen-home'); return; }
-    // Always go to create screen for simplicity
-    document.getElementById('duel-my-coins').textContent = ProfileManager.get('coins', 0);
-    showScreen('screen-duel-create');
+    const code = this.code;
+    const role = this.role;
+    if (!duel || !code) { this._cleanup(); showScreen('screen-home'); return; }
+
+    // Mark this player as ready for rematch
+    await db.ref('duels/' + code + '/rematch/' + role).set(true);
+
+    // Show waiting state
+    document.getElementById('duel-final-result').innerHTML =
+      '<div style="text-align:center;padding:2rem"><div style="font-size:1.5rem;margin-bottom:0.5rem">⏳</div><div>En attente de l\'adversaire...</div></div>';
+    document.querySelector('#screen-duel-end .btn-primary')?.setAttribute('disabled', '');
+
+    // Listen for both players ready
+    const rematchRef = db.ref('duels/' + code + '/rematch');
+    rematchRef.on('value', async (snap) => {
+      const d = snap.val() || {};
+      if (d.a && d.b) {
+        rematchRef.off();
+        // Player A resets the duel — both players' listener (_onDuelUpdate) picks up the change
+        if (role === 'a') {
+          await db.ref('duels/' + code).update({
+            status: 'ready',
+            currentRound: 0,
+            rounds: {},
+            winner: null,
+            rematch: null,
+            'players/a/score': 0,
+            'players/b/score': 0,
+          });
+        }
+      }
+    });
   },
 
   // ── Purge stale duels (>1h old) on app start ──
