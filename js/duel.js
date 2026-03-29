@@ -319,7 +319,7 @@ const Duel = {
       if (answers.a?.correct && answers.b?.correct) {
         detailEl.textContent = 'Plus rapide ! (' + (answers[this.role].time / 1000).toFixed(1) + 's)';
       } else {
-        detailEl.textContent = 'Bonne réponse : ' + roundData.question.answer;
+        detailEl.textContent = 'Bonne réponse : ' + (roundData.question.textAnswer || roundData.question.answer);
       }
     } else {
       winnerEl.textContent = '❌ Point pour l\'adversaire';
@@ -422,9 +422,10 @@ const Duel = {
     await db.ref('duels/' + code + '/rematch/' + role).set(true);
 
     // Show waiting state
-    document.getElementById('duel-final-result').innerHTML =
-      '<div style="text-align:center;padding:2rem"><div style="font-size:1.5rem;margin-bottom:0.5rem">⏳</div><div>En attente de l\'adversaire...</div></div>';
-    document.querySelector('#screen-duel-end .btn-primary')?.setAttribute('disabled', '');
+    document.getElementById('duel-end-icon').textContent = '⏳';
+    document.getElementById('duel-end-title').textContent = 'En attente de l\'adversaire...';
+    document.getElementById('duel-end-score').textContent = '';
+    document.getElementById('btn-duel-rematch')?.setAttribute('disabled', '');
 
     // Listen for both players ready
     const rematchRef = db.ref('duels/' + code + '/rematch');
