@@ -1,6 +1,6 @@
 /* QuizHero V2 — App Logic (profile-aware) */
 
-const APP_VERSION = '7.0.1';
+const APP_VERSION = '7.0.2';
 
 // ── Theme Helpers ───────────────────────────────────────────────
 function isCatTheme() {
@@ -5056,6 +5056,9 @@ function openDailyQuestion(data) {
   document.getElementById('daily-answer-section').style.display = '';
   document.getElementById('daily-result').style.display = 'none';
   const input = document.getElementById('daily-answer-input');
+  const isTextQuestion = q.textAnswer !== undefined || q.acceptedAnswers;
+  input.type = isTextQuestion ? 'text' : 'number';
+  input.inputMode = isTextQuestion ? 'text' : 'decimal';
   input.value = '';
   setTimeout(() => input.focus(), 100);
 
@@ -5071,7 +5074,7 @@ function openDailyQuestion(data) {
     const elapsed = Date.now() - startTime;
     newBtn.disabled = true;
     try {
-      const correct = await submitDailyAnswer(data.date, Number(val), elapsed);
+      const correct = await submitDailyAnswer(data.date, isTextQuestion ? val : Number(val), elapsed);
       document.getElementById('daily-answer-section').style.display = 'none';
       const secs = (elapsed / 1000).toFixed(1);
       let html = correct
@@ -5081,7 +5084,7 @@ function openDailyQuestion(data) {
           '<div style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-secondary)">Classement disponible demain</div>'
         : '<div style="text-align:center"><div style="font-size:2rem;margin-bottom:0.5rem">❌</div>' +
           '<div style="font-weight:700;font-size:1.2rem;color:#f44336">Mauvaise réponse</div>' +
-          '<div style="margin-top:0.5rem;color:var(--text-secondary)">Réponse : ' + q.answer + '</div>';
+          '<div style="margin-top:0.5rem;color:var(--text-secondary)">Réponse : ' + (q.textAnswer !== undefined ? q.textAnswer : q.answer) + '</div>';
       if (q.explanation) html += '<div style="margin-top:1rem;font-size:0.85rem;color:var(--text-secondary)">' + q.explanation + '</div>';
       html += '</div>';
       document.getElementById('daily-result').innerHTML = html;

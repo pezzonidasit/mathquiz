@@ -807,11 +807,14 @@ async function getDailyQuestion() {
 
   if (!snap.exists()) {
     const q = generateQuestion('all', 2, null);
-    await ref.child('question').set({
+    const questionData = {
       text: q.text, answer: q.answer, unit: q.unit || '',
       hint: q.hint || '', explanation: q.explanation || '',
       category: q.category, generatedAt: firebase.database.ServerValue.TIMESTAMP,
-    });
+    };
+    if (q.textAnswer !== undefined) questionData.textAnswer = q.textAnswer;
+    if (q.acceptedAnswers) questionData.acceptedAnswers = q.acceptedAnswers;
+    await ref.child('question').set(questionData);
     snap = await ref.child('question').once('value');
   }
 
@@ -827,9 +830,16 @@ async function submitDailyAnswer(date, value, time) {
   const snap = await ref.once('value');
   if (snap.exists()) throw new Error('Déjà répondu');
 
-  const questionSnap = await db.ref('dailyQuestion/' + date + '/question/answer').once('value');
-  const correctAnswer = questionSnap.val();
-  const correct = Math.abs(Number(value) - correctAnswer) < 0.01;
+  const qSnap = await db.ref('dailyQuestion/' + date + '/question').once('value');
+  const qData = qSnap.val();
+  let correct;
+  if (qData.textAnswer !== undefined) {
+    const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const accepted = qData.acceptedAnswers || [qData.textAnswer];
+    correct = accepted.some(a => norm(value) === norm(a));
+  } else {
+    correct = Math.abs(Number(value) - qData.answer) < 0.01;
+  }
 
   await ref.set({
     correct, time, answeredAt: firebase.database.ServerValue.TIMESTAMP,

@@ -426,13 +426,14 @@ function applyTheme(themeId) {
   for (const p of patterns) document.body.classList.toggle('theme-pattern-' + p, pat === p);
 
   // Theme decorations on static elements
-  const decos = { paws: ['😼','🐱','😸'], onepiece: ['🏴‍☠️','🏴‍☠️','☠️'], splatoon: ['🦑','🦑','🎨'], dbz: ['🟠','🐉','⚡'] };
+  const kameIcon = '<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:2px solid currentColor;border-radius:50%;font-size:16px;font-weight:900;vertical-align:middle;margin-right:4px">亀</span>';
+  const decos = { paws: ['😼','🐱','😸'], onepiece: ['🏴‍☠️','🏴‍☠️','☠️'], splatoon: ['🦑','🦑','🎨'], dbz: ['★', kameIcon, '⚡'] };
   const d = decos[pat];
   const shopBtn = document.getElementById('btn-shop');
   if (shopBtn) shopBtn.textContent = d ? d[0] : '🛒';
 
   const homeTitle = document.querySelector('#screen-home > h1');
-  if (homeTitle) homeTitle.textContent = d ? d[1] + ' QuizHero' : 'QuizHero';
+  if (homeTitle) homeTitle.innerHTML = d ? d[1] + ' QuizHero' : 'QuizHero';
 
   const endTitle = document.querySelector('#screen-end > h2');
   if (endTitle) endTitle.textContent = d ? d[2] + ' Partie terminée !' : '🎉 Partie terminée !';
