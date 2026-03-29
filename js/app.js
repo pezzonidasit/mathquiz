@@ -12,6 +12,9 @@ function isOnePieceTheme() {
 function isSplatoonTheme() {
   return document.body.classList.contains('theme-pattern-splatoon');
 }
+function isDBZTheme() {
+  return document.body.classList.contains('theme-pattern-dbz');
+}
 
 // ── HTML Sanitization ────────────────────────────────────────────
 const _escapeDiv = document.createElement('div');
@@ -1321,15 +1324,15 @@ function processAnswer(isCorrect, q) {
   const feedbackExplanation = document.getElementById('feedback-explanation');
 
   if (isCorrect) {
-    feedbackResult.textContent = isCatTheme() ? '😺 Correct !' : isOnePieceTheme() ? '☠️ Yohoho !' : isSplatoonTheme() ? '🦑 Splaaaash !' : 'Correct !';
+    feedbackResult.textContent = isCatTheme() ? '😺 Correct !' : isOnePieceTheme() ? '☠️ Yohoho !' : isSplatoonTheme() ? '🦑 Splaaaash !' : isDBZTheme() ? '⚡ KAMEHAMEHA !' : 'Correct !';
     feedbackResult.className = 'feedback-result correct';
     launchMiniConfetti();
   } else {
     const correctAnswer = q.textAnswer !== undefined ? q.textAnswer : q.answer;
     const userInput = document.getElementById('answer-input').value.trim();
     const acceptedList = q.acceptedAnswers && q.acceptedAnswers.length > 1 ? ' (ou ' + q.acceptedAnswers.map(a => escapeHtml(a)).join(', ') + ')' : '';
-    const themePrefix = isCatTheme() ? '😿 ' : isOnePieceTheme() ? '⚓ ' : isSplatoonTheme() ? '💦 ' : '';
-    const themeMsg = isOnePieceTheme() ? 'Pas encore, nakama !' : isSplatoonTheme() ? "Oups, raté l'encre !" : 'Pas encore !';
+    const themePrefix = isCatTheme() ? '😿 ' : isOnePieceTheme() ? '⚓ ' : isSplatoonTheme() ? '💦 ' : isDBZTheme() ? '🔥 ' : '';
+    const themeMsg = isOnePieceTheme() ? 'Pas encore, nakama !' : isSplatoonTheme() ? "Oups, raté l'encre !" : isDBZTheme() ? 'Ce n\'est pas fini, Saiyan !' : 'Pas encore !';
     feedbackResult.innerHTML = themePrefix + themeMsg + '<br>Ta réponse : <strong>' + escapeHtml(userInput) + '</strong><br>Réponse correcte : <strong>' + escapeHtml(String(correctAnswer)) + '</strong>' + acceptedList;
     feedbackResult.className = 'feedback-result incorrect';
     if (state.streakLostMessage) {

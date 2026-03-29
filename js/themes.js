@@ -335,6 +335,29 @@ const THEMES = {
     pattern: 'splatoon'
   },
 
+  // === LEGENDARY THEME (Dragon Ball Z) ===
+  dbz: {
+    id: 'dbz',
+    name: 'Saiyan',
+    price: 3000,
+    rarity: 'legendary',
+    preview: '🟠',
+    vars: {
+      '--bg-dark': '#0a0a14',
+      '--bg-card': '#1a1a2e',
+      '--bg-card-hover': '#252540',
+      '--text-primary': '#fff0d0',
+      '--text-secondary': '#c0a060',
+      '--accent-blue': '#00b0ff',
+      '--accent-green': '#76ff03',
+      '--accent-orange': '#ff6d00',
+      '--accent-violet': '#aa00ff',
+      '--accent-red': '#ff1744',
+      '--accent-yellow': '#ffd600'
+    },
+    pattern: 'dbz'
+  },
+
   // === EPIC THEME (One Piece) ===
   onepiece: {
     id: 'onepiece',
@@ -398,22 +421,21 @@ function applyTheme(themeId) {
   }
 
   // Pattern overlays
-  const isCat = theme.pattern === 'paws';
-  const isOP = theme.pattern === 'onepiece';
-  const isSplat = theme.pattern === 'splatoon';
-  document.body.classList.toggle('theme-pattern-paws', isCat);
-  document.body.classList.toggle('theme-pattern-onepiece', isOP);
-  document.body.classList.toggle('theme-pattern-splatoon', isSplat);
+  const patterns = ['paws', 'onepiece', 'splatoon', 'dbz'];
+  const pat = theme.pattern || '';
+  for (const p of patterns) document.body.classList.toggle('theme-pattern-' + p, pat === p);
 
   // Theme decorations on static elements
+  const decos = { paws: ['😼','🐱','😸'], onepiece: ['🏴‍☠️','🏴‍☠️','☠️'], splatoon: ['🦑','🦑','🎨'], dbz: ['🟠','🐉','⚡'] };
+  const d = decos[pat];
   const shopBtn = document.getElementById('btn-shop');
-  if (shopBtn) shopBtn.textContent = isCat ? '😼' : isOP ? '🏴‍☠️' : isSplat ? '🦑' : '🛒';
+  if (shopBtn) shopBtn.textContent = d ? d[0] : '🛒';
 
   const homeTitle = document.querySelector('#screen-home > h1');
-  if (homeTitle) homeTitle.textContent = isCat ? '🐱 QuizHero' : isOP ? '🏴‍☠️ QuizHero' : isSplat ? '🦑 QuizHero' : 'QuizHero';
+  if (homeTitle) homeTitle.textContent = d ? d[1] + ' QuizHero' : 'QuizHero';
 
   const endTitle = document.querySelector('#screen-end > h2');
-  if (endTitle) endTitle.textContent = isCat ? '😸 Partie terminée !' : isOP ? '☠️ Partie terminée !' : isSplat ? '🎨 Partie terminée !' : '🎉 Partie terminée !';
+  if (endTitle) endTitle.textContent = d ? d[2] + ' Partie terminée !' : '🎉 Partie terminée !';
 }
 
 /**
