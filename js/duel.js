@@ -157,8 +157,10 @@ const Duel = {
 
   async submitAnswer(value) {
     const duel = this.state;
+    if (!duel || !duel.rounds) return;
     const round = duel.currentRound;
     const roundData = duel.rounds[round];
+    if (!roundData) return;
     const elapsed = Date.now() - this.timerStart;
 
     const q = roundData.question;
@@ -400,7 +402,8 @@ const Duel = {
       coinsEl.innerHTML = '<div class="reward-row"><span>Pièces perdues</span><span class="reward-value" style="color:var(--accent-red, #ff6b6b)">-' + effective + ' 🪙</span></div>';
     }
 
-    // Schedule cleanup — cancelled if rematch starts
+    // Schedule cleanup — cancelled if rematch starts (clear previous to avoid orphans)
+    if (this._cleanupTimer) { clearTimeout(this._cleanupTimer); this._cleanupTimer = null; }
     this._cleanupTimer = setTimeout(() => {
       db.ref('duels/' + this.code).remove().catch(() => {});
       if (this.listener) { this.listener.off(); this.listener = null; }
@@ -449,7 +452,7 @@ const Duel = {
           await db.ref('duels/' + code).update({
             status: 'ready',
             currentRound: 0,
-            rounds: {},
+            rounds: null,
             winner: null,
             rematch: null,
             'players/a/score': 0,
