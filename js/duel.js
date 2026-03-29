@@ -141,7 +141,11 @@ const Duel = {
         status: 'playing',
         currentRound: round,
         ['rounds/' + round]: {
-          question: { text: q.text, answer: q.answer, unit: q.unit || '', hint: q.hint || '', explanation: q.explanation || '', category: q.category || cat },
+          question: Object.assign(
+            { text: q.text, answer: q.answer, unit: q.unit || '', hint: q.hint || '', explanation: q.explanation || '', category: q.category || cat },
+            q.textAnswer !== undefined ? { textAnswer: q.textAnswer } : {},
+            q.acceptedAnswers ? { acceptedAnswers: q.acceptedAnswers } : {}
+          ),
           answers: {},
           winner: null,
         },

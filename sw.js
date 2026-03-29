@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quizhero-v715';
+const CACHE_NAME = 'quizhero-v716';
 const ASSETS = [
   './',
   './index.html',
