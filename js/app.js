@@ -1,6 +1,6 @@
 /* QuizHero V2 — App Logic (profile-aware) */
 
-const APP_VERSION = '7.4.6';
+const APP_VERSION = '7.4.7';
 
 // ── Theme Helpers ───────────────────────────────────────────────
 function isCatTheme() {
@@ -5152,7 +5152,20 @@ async function checkDailyQuestion() {
       btn.textContent = '🌟 Question du jour';
       btn.onclick = () => openDailyQuestion(data);
     }
-  } catch(e) { if (btn) btn.style.display = 'none'; }
+  } catch(e) {
+    if (btn) btn.style.display = 'none';
+    // Debug toast for Test group only
+    try {
+      const groups = await getMyGroups();
+      if (groups.some(g => g.name === 'Test')) {
+        const t = document.createElement('div');
+        t.textContent = '🐛 Daily Q error: ' + (e.message || e);
+        Object.assign(t.style, { position:'fixed',bottom:'1rem',left:'50%',transform:'translateX(-50%)',background:'#ff5722',color:'#fff',padding:'0.5rem 1rem',borderRadius:'8px',zIndex:'9999',fontSize:'0.8rem',maxWidth:'90vw',wordBreak:'break-all' });
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 8000);
+      }
+    } catch(_) {}
+  }
 }
 
 function openDailyQuestion(data) {
