@@ -3271,6 +3271,8 @@ MQSync.syncOnLaunch().then(() => {
   }
   // Check for active revision sets
   checkRevisionSets();
+  // Re-check daily question now that Firebase auth is ready
+  checkDailyQuestion();
 }).catch(() => {});
 
 // ══════════════════════════════════════════════════════════════════════
