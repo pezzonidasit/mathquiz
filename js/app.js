@@ -1,6 +1,6 @@
 /* QuizHero V2 — App Logic (profile-aware) */
 
-const APP_VERSION = '7.4.7';
+const APP_VERSION = '7.4.8';
 
 // ── Theme Helpers ───────────────────────────────────────────────
 function isCatTheme() {
@@ -154,6 +154,24 @@ function saveGameState() {
     timerEnabled: state.timerEnabled,
     questions: state.questions,
     currentIndex: state.currentIndex + 1,
+    score: state.score,
+    streak: state.streak,
+    bestStreakThisGame: state.bestStreakThisGame,
+    consecutiveCorrect: state.consecutiveCorrect,
+    consecutiveWrong: state.consecutiveWrong,
+    noHintCount: state.noHintCount,
+    gameStartTime: state.gameStartTime,
+    elapsedBeforeSave: Date.now() - state.gameStartTime,
+  });
+}
+
+function saveGameStateInProgress() {
+  ProfileManager.set('gameState', {
+    category: state.category,
+    questionCount: state.questionCount,
+    timerEnabled: state.timerEnabled,
+    questions: state.questions,
+    currentIndex: state.currentIndex,
     score: state.score,
     streak: state.streak,
     bestStreakThisGame: state.bestStreakThisGame,
@@ -450,13 +468,16 @@ function selectProfile(id) {
     state.noHintCount = savedGame.noHintCount;
     state.gameStartTime = Date.now() - (savedGame.elapsedBeforeSave || 0);
     state.answered = false;
-    // Don't increment - saveGameState already saved the next index
+    // Resume: if currentIndex already has a question, show it (mid-question refresh).
+    // Otherwise generate the next one (post-answer save).
     if (state.currentIndex >= state.questionCount) {
       showScreen('screen-home');
       clearGameState();
     } else {
-      const lastCat = state.questions[state.currentIndex - 1]?.category;
-      state.questions.push(generateQuestion(state.category, getSubLevel(lastCat || state.category), lastCat));
+      if (!state.questions[state.currentIndex]) {
+        const lastCat = state.questions[state.currentIndex - 1]?.category;
+        state.questions.push(generateQuestion(state.category, getSubLevel(lastCat || state.category), lastCat));
+      }
       showScreen('screen-game');
       if (state.timerEnabled) {
         document.getElementById('timer-stat').style.display = '';
@@ -1188,6 +1209,9 @@ function showQuestion() {
   setTimeout(() => input.focus(), 100);
 
   renderSkipButton();
+
+  // Persist current question so page refresh doesn't skip it
+  saveGameStateInProgress();
 }
 
 // ── Hint System (with free hints support) ─────────────────────────
